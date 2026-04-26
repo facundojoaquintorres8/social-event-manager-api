@@ -4,6 +4,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.socialeventmanager.auth.dto.AuthResponseDTO;
+import com.socialeventmanager.auth.dto.LoginRequestDTO;
 import com.socialeventmanager.auth.dto.RegisterRequestDTO;
 import com.socialeventmanager.shared.dto.ApiResponseDTO;
 import com.socialeventmanager.shared.exception.BadRequestException;
@@ -40,11 +41,36 @@ public class AuthServiceImpl implements AuthService {
         return new ApiResponseDTO<>(
                 true,
                 "User registered successfully",
-                AuthResponseDTO.builder()
-                        .email(email)
-                        .firstName(request.getFirstName())
-                        .lastName(request.getLastName())
-                        .token(jwtService.generateToken(email))
-                        .build());
+                buildAuthResponse(user));
     }
+
+    @Override
+    public ApiResponseDTO<AuthResponseDTO> login(LoginRequestDTO request) {
+        String email = request.getEmail().trim().toLowerCase();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new BadRequestException("Invalid credentials"));
+
+        boolean passwordMatches = passwordEncoder.matches(
+                request.getPassword(),
+                user.getPassword());
+
+        if (!passwordMatches) {
+            throw new BadRequestException("Invalid credentials");
+        }
+
+        return new ApiResponseDTO<>(
+                true,
+                "Login successful",
+                buildAuthResponse(user));
+    }
+
+    private AuthResponseDTO buildAuthResponse(User user) {
+        return AuthResponseDTO.builder()
+                .token(jwtService.generateToken(user.getEmail()))
+                .email(user.getEmail())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .build();
+    }
+
 }
