@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 
 import com.socialeventmanager.auth.dto.RegisterRequestDTO;
 import com.socialeventmanager.shared.dto.ApiResponseDTO;
+import com.socialeventmanager.shared.exception.BadRequestException;
 import com.socialeventmanager.user.entity.User;
 import com.socialeventmanager.user.repository.UserRepository;
 
@@ -18,10 +19,10 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder passwordEncoder;
 
     @Override
-    public ApiResponseDTO<String> register(RegisterRequestDTO request) {
+    public ApiResponseDTO<Void> register(RegisterRequestDTO request) {
 
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Email already registered");
+            throw new BadRequestException("Email already registered");
         }
 
         User user = User.builder()

@@ -5,5 +5,5 @@ import com.socialeventmanager.shared.dto.ApiResponseDTO;
 
 public interface AuthService {
 
-    ApiResponseDTO<String> register(RegisterRequestDTO request);
+    ApiResponseDTO<Void> register(RegisterRequestDTO request);
 }
