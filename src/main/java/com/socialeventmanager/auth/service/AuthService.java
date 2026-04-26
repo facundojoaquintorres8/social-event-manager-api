@@ -1,5 +1,9 @@
 package com.socialeventmanager.auth.service;
 
-public class AuthService {
-    
+import com.socialeventmanager.auth.dto.RegisterRequestDTO;
+import com.socialeventmanager.shared.dto.ApiResponseDTO;
+
+public interface AuthService {
+
+    ApiResponseDTO<String> register(RegisterRequestDTO request);
 }
