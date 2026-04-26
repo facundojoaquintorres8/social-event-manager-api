@@ -1,5 +1,9 @@
 package com.socialeventmanager.user.service;
 
-public class UserService {
-    
+import com.socialeventmanager.shared.dto.ApiResponseDTO;
+import com.socialeventmanager.user.dto.UserResponseDTO;
+import com.socialeventmanager.user.entity.User;
+
+public interface UserService {
+    ApiResponseDTO<UserResponseDTO> me(User user);
 }
