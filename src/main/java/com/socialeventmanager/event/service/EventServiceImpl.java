@@ -1,6 +1,7 @@
 package com.socialeventmanager.event.service;
 
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -60,6 +61,47 @@ public class EventServiceImpl implements EventService {
                 events);
     }
 
+    @Override
+    public ApiResponseDTO<EventResponseDTO> getEventById(UUID eventId) {
+            Event event = getOwnedEvent(eventId);
+
+            return new ApiResponseDTO<>(
+                            true,
+                            "Event retrieved successfully",
+                            mapToResponse(event));
+    }
+
+    @Override
+    public ApiResponseDTO<EventResponseDTO> updateEvent(
+                    UUID eventId,
+                    CreateEventRequestDTO request) {
+            Event event = getOwnedEvent(eventId);
+
+            event.setTitle(request.getTitle());
+            event.setDescription(request.getDescription());
+            event.setEventDate(request.getEventDate());
+            event.setLocation(request.getLocation());
+
+            eventRepository.save(event);
+
+            return new ApiResponseDTO<>(
+                            true,
+                            "Event updated successfully",
+                            mapToResponse(event));
+    }
+
+    @Override
+    public ApiResponseDTO<Void> deleteEvent(UUID eventId) {
+            Event event = getOwnedEvent(eventId);
+
+            eventRepository.delete(event);
+
+            return new ApiResponseDTO<>(
+                            true,
+                            "Event deleted successfully",
+                            null);
+    }
+
     private User getCurrentUser() {
         String email = SecurityContextHolder.getContext()
                 .getAuthentication()
@@ -78,5 +120,14 @@ public class EventServiceImpl implements EventService {
                 .location(event.getLocation())
                 .createdBy(event.getCreatedBy().getEmail())
                 .build();
+    }
+
+    private Event getOwnedEvent(UUID eventId) {
+        User currentUser = getCurrentUser();
+    
+        return eventRepository
+                .findByIdAndCreatedBy(eventId, currentUser)
+                .orElseThrow(() ->
+                        new BadRequestException("Event not found"));
     }
 }
