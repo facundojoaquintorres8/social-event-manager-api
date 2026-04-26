@@ -1,6 +1,9 @@
 package com.socialeventmanager.shared.exception;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -17,8 +20,7 @@ public class GlobalExceptionHandler {
         return new ApiResponseDTO<>(
                 false,
                 ex.getMessage(),
-                null
-        );
+                null);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -31,8 +33,7 @@ public class GlobalExceptionHandler {
         return new ApiResponseDTO<>(
                 false,
                 message,
-                null
-        );
+                null);
     }
 
     @ExceptionHandler(Exception.class)
@@ -41,7 +42,27 @@ public class GlobalExceptionHandler {
         return new ApiResponseDTO<>(
                 false,
                 "Internal server error",
-                null
-        );
+                null);
     }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<ApiResponseDTO<Object>> handleBadCredentials(
+            BadCredentialsException ex) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(new ApiResponseDTO<>(
+                        false,
+                        "Invalid email or password",
+                        null));
+    }
+
+    @ExceptionHandler(UsernameNotFoundException.class)
+    public ResponseEntity<ApiResponseDTO<Object>> handleUsernameNotFound(
+            UsernameNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(new ApiResponseDTO<>(
+                        false,
+                        "Invalid email or password",
+                        null));
+    }
+
 }

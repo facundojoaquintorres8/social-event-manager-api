@@ -7,6 +7,7 @@ import lombok.Data;
 @Data
 public class LoginRequestDTO {
 
+    // TODO: change to regex pattern
     @Email(message = "Invalid email")
     @NotBlank(message = "Email is required")
     private String email;

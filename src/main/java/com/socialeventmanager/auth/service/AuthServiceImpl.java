@@ -1,5 +1,7 @@
 package com.socialeventmanager.auth.service;
 
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +22,7 @@ public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final AuthenticationManager authenticationManager;
 
     @Override
     public ApiResponseDTO<AuthResponseDTO> register(RegisterRequestDTO request) {
@@ -47,16 +50,14 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public ApiResponseDTO<AuthResponseDTO> login(LoginRequestDTO request) {
         String email = request.getEmail().trim().toLowerCase();
+
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        email,
+                        request.getPassword()));
+
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new BadRequestException("Invalid credentials"));
-
-        boolean passwordMatches = passwordEncoder.matches(
-                request.getPassword(),
-                user.getPassword());
-
-        if (!passwordMatches) {
-            throw new BadRequestException("Invalid credentials");
-        }
+                .orElseThrow(() -> new BadRequestException("User not found"));
 
         return new ApiResponseDTO<>(
                 true,
