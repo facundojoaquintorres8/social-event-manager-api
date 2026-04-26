@@ -1,7 +1,6 @@
 package com.socialeventmanager.shared.exception;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -10,6 +9,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import com.socialeventmanager.shared.dto.ApiResponseDTO;
+
+import io.jsonwebtoken.JwtException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -46,23 +47,36 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(BadCredentialsException.class)
-    public ResponseEntity<ApiResponseDTO<Object>> handleBadCredentials(
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public ApiResponseDTO<Void> handleBadCredentials(
             BadCredentialsException ex) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(new ApiResponseDTO<>(
-                        false,
-                        "Invalid email or password",
-                        null));
+        return new ApiResponseDTO<>(
+                false,
+                "Invalid email or password",
+                null
+        );
     }
-
+    
     @ExceptionHandler(UsernameNotFoundException.class)
-    public ResponseEntity<ApiResponseDTO<Object>> handleUsernameNotFound(
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public ApiResponseDTO<Void> handleUsernameNotFound(
             UsernameNotFoundException ex) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(new ApiResponseDTO<>(
-                        false,
-                        "Invalid email or password",
-                        null));
+        return new ApiResponseDTO<>(
+                false,
+                "Invalid email or password",
+                null
+        );
+    }
+    
+    @ExceptionHandler(JwtException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public ApiResponseDTO<Void> handleJwtException(
+            JwtException ex) {
+        return new ApiResponseDTO<>(
+                false,
+                "Invalid or expired token",
+                null
+        );
     }
 
 }

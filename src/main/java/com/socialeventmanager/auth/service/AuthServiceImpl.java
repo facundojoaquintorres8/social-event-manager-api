@@ -1,5 +1,7 @@
 package com.socialeventmanager.auth.service;
 
+import java.util.List;
+
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -7,9 +9,13 @@ import org.springframework.stereotype.Service;
 
 import com.socialeventmanager.auth.dto.AuthResponseDTO;
 import com.socialeventmanager.auth.dto.LoginRequestDTO;
+import com.socialeventmanager.auth.dto.RefreshRequestDTO;
 import com.socialeventmanager.auth.dto.RegisterRequestDTO;
 import com.socialeventmanager.shared.dto.ApiResponseDTO;
 import com.socialeventmanager.shared.exception.BadRequestException;
+import com.socialeventmanager.token.entity.Token;
+import com.socialeventmanager.token.enums.TokenType;
+import com.socialeventmanager.token.repository.TokenRepository;
 import com.socialeventmanager.user.entity.User;
 import com.socialeventmanager.user.repository.UserRepository;
 
@@ -23,6 +29,7 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+    private final TokenRepository tokenRepository;
 
     @Override
     public ApiResponseDTO<AuthResponseDTO> register(RegisterRequestDTO request) {
@@ -65,13 +72,88 @@ public class AuthServiceImpl implements AuthService {
                 buildAuthResponse(user));
     }
 
-    private AuthResponseDTO buildAuthResponse(User user) {
-        return AuthResponseDTO.builder()
-                .token(jwtService.generateToken(user.getEmail()))
+    @Override
+    public ApiResponseDTO<AuthResponseDTO> refreshToken(RefreshRequestDTO request) {
+
+        String refreshToken = request.getRefreshToken();
+        String userEmail = jwtService.extractUsername(refreshToken);
+
+        if (userEmail == null) {
+            throw new BadRequestException("Invalid refresh token");
+        }
+
+        if (!"REFRESH".equals(jwtService.extractTokenType(refreshToken))) {
+            throw new BadRequestException("Invalid refresh token");
+        }
+
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new BadRequestException("User not found"));
+
+        if (!jwtService.isTokenValid(refreshToken, user)) {
+            throw new BadRequestException("Invalid refresh token");
+        }
+
+        String newAccessToken = jwtService.generateToken(user.getEmail());
+
+        revokeAllUserTokens(user);
+        saveUserToken(user, newAccessToken);
+
+        AuthResponseDTO response = AuthResponseDTO.builder()
+                .accessToken(newAccessToken)
+                .refreshToken(refreshToken)
                 .email(user.getEmail())
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
                 .build();
+
+        return new ApiResponseDTO<>(
+                true,
+                "Token refreshed successfully",
+                response);
+    }
+
+    private AuthResponseDTO buildAuthResponse(User user) {
+        String accessToken = jwtService.generateToken(user.getEmail());
+        String refreshToken = jwtService.generateRefreshToken(user.getEmail());
+    
+        revokeAllUserTokens(user);
+        saveUserToken(user, accessToken);
+    
+        return AuthResponseDTO.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .email(user.getEmail())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .build();
+    }
+
+    private void saveUserToken(User user, String jwtToken) {
+        Token token = Token.builder()
+                        .user(user)
+                        .tokenValue(jwtToken)
+                        .tokenType(TokenType.BEARER)
+                        .expired(false)
+                        .revoked(false)
+                        .build();
+
+        tokenRepository.save(token);
+    }
+
+    private void revokeAllUserTokens(User user) {
+        List<Token> validUserTokens =
+                tokenRepository.findAllByUserIdAndExpiredFalseAndRevokedFalse(user.getId());
+    
+        if (validUserTokens.isEmpty()) {
+            return;
+        }
+    
+        validUserTokens.forEach(token -> {
+            token.setExpired(true);
+            token.setRevoked(true);
+        });
+    
+        tokenRepository.saveAll(validUserTokens);
     }
 
 }

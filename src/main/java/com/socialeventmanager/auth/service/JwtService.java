@@ -23,11 +23,26 @@ public class JwtService {
 
     public String generateToken(String email) {
         return Jwts.builder()
+                .claim("type", "ACCESS")
                 .subject(email)
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + jwtExpiration))
                 .signWith(getSignInKey())
                 .compact();
+    }
+
+    public String generateRefreshToken(String email) {
+        return Jwts.builder()
+                .claim("type", "REFRESH")
+                .subject(email)
+                .issuedAt(new Date(System.currentTimeMillis()))
+                .expiration(new Date(System.currentTimeMillis() + 604800000)) // 7 days
+                .signWith(getSignInKey())
+                .compact();
+    }
+
+    public String extractTokenType(String token) {
+        return extractClaim(token, claims -> claims.get("type", String.class));
     }
 
     public String extractUsername(String token) {

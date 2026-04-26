@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.socialeventmanager.auth.dto.AuthResponseDTO;
 import com.socialeventmanager.auth.dto.LoginRequestDTO;
+import com.socialeventmanager.auth.dto.RefreshRequestDTO;
 import com.socialeventmanager.auth.dto.RegisterRequestDTO;
 import com.socialeventmanager.auth.service.AuthService;
 import com.socialeventmanager.shared.dto.ApiResponseDTO;
@@ -35,6 +36,12 @@ public class AuthController {
     public ResponseEntity<ApiResponseDTO<AuthResponseDTO>> login(
             @Valid @RequestBody LoginRequestDTO request) {
         return ResponseEntity.ok(authService.login(request));
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<ApiResponseDTO<AuthResponseDTO>> refreshToken(
+            @Valid @RequestBody RefreshRequestDTO request) {
+        return ResponseEntity.ok(authService.refreshToken(request));
     }
 
 }
