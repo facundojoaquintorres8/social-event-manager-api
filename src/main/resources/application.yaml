@@ -22,5 +22,5 @@ spring:
     time-zone: America/Argentina/Buenos_Aires
 
 jwt:
-  secret: my-calculator-is-casio-2026
+  secret: my-calculator-is-casio-2026-coffee
   expiration: 86400000 #1 hour

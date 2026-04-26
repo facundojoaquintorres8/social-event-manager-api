@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.socialeventmanager.auth.dto.AuthResponseDTO;
 import com.socialeventmanager.auth.dto.RegisterRequestDTO;
 import com.socialeventmanager.auth.service.AuthService;
 import com.socialeventmanager.shared.dto.ApiResponseDTO;
@@ -22,7 +23,7 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/register")
-    public ResponseEntity<ApiResponseDTO<Void>> register(
+    public ResponseEntity<ApiResponseDTO<AuthResponseDTO>> register(
             @Valid @RequestBody RegisterRequestDTO request) {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
