@@ -7,6 +7,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.socialeventmanager.event.dto.CreateEventRequestDTO;
+import com.socialeventmanager.event.dto.EventParticipantResponseDTO;
 import com.socialeventmanager.event.dto.EventResponseDTO;
 import com.socialeventmanager.event.dto.InvitationResponseDTO;
 import com.socialeventmanager.event.dto.InviteUserRequestDTO;
@@ -201,6 +202,28 @@ public class EventServiceImpl implements EventService {
                             true,
                             "Invitation updated successfully",
                             null);
+    }
+
+    @Override
+    public ApiResponseDTO<List<EventParticipantResponseDTO>> getEventParticipants(
+                    UUID eventId) {
+            Event event = getOwnedEvent(eventId);
+
+            List<EventParticipantResponseDTO> participants = invitationRepository
+                            .findAllByEvent(event)
+                            .stream()
+                            .map(invitation -> EventParticipantResponseDTO.builder()
+                                            .firstName(invitation.getInvitedUser().getFirstName())
+                                            .lastName(invitation.getInvitedUser().getLastName())
+                                            .email(invitation.getInvitedUser().getEmail())
+                                            .status(invitation.getStatus())
+                                            .build())
+                            .toList();
+
+            return new ApiResponseDTO<>(
+                            true,
+                            "Participants retrieved successfully",
+                            participants);
     }
 
     private User getCurrentUser() {

@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.UUID;
 
 import com.socialeventmanager.event.dto.CreateEventRequestDTO;
+import com.socialeventmanager.event.dto.EventParticipantResponseDTO;
 import com.socialeventmanager.event.dto.EventResponseDTO;
 import com.socialeventmanager.event.dto.InvitationResponseDTO;
 import com.socialeventmanager.event.dto.InviteUserRequestDTO;
@@ -33,4 +34,6 @@ public interface EventService {
     ApiResponseDTO<Void> updateInvitationStatus(
                     UUID invitationId,
                     UpdateInvitationStatusRequestDTO request);
+
+    ApiResponseDTO<List<EventParticipantResponseDTO>> getEventParticipants(UUID eventId);
 }

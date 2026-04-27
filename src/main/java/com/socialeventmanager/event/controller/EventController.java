@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.socialeventmanager.event.dto.CreateEventRequestDTO;
+import com.socialeventmanager.event.dto.EventParticipantResponseDTO;
 import com.socialeventmanager.event.dto.EventResponseDTO;
 import com.socialeventmanager.event.dto.InvitationResponseDTO;
 import com.socialeventmanager.event.dto.InviteUserRequestDTO;
@@ -81,6 +82,12 @@ public class EventController {
                 eventService.updateInvitationStatus(
                         invitationId,
                         request));
+    }
+
+    @GetMapping("/{eventId}/participants")
+    public ResponseEntity<ApiResponseDTO<List<EventParticipantResponseDTO>>> getEventParticipants(
+            @PathVariable UUID eventId) {
+        return ResponseEntity.ok(eventService.getEventParticipants(eventId));
     }
 
 }
