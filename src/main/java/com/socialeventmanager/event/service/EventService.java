@@ -3,6 +3,8 @@ package com.socialeventmanager.event.service;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
+
 import com.socialeventmanager.event.dto.CreateEventRequestDTO;
 import com.socialeventmanager.event.dto.EventParticipantResponseDTO;
 import com.socialeventmanager.event.dto.EventResponseDTO;
@@ -15,7 +17,11 @@ public interface EventService {
 
     ApiResponseDTO<EventResponseDTO> createEvent(CreateEventRequestDTO request);
 
-    ApiResponseDTO<List<EventResponseDTO>> getMyEvents();
+    ApiResponseDTO<Page<EventResponseDTO>> getMyEvents(
+                    int page,
+                    int size,
+                    String sortBy,
+                    String direction);
 
     ApiResponseDTO<EventResponseDTO> getEventById(UUID eventId);
 

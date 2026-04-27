@@ -3,6 +3,10 @@ package com.socialeventmanager.event.service;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -54,19 +58,39 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public ApiResponseDTO<List<EventResponseDTO>> getMyEvents() {
-        User currentUser = getCurrentUser();
+    public ApiResponseDTO<Page<EventResponseDTO>> getMyEvents(
+                    int page,
+                    int size,
+                    String sortBy,
+                    String direction) {
+            User currentUser = getCurrentUser();
 
-        List<EventResponseDTO> events = eventRepository
-                .findAllByCreatedBy(currentUser)
-                .stream()
-                .map(this::mapToResponse)
-                .toList();
+            size = Math.min(size, 50);
 
-        return new ApiResponseDTO<>(
-                true,
-                "Events retrieved successfully",
-                events);
+            List<String> allowedSortFields = List.of(
+                            "title",
+                            "eventDate",
+                            "createdAt",
+                            "location");
+
+            if (!allowedSortFields.contains(sortBy)) {
+                sortBy = "eventDate";
+            }
+
+            Sort sort = direction.equalsIgnoreCase("asc")
+                            ? Sort.by(sortBy).ascending()
+                            : Sort.by(sortBy).descending();
+
+            Pageable pageable = PageRequest.of(page, size, sort);
+
+            Page<EventResponseDTO> events = eventRepository
+                            .findAllByCreatedBy(currentUser, pageable)
+                            .map(this::mapToResponse);
+
+            return new ApiResponseDTO<>(
+                            true,
+                            "Events retrieved successfully",
+                            events);
     }
 
     @Override
