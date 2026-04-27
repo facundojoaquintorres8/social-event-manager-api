@@ -18,4 +18,8 @@ public interface EventInvitationRepository
     Optional<EventInvitation> findByEventAndInvitedUser(
             Event event,
             User invitedUser);
+
+    Optional<EventInvitation> findByIdAndInvitedUser(
+                    UUID id,
+                    User invitedUser);
 }

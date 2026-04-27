@@ -17,6 +17,7 @@ import com.socialeventmanager.event.dto.CreateEventRequestDTO;
 import com.socialeventmanager.event.dto.EventResponseDTO;
 import com.socialeventmanager.event.dto.InvitationResponseDTO;
 import com.socialeventmanager.event.dto.InviteUserRequestDTO;
+import com.socialeventmanager.event.dto.UpdateInvitationStatusRequestDTO;
 import com.socialeventmanager.event.service.EventService;
 import com.socialeventmanager.shared.dto.ApiResponseDTO;
 
@@ -70,6 +71,16 @@ public class EventController {
     @GetMapping("/invitations")
     public ResponseEntity<ApiResponseDTO<List<InvitationResponseDTO>>> getMyInvitations() {
         return ResponseEntity.ok(eventService.getMyInvitations());
+    }
+
+    @PutMapping("/invitations/{invitationId}")
+    public ResponseEntity<ApiResponseDTO<Void>> updateInvitationStatus(
+            @PathVariable UUID invitationId,
+            @Valid @RequestBody UpdateInvitationStatusRequestDTO request) {
+        return ResponseEntity.ok(
+                eventService.updateInvitationStatus(
+                        invitationId,
+                        request));
     }
 
 }

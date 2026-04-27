@@ -10,6 +10,7 @@ import com.socialeventmanager.event.dto.CreateEventRequestDTO;
 import com.socialeventmanager.event.dto.EventResponseDTO;
 import com.socialeventmanager.event.dto.InvitationResponseDTO;
 import com.socialeventmanager.event.dto.InviteUserRequestDTO;
+import com.socialeventmanager.event.dto.UpdateInvitationStatusRequestDTO;
 import com.socialeventmanager.event.entity.Event;
 import com.socialeventmanager.event.entity.EventInvitation;
 import com.socialeventmanager.event.enums.InvitationStatus;
@@ -172,6 +173,34 @@ public class EventServiceImpl implements EventService {
                             true,
                             "Invitations retrieved successfully",
                             invitations);
+    }
+
+    @Override
+    public ApiResponseDTO<Void> updateInvitationStatus(
+                    UUID invitationId,
+                    UpdateInvitationStatusRequestDTO request) {
+            User currentUser = getCurrentUser();
+
+            EventInvitation invitation = invitationRepository
+                            .findByIdAndInvitedUser(invitationId, currentUser)
+                            .orElseThrow(() -> new BadRequestException("Invitation not found"));
+
+            if (request.getStatus() == InvitationStatus.PENDING) {
+                    throw new BadRequestException("Invalid invitation status");
+            }
+
+            if (invitation.getStatus() == request.getStatus()) {
+                throw new BadRequestException("Invitation already has this status");
+            }
+
+            invitation.setStatus(request.getStatus());
+
+            invitationRepository.save(invitation);
+
+            return new ApiResponseDTO<>(
+                            true,
+                            "Invitation updated successfully",
+                            null);
     }
 
     private User getCurrentUser() {
