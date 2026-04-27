@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import com.socialeventmanager.event.dto.CreateEventRequestDTO;
 import com.socialeventmanager.event.dto.EventResponseDTO;
+import com.socialeventmanager.event.dto.InvitationResponseDTO;
 import com.socialeventmanager.event.dto.InviteUserRequestDTO;
 import com.socialeventmanager.shared.dto.ApiResponseDTO;
 
@@ -25,4 +26,6 @@ public interface EventService {
     ApiResponseDTO<Void> inviteUser(
             UUID eventId,
             InviteUserRequestDTO request);
+
+    ApiResponseDTO<List<InvitationResponseDTO>> getMyInvitations();
 }

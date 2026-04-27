@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import com.socialeventmanager.event.dto.CreateEventRequestDTO;
 import com.socialeventmanager.event.dto.EventResponseDTO;
+import com.socialeventmanager.event.dto.InvitationResponseDTO;
 import com.socialeventmanager.event.dto.InviteUserRequestDTO;
 import com.socialeventmanager.event.entity.Event;
 import com.socialeventmanager.event.entity.EventInvitation;
@@ -147,6 +148,30 @@ public class EventServiceImpl implements EventService {
                             true,
                             "User invited successfully",
                             null);
+    }
+
+    @Override
+    public ApiResponseDTO<List<InvitationResponseDTO>> getMyInvitations() {
+            User currentUser = getCurrentUser();
+
+            List<InvitationResponseDTO> invitations = invitationRepository
+                            .findAllByInvitedUser(currentUser)
+                            .stream()
+                            .map(invitation -> InvitationResponseDTO.builder()
+                                            .invitationId(invitation.getId())
+                                            .eventId(invitation.getEvent().getId())
+                                            .title(invitation.getEvent().getTitle())
+                                            .eventDate(invitation.getEvent().getEventDate())
+                                            .location(invitation.getEvent().getLocation())
+                                            .invitedBy(invitation.getInvitedBy().getEmail())
+                                            .status(invitation.getStatus())
+                                            .build())
+                            .toList();
+
+            return new ApiResponseDTO<>(
+                            true,
+                            "Invitations retrieved successfully",
+                            invitations);
     }
 
     private User getCurrentUser() {
