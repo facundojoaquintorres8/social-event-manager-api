@@ -8,7 +8,11 @@ import org.springframework.stereotype.Service;
 
 import com.socialeventmanager.event.dto.CreateEventRequestDTO;
 import com.socialeventmanager.event.dto.EventResponseDTO;
+import com.socialeventmanager.event.dto.InviteUserRequestDTO;
 import com.socialeventmanager.event.entity.Event;
+import com.socialeventmanager.event.entity.EventInvitation;
+import com.socialeventmanager.event.enums.InvitationStatus;
+import com.socialeventmanager.event.repository.EventInvitationRepository;
 import com.socialeventmanager.event.repository.EventRepository;
 import com.socialeventmanager.shared.dto.ApiResponseDTO;
 import com.socialeventmanager.shared.exception.BadRequestException;
@@ -23,6 +27,7 @@ public class EventServiceImpl implements EventService {
 
     private final EventRepository eventRepository;
     private final UserRepository userRepository;
+    private final EventInvitationRepository invitationRepository;
 
     @Override
     public ApiResponseDTO<EventResponseDTO> createEvent(
@@ -99,6 +104,48 @@ public class EventServiceImpl implements EventService {
             return new ApiResponseDTO<>(
                             true,
                             "Event deleted successfully",
+                            null);
+    }
+
+    @Override
+    public ApiResponseDTO<Void> inviteUser(
+                    UUID eventId,
+                    InviteUserRequestDTO request) {
+            User currentUser = getCurrentUser();
+
+            Event event = eventRepository
+                            .findByIdAndCreatedBy(eventId, currentUser)
+                            .orElseThrow(() -> new BadRequestException("Event not found"));
+
+            String email = request.getEmail().trim().toLowerCase();
+
+            User invitedUser = userRepository.findByEmail(email)
+                            .orElseThrow(() -> new BadRequestException("User not found"));
+
+            if (invitedUser.getId().equals(currentUser.getId())) {
+                    throw new BadRequestException("You cannot invite yourself");
+            }
+
+            boolean alreadyInvited = invitationRepository
+                            .findByEventAndInvitedUser(event, invitedUser)
+                            .isPresent();
+
+            if (alreadyInvited) {
+                    throw new BadRequestException("User already invited");
+            }
+
+            EventInvitation invitation = EventInvitation.builder()
+                            .event(event)
+                            .invitedUser(invitedUser)
+                            .invitedBy(currentUser)
+                            .status(InvitationStatus.PENDING)
+                            .build();
+
+            invitationRepository.save(invitation);
+
+            return new ApiResponseDTO<>(
+                            true,
+                            "User invited successfully",
                             null);
     }
 

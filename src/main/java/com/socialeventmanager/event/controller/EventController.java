@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.socialeventmanager.event.dto.CreateEventRequestDTO;
 import com.socialeventmanager.event.dto.EventResponseDTO;
+import com.socialeventmanager.event.dto.InviteUserRequestDTO;
 import com.socialeventmanager.event.service.EventService;
 import com.socialeventmanager.shared.dto.ApiResponseDTO;
 
@@ -57,4 +58,13 @@ public class EventController {
             @PathVariable UUID eventId) {
         return ResponseEntity.ok(eventService.deleteEvent(eventId));
     }
+
+    @PostMapping("/{eventId}/invite")
+    public ResponseEntity<ApiResponseDTO<Void>> inviteUser(
+            @PathVariable UUID eventId,
+            @Valid @RequestBody InviteUserRequestDTO request) {
+        return ResponseEntity.ok(
+                eventService.inviteUser(eventId, request));
+    }
+
 }
