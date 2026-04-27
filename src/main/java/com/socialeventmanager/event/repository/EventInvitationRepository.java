@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.socialeventmanager.event.entity.Event;
 import com.socialeventmanager.event.entity.EventInvitation;
+import com.socialeventmanager.event.enums.InvitationStatus;
 import com.socialeventmanager.user.entity.User;
 
 public interface EventInvitationRepository
@@ -24,4 +25,8 @@ public interface EventInvitationRepository
                     User invitedUser);
 
     List<EventInvitation> findAllByEvent(Event event);
+
+    List<EventInvitation> findAllByInvitedUserAndStatus(
+                    User invitedUser,
+                    InvitationStatus status);
 }

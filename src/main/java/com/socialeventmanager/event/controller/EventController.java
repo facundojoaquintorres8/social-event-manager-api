@@ -89,5 +89,10 @@ public class EventController {
             @PathVariable UUID eventId) {
         return ResponseEntity.ok(eventService.getEventParticipants(eventId));
     }
+    
+    @GetMapping("/attending")
+    public ResponseEntity<ApiResponseDTO<List<EventResponseDTO>>> getAttendingEvents() {
+        return ResponseEntity.ok(eventService.getAttendingEvents());
+    }
 
 }

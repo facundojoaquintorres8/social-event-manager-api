@@ -36,4 +36,6 @@ public interface EventService {
                     UpdateInvitationStatusRequestDTO request);
 
     ApiResponseDTO<List<EventParticipantResponseDTO>> getEventParticipants(UUID eventId);
+
+    ApiResponseDTO<List<EventResponseDTO>> getAttendingEvents();
 }

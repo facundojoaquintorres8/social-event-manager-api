@@ -226,6 +226,24 @@ public class EventServiceImpl implements EventService {
                             participants);
     }
 
+    @Override
+    public ApiResponseDTO<List<EventResponseDTO>> getAttendingEvents() {
+            User currentUser = getCurrentUser();
+
+            List<EventResponseDTO> events = invitationRepository
+                            .findAllByInvitedUserAndStatus(
+                                            currentUser,
+                                            InvitationStatus.ACCEPTED)
+                            .stream()
+                            .map(invitation -> mapToResponse(invitation.getEvent()))
+                            .toList();
+
+            return new ApiResponseDTO<>(
+                            true,
+                            "Attending events retrieved successfully",
+                            events);
+    }
+
     private User getCurrentUser() {
         String email = SecurityContextHolder.getContext()
                 .getAuthentication()
