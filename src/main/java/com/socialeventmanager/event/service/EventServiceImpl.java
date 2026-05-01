@@ -1,5 +1,6 @@
 package com.socialeventmanager.event.service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -7,6 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +23,7 @@ import com.socialeventmanager.event.entity.EventInvitation;
 import com.socialeventmanager.event.enums.InvitationStatus;
 import com.socialeventmanager.event.repository.EventInvitationRepository;
 import com.socialeventmanager.event.repository.EventRepository;
+import com.socialeventmanager.event.repository.EventSpecification;
 import com.socialeventmanager.shared.dto.ApiResponseDTO;
 import com.socialeventmanager.shared.exception.BadRequestException;
 import com.socialeventmanager.user.entity.User;
@@ -62,7 +65,10 @@ public class EventServiceImpl implements EventService {
                     int page,
                     int size,
                     String sortBy,
-                    String direction) {
+                    String direction,
+                    String title,
+                    LocalDateTime fromDate,
+                    LocalDateTime toDate) {
             User currentUser = getCurrentUser();
 
             size = Math.min(size, 50);
@@ -74,7 +80,7 @@ public class EventServiceImpl implements EventService {
                             "location");
 
             if (!allowedSortFields.contains(sortBy)) {
-                sortBy = "eventDate";
+                    throw new BadRequestException("Invalid sort field");
             }
 
             Sort sort = direction.equalsIgnoreCase("asc")
@@ -83,8 +89,24 @@ public class EventServiceImpl implements EventService {
 
             Pageable pageable = PageRequest.of(page, size, sort);
 
+            Specification<Event> spec = Specification.unrestricted();
+            
+            spec = spec.and(EventSpecification.hasUser(currentUser));
+
+            if (title != null && !title.isBlank()) {
+                    spec = spec.and(EventSpecification.titleContains(title));
+            }
+
+            if (fromDate != null) {
+                    spec = spec.and(EventSpecification.dateAfter(fromDate));
+            }
+
+            if (toDate != null) {
+                    spec = spec.and(EventSpecification.dateBefore(toDate));
+            }
+
             Page<EventResponseDTO> events = eventRepository
-                            .findAllByCreatedBy(currentUser, pageable)
+                            .findAll(spec, pageable)
                             .map(this::mapToResponse);
 
             return new ApiResponseDTO<>(

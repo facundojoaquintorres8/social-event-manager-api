@@ -1,5 +1,6 @@
 package com.socialeventmanager.event.service;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
@@ -20,7 +21,10 @@ public interface EventService {
                     int page,
                     int size,
                     String sortBy,
-                    String direction);
+                    String direction,
+                    String title,
+                    LocalDateTime fromDate,
+                    LocalDateTime toDate);
 
     ApiResponseDTO<EventResponseDTO> getEventById(UUID eventId);
 

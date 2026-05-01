@@ -1,5 +1,6 @@
 package com.socialeventmanager.event.controller;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
@@ -44,13 +45,19 @@ public class EventController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "eventDate") String sortBy,
-            @RequestParam(defaultValue = "desc") String direction) {
+            @RequestParam(defaultValue = "desc") String direction,
+            @RequestParam(required = false) String title,
+            @RequestParam(required = false) LocalDateTime fromDate,
+            @RequestParam(required = false) LocalDateTime toDate) {
         return ResponseEntity.ok(
                 eventService.getMyEvents(
                         page,
                         size,
                         sortBy,
-                        direction));
+                        direction,
+                        title,
+                        fromDate,
+                        toDate));
     }
 
     @GetMapping("/{eventId}")
