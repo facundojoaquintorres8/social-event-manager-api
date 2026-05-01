@@ -2,11 +2,14 @@ package com.socialeventmanager.event.entity;
 
 import java.time.LocalDateTime;
 
+import com.socialeventmanager.event.enums.EventStatus;
 import com.socialeventmanager.shared.entity.BaseEntity;
 import com.socialeventmanager.user.entity.User;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -41,4 +44,8 @@ public class Event extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by", nullable = false)
     private User createdBy;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private EventStatus status;
 }

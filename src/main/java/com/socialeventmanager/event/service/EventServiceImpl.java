@@ -21,6 +21,7 @@ import com.socialeventmanager.event.dto.RemoveInvitationRequestDTO;
 import com.socialeventmanager.event.dto.UpdateInvitationStatusRequestDTO;
 import com.socialeventmanager.event.entity.Event;
 import com.socialeventmanager.event.entity.EventInvitation;
+import com.socialeventmanager.event.enums.EventStatus;
 import com.socialeventmanager.event.enums.InvitationStatus;
 import com.socialeventmanager.event.repository.EventInvitationRepository;
 import com.socialeventmanager.event.repository.EventInvitationSpecification;
@@ -52,6 +53,7 @@ public class EventServiceImpl implements EventService {
                 .eventDate(request.getEventDate())
                 .location(request.getLocation())
                 .createdBy(currentUser)
+                .status(EventStatus.ACTIVE)
                 .build();
 
         eventRepository.save(event);
@@ -94,6 +96,8 @@ public class EventServiceImpl implements EventService {
             Specification<Event> spec = Specification.unrestricted();
             
             spec = spec.and(EventSpecification.hasUser(currentUser));
+
+            spec = spec.and(EventSpecification.isActive());
 
             if (title != null && !title.isBlank()) {
                     spec = spec.and(EventSpecification.titleContains(title));
@@ -150,11 +154,25 @@ public class EventServiceImpl implements EventService {
     public ApiResponseDTO<Void> deleteEvent(UUID eventId) {
             Event event = getOwnedEvent(eventId);
 
-            eventRepository.delete(event);
+            if (event.getStatus() == EventStatus.CANCELLED) {
+                    throw new BadRequestException("Event already cancelled");
+            }
+
+            event.setStatus(EventStatus.CANCELLED);
+
+            eventRepository.save(event);
+
+            List<EventInvitation> invitations = invitationRepository.findAllByEvent(event);
+
+            for (EventInvitation invitation : invitations) {
+                    invitation.setStatus(InvitationStatus.CANCELLED);
+            }
+
+            invitationRepository.saveAll(invitations);
 
             return new ApiResponseDTO<>(
                             true,
-                            "Event deleted successfully",
+                            "Event cancelled successfully",
                             null);
     }
 

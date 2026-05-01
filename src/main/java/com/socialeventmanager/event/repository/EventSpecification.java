@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import org.springframework.data.jpa.domain.Specification;
 
 import com.socialeventmanager.event.entity.Event;
+import com.socialeventmanager.event.enums.EventStatus;
 import com.socialeventmanager.user.entity.User;
 
 public class EventSpecification {
@@ -29,5 +30,9 @@ public class EventSpecification {
         return (root, query, cb) -> cb.lessThanOrEqualTo(
                 root.get("eventDate"),
                 toDate);
+    }
+
+    public static Specification<Event> isActive() {
+        return (root, query, cb) -> cb.equal(root.get("status"), EventStatus.ACTIVE);
     }
 }

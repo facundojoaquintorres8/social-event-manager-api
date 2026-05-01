@@ -75,7 +75,7 @@ public class EventController {
         return ResponseEntity.ok(eventService.updateEvent(eventId, request));
     }
 
-    @DeleteMapping("/{eventId}")
+    @PutMapping("/{eventId}/cancel")
     public ResponseEntity<ApiResponseDTO<Void>> deleteEvent(
             @PathVariable UUID eventId) {
         return ResponseEntity.ok(eventService.deleteEvent(eventId));

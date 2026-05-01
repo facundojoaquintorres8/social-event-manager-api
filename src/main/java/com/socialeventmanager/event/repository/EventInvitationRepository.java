@@ -1,5 +1,6 @@
 package com.socialeventmanager.event.repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -34,4 +35,6 @@ public interface EventInvitationRepository extends JpaRepository<EventInvitation
                     User invitedUser,
                     InvitationStatus status,
                     Pageable pageable);
+
+    List<EventInvitation> findAllByEvent(Event event);
 }
