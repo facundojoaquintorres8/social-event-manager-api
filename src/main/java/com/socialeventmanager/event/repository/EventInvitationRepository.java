@@ -13,8 +13,7 @@ import com.socialeventmanager.event.entity.EventInvitation;
 import com.socialeventmanager.event.enums.InvitationStatus;
 import com.socialeventmanager.user.entity.User;
 
-public interface EventInvitationRepository
-        extends JpaRepository<EventInvitation, UUID> {
+public interface EventInvitationRepository extends JpaRepository<EventInvitation, UUID> {
 
     Page<EventInvitation> findAllByInvitedUser(User user, Pageable pageable);
 
@@ -28,7 +27,8 @@ public interface EventInvitationRepository
 
     List<EventInvitation> findAllByEvent(Event event);
 
-    List<EventInvitation> findAllByInvitedUserAndStatus(
+    Page<EventInvitation> findAllByInvitedUserAndStatus(
                     User invitedUser,
-                    InvitationStatus status);
+                    InvitationStatus status,
+                    Pageable pageable);
 }

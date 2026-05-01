@@ -273,16 +273,36 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public ApiResponseDTO<List<EventResponseDTO>> getAttendingEvents() {
+    public ApiResponseDTO<Page<EventResponseDTO>> getAttendingEvents(
+                    int page,
+                    int size,
+                    String sortBy,
+                    String direction) {
             User currentUser = getCurrentUser();
 
-            List<EventResponseDTO> events = invitationRepository
+            size = Math.min(size, 50);
+
+            List<String> allowedSortFields = List.of(
+                            "eventDate",
+                            "title",
+                            "location");
+
+            if (!allowedSortFields.contains(sortBy)) {
+                    throw new BadRequestException("Invalid sort field");
+            }
+
+            Sort sort = direction.equalsIgnoreCase("asc")
+                            ? Sort.by("event." + sortBy).ascending()
+                            : Sort.by("event." + sortBy).descending();
+
+            Pageable pageable = PageRequest.of(page, size, sort);
+
+            Page<EventResponseDTO> events = invitationRepository
                             .findAllByInvitedUserAndStatus(
                                             currentUser,
-                                            InvitationStatus.ACCEPTED)
-                            .stream()
-                            .map(invitation -> mapToResponse(invitation.getEvent()))
-                            .toList();
+                                            InvitationStatus.ACCEPTED,
+                                            pageable)
+                            .map(invitation -> mapToResponse(invitation.getEvent()));
 
             return new ApiResponseDTO<>(
                             true,

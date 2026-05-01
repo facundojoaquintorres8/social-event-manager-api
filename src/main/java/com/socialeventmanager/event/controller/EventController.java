@@ -107,8 +107,12 @@ public class EventController {
     }
     
     @GetMapping("/attending")
-    public ResponseEntity<ApiResponseDTO<List<EventResponseDTO>>> getAttendingEvents() {
-        return ResponseEntity.ok(eventService.getAttendingEvents());
+    public ResponseEntity<ApiResponseDTO<Page<EventResponseDTO>>> getAttendingEvents(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "eventDate") String sortBy,
+            @RequestParam(defaultValue = "desc") String direction) {
+        return ResponseEntity.ok(eventService.getAttendingEvents(page, size, sortBy, direction));
     }
 
 }

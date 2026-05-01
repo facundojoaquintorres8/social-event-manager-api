@@ -47,5 +47,9 @@ public interface EventService {
 
     ApiResponseDTO<List<EventParticipantResponseDTO>> getEventParticipants(UUID eventId);
 
-    ApiResponseDTO<List<EventResponseDTO>> getAttendingEvents();
+    ApiResponseDTO<Page<EventResponseDTO>> getAttendingEvents(
+                    int page,
+                    int size,
+                    String sortBy,
+                    String direction);
 }
