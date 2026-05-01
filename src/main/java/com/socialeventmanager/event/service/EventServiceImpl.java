@@ -22,6 +22,7 @@ import com.socialeventmanager.event.entity.Event;
 import com.socialeventmanager.event.entity.EventInvitation;
 import com.socialeventmanager.event.enums.InvitationStatus;
 import com.socialeventmanager.event.repository.EventInvitationRepository;
+import com.socialeventmanager.event.repository.EventInvitationSpecification;
 import com.socialeventmanager.event.repository.EventRepository;
 import com.socialeventmanager.event.repository.EventSpecification;
 import com.socialeventmanager.shared.dto.ApiResponseDTO;
@@ -200,48 +201,53 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public ApiResponseDTO<Page<InvitationResponseDTO>> getMyInvitations(
-            int page,
-            int size,
-            String sortBy,
-            String direction
-    ) {
-        User currentUser = getCurrentUser();
-    
-        size = Math.min(size, 50);
-    
-        List<String> allowedSortFields = List.of(
-                "status",
-                "createdAt"
-        );
-    
-        if (!allowedSortFields.contains(sortBy)) {
-            throw new BadRequestException("Invalid sort field");
-        }
-    
-        Sort sort = direction.equalsIgnoreCase("asc")
-                ? Sort.by(sortBy).ascending()
-                : Sort.by(sortBy).descending();
-    
-        Pageable pageable = PageRequest.of(page, size, sort);
-    
-        Page<InvitationResponseDTO> invitations = invitationRepository
-                .findAllByInvitedUser(currentUser, pageable)
-                .map(invitation -> InvitationResponseDTO.builder()
-                        .invitationId(invitation.getId())
-                        .eventId(invitation.getEvent().getId())
-                        .title(invitation.getEvent().getTitle())
-                        .eventDate(invitation.getEvent().getEventDate())
-                        .location(invitation.getEvent().getLocation())
-                        .invitedBy(invitation.getInvitedBy().getEmail())
-                        .status(invitation.getStatus())
-                        .build()
-                );
-    
-        return new ApiResponseDTO<>(
-                true,
-                "Invitations retrieved successfully",
-                invitations
-        );
+                    int page,
+                    int size,
+                    String sortBy,
+                    String direction,
+                    InvitationStatus status) {
+            User currentUser = getCurrentUser();
+
+            size = Math.min(size, 50);
+
+            List<String> allowedSortFields = List.of(
+                            "status",
+                            "createdAt");
+
+            if (!allowedSortFields.contains(sortBy)) {
+                    throw new BadRequestException("Invalid sort field");
+            }
+
+            Sort sort = direction.equalsIgnoreCase("asc")
+                            ? Sort.by(sortBy).ascending()
+                            : Sort.by(sortBy).descending();
+
+            Pageable pageable = PageRequest.of(page, size, sort);
+
+            Specification<EventInvitation> spec = Specification.<EventInvitation>unrestricted()
+                            .and(EventInvitationSpecification.hasUser(currentUser));
+
+            if (status != null) {
+                    spec = spec.and(
+                                    EventInvitationSpecification.hasStatus(status));
+            }
+
+            Page<InvitationResponseDTO> invitations = invitationRepository
+                            .findAll(spec, pageable)
+                            .map(invitation -> InvitationResponseDTO.builder()
+                                            .invitationId(invitation.getId())
+                                            .eventId(invitation.getEvent().getId())
+                                            .title(invitation.getEvent().getTitle())
+                                            .eventDate(invitation.getEvent().getEventDate())
+                                            .location(invitation.getEvent().getLocation())
+                                            .invitedBy(invitation.getInvitedBy().getEmail())
+                                            .status(invitation.getStatus())
+                                            .build());
+
+            return new ApiResponseDTO<>(
+                            true,
+                            "Invitations retrieved successfully",
+                            invitations);
     }
 
     @Override

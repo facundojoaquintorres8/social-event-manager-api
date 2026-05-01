@@ -21,6 +21,7 @@ import com.socialeventmanager.event.dto.EventResponseDTO;
 import com.socialeventmanager.event.dto.InvitationResponseDTO;
 import com.socialeventmanager.event.dto.InviteUserRequestDTO;
 import com.socialeventmanager.event.dto.UpdateInvitationStatusRequestDTO;
+import com.socialeventmanager.event.enums.InvitationStatus;
 import com.socialeventmanager.event.service.EventService;
 import com.socialeventmanager.shared.dto.ApiResponseDTO;
 
@@ -91,9 +92,15 @@ public class EventController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "createdAt") String sortBy,
-            @RequestParam(defaultValue = "desc") String direction
-    ) {
-        return ResponseEntity.ok(eventService.getMyInvitations(page, size, sortBy, direction));
+            @RequestParam(defaultValue = "desc") String direction,
+            @RequestParam(required = false) InvitationStatus status) {
+        return ResponseEntity.ok(
+                eventService.getMyInvitations(
+                        page,
+                        size,
+                        sortBy,
+                        direction,
+                        status));
     }
 
     @PutMapping("/invitations/{invitationId}")

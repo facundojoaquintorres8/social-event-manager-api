@@ -11,6 +11,7 @@ import com.socialeventmanager.event.dto.EventResponseDTO;
 import com.socialeventmanager.event.dto.InvitationResponseDTO;
 import com.socialeventmanager.event.dto.InviteUserRequestDTO;
 import com.socialeventmanager.event.dto.UpdateInvitationStatusRequestDTO;
+import com.socialeventmanager.event.enums.InvitationStatus;
 import com.socialeventmanager.shared.dto.ApiResponseDTO;
 
 public interface EventService {
@@ -42,7 +43,8 @@ public interface EventService {
                     int page,
                     int size,
                     String sortBy,
-                    String direction);
+                    String direction,
+                    InvitationStatus status);
 
     ApiResponseDTO<Void> updateInvitationStatus(
                     UUID invitationId,
