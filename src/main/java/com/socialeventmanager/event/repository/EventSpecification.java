@@ -32,7 +32,8 @@ public class EventSpecification {
                 toDate);
     }
 
-    public static Specification<Event> isActive() {
-        return (root, query, cb) -> cb.equal(root.get("status"), EventStatus.ACTIVE);
+    public static Specification<Event> hasStatus(EventStatus status) {
+        return (root, query, cb) ->
+                cb.equal(root.get("status"), status);
     }
 }

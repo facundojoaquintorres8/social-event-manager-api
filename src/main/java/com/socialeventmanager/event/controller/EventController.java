@@ -22,6 +22,7 @@ import com.socialeventmanager.event.dto.InvitationResponseDTO;
 import com.socialeventmanager.event.dto.InviteUserRequestDTO;
 import com.socialeventmanager.event.dto.RemoveInvitationRequestDTO;
 import com.socialeventmanager.event.dto.UpdateInvitationStatusRequestDTO;
+import com.socialeventmanager.event.enums.EventStatus;
 import com.socialeventmanager.event.enums.InvitationStatus;
 import com.socialeventmanager.event.service.EventService;
 import com.socialeventmanager.shared.dto.ApiResponseDTO;
@@ -50,7 +51,8 @@ public class EventController {
             @RequestParam(defaultValue = "desc") String direction,
             @RequestParam(required = false) String title,
             @RequestParam(required = false) LocalDateTime fromDate,
-            @RequestParam(required = false) LocalDateTime toDate) {
+            @RequestParam(required = false) LocalDateTime toDate,
+            @RequestParam(required = false) EventStatus status) {
         return ResponseEntity.ok(
                 eventService.getMyEvents(
                         page,
@@ -59,7 +61,8 @@ public class EventController {
                         direction,
                         title,
                         fromDate,
-                        toDate));
+                        toDate,
+                        status));
     }
 
     @GetMapping("/{eventId}")

@@ -72,7 +72,8 @@ public class EventServiceImpl implements EventService {
                     String direction,
                     String title,
                     LocalDateTime fromDate,
-                    LocalDateTime toDate) {
+                    LocalDateTime toDate,
+                    EventStatus status) {
             User currentUser = getCurrentUser();
 
             size = Math.min(size, 50);
@@ -97,7 +98,9 @@ public class EventServiceImpl implements EventService {
             
             spec = spec.and(EventSpecification.hasUser(currentUser));
 
-            spec = spec.and(EventSpecification.isActive());
+            if (status != null) {
+                spec = spec.and(EventSpecification.hasStatus(status));
+            }
 
             if (title != null && !title.isBlank()) {
                     spec = spec.and(EventSpecification.titleContains(title));

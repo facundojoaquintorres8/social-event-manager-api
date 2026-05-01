@@ -12,6 +12,7 @@ import com.socialeventmanager.event.dto.InvitationResponseDTO;
 import com.socialeventmanager.event.dto.InviteUserRequestDTO;
 import com.socialeventmanager.event.dto.RemoveInvitationRequestDTO;
 import com.socialeventmanager.event.dto.UpdateInvitationStatusRequestDTO;
+import com.socialeventmanager.event.enums.EventStatus;
 import com.socialeventmanager.event.enums.InvitationStatus;
 import com.socialeventmanager.shared.dto.ApiResponseDTO;
 
@@ -26,7 +27,8 @@ public interface EventService {
                     String direction,
                     String title,
                     LocalDateTime fromDate,
-                    LocalDateTime toDate);
+                    LocalDateTime toDate,
+                    EventStatus status);
 
     ApiResponseDTO<EventResponseDTO> getEventById(UUID eventId);
 
@@ -66,6 +68,5 @@ public interface EventService {
 
     ApiResponseDTO<Void> removeInvitation(
                     UUID eventId,
-                    RemoveInvitationRequestDTO request
-);
+                    RemoveInvitationRequestDTO request);
 }
