@@ -1,6 +1,5 @@
 package com.socialeventmanager.event.service;
 
-import java.util.List;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
@@ -45,7 +44,12 @@ public interface EventService {
                     UUID invitationId,
                     UpdateInvitationStatusRequestDTO request);
 
-    ApiResponseDTO<List<EventParticipantResponseDTO>> getEventParticipants(UUID eventId);
+    ApiResponseDTO<Page<EventParticipantResponseDTO>> getEventParticipants(
+                    UUID eventId,
+                    int page,
+                    int size,
+                    String sortBy,
+                    String direction);
 
     ApiResponseDTO<Page<EventResponseDTO>> getAttendingEvents(
                     int page,

@@ -1,6 +1,5 @@
 package com.socialeventmanager.event.controller;
 
-import java.util.List;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
@@ -101,9 +100,19 @@ public class EventController {
     }
 
     @GetMapping("/{eventId}/participants")
-    public ResponseEntity<ApiResponseDTO<List<EventParticipantResponseDTO>>> getEventParticipants(
-            @PathVariable UUID eventId) {
-        return ResponseEntity.ok(eventService.getEventParticipants(eventId));
+    public ResponseEntity<ApiResponseDTO<Page<EventParticipantResponseDTO>>> getEventParticipants(
+            @PathVariable UUID eventId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String direction) {
+        return ResponseEntity.ok(
+                eventService.getEventParticipants(
+                        eventId,
+                        page,
+                        size,
+                        sortBy,
+                        direction));
     }
     
     @GetMapping("/attending")
