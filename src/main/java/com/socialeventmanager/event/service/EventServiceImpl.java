@@ -177,27 +177,49 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public ApiResponseDTO<List<InvitationResponseDTO>> getMyInvitations() {
-            User currentUser = getCurrentUser();
-
-            List<InvitationResponseDTO> invitations = invitationRepository
-                            .findAllByInvitedUser(currentUser)
-                            .stream()
-                            .map(invitation -> InvitationResponseDTO.builder()
-                                            .invitationId(invitation.getId())
-                                            .eventId(invitation.getEvent().getId())
-                                            .title(invitation.getEvent().getTitle())
-                                            .eventDate(invitation.getEvent().getEventDate())
-                                            .location(invitation.getEvent().getLocation())
-                                            .invitedBy(invitation.getInvitedBy().getEmail())
-                                            .status(invitation.getStatus())
-                                            .build())
-                            .toList();
-
-            return new ApiResponseDTO<>(
-                            true,
-                            "Invitations retrieved successfully",
-                            invitations);
+    public ApiResponseDTO<Page<InvitationResponseDTO>> getMyInvitations(
+            int page,
+            int size,
+            String sortBy,
+            String direction
+    ) {
+        User currentUser = getCurrentUser();
+    
+        size = Math.min(size, 50);
+    
+        List<String> allowedSortFields = List.of(
+                "status",
+                "createdAt"
+        );
+    
+        if (!allowedSortFields.contains(sortBy)) {
+            throw new BadRequestException("Invalid sort field");
+        }
+    
+        Sort sort = direction.equalsIgnoreCase("asc")
+                ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
+    
+        Pageable pageable = PageRequest.of(page, size, sort);
+    
+        Page<InvitationResponseDTO> invitations = invitationRepository
+                .findAllByInvitedUser(currentUser, pageable)
+                .map(invitation -> InvitationResponseDTO.builder()
+                        .invitationId(invitation.getId())
+                        .eventId(invitation.getEvent().getId())
+                        .title(invitation.getEvent().getTitle())
+                        .eventDate(invitation.getEvent().getEventDate())
+                        .location(invitation.getEvent().getLocation())
+                        .invitedBy(invitation.getInvitedBy().getEmail())
+                        .status(invitation.getStatus())
+                        .build()
+                );
+    
+        return new ApiResponseDTO<>(
+                true,
+                "Invitations retrieved successfully",
+                invitations
+        );
     }
 
     @Override

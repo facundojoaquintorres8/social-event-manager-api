@@ -81,8 +81,13 @@ public class EventController {
     }
 
     @GetMapping("/invitations")
-    public ResponseEntity<ApiResponseDTO<List<InvitationResponseDTO>>> getMyInvitations() {
-        return ResponseEntity.ok(eventService.getMyInvitations());
+    public ResponseEntity<ApiResponseDTO<Page<InvitationResponseDTO>>> getMyInvitations(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String direction
+    ) {
+        return ResponseEntity.ok(eventService.getMyInvitations(page, size, sortBy, direction));
     }
 
     @PutMapping("/invitations/{invitationId}")

@@ -35,7 +35,11 @@ public interface EventService {
             UUID eventId,
             InviteUserRequestDTO request);
 
-    ApiResponseDTO<List<InvitationResponseDTO>> getMyInvitations();
+    ApiResponseDTO<Page<InvitationResponseDTO>> getMyInvitations(
+                    int page,
+                    int size,
+                    String sortBy,
+                    String direction);
 
     ApiResponseDTO<Void> updateInvitationStatus(
                     UUID invitationId,
