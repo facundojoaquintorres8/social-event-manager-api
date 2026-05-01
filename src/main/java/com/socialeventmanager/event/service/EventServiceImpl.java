@@ -17,6 +17,7 @@ import com.socialeventmanager.event.dto.EventParticipantResponseDTO;
 import com.socialeventmanager.event.dto.EventResponseDTO;
 import com.socialeventmanager.event.dto.InvitationResponseDTO;
 import com.socialeventmanager.event.dto.InviteUserRequestDTO;
+import com.socialeventmanager.event.dto.RemoveInvitationRequestDTO;
 import com.socialeventmanager.event.dto.UpdateInvitationStatusRequestDTO;
 import com.socialeventmanager.event.entity.Event;
 import com.socialeventmanager.event.entity.EventInvitation;
@@ -256,12 +257,16 @@ public class EventServiceImpl implements EventService {
                     UpdateInvitationStatusRequestDTO request) {
             User currentUser = getCurrentUser();
 
+            if (request.getStatus() == InvitationStatus.PENDING) {
+                    throw new BadRequestException("Invalid invitation status");
+            }
+
             EventInvitation invitation = invitationRepository
                             .findByIdAndInvitedUser(invitationId, currentUser)
                             .orElseThrow(() -> new BadRequestException("Invitation not found"));
 
-            if (request.getStatus() == InvitationStatus.PENDING) {
-                    throw new BadRequestException("Invalid invitation status");
+            if (invitation.getStatus() == InvitationStatus.CANCELLED) {
+                    throw new BadRequestException("Invitation is cancelled");
             }
 
             if (invitation.getStatus() == request.getStatus()) {
@@ -357,6 +362,39 @@ public class EventServiceImpl implements EventService {
                             true,
                             "Attending events retrieved successfully",
                             events);
+    }
+
+    @Override
+    public ApiResponseDTO<Void> removeInvitation(
+                    UUID eventId,
+                    RemoveInvitationRequestDTO request) {
+            User currentUser = getCurrentUser();
+
+            Event event = eventRepository
+                            .findByIdAndCreatedBy(eventId, currentUser)
+                            .orElseThrow(() -> new BadRequestException("Event not found"));
+
+            String email = request.getEmail().trim().toLowerCase();
+
+            User invitedUser = userRepository.findByEmail(email)
+                            .orElseThrow(() -> new BadRequestException("User not found"));
+
+            EventInvitation invitation = invitationRepository
+                            .findByEventAndInvitedUser(event, invitedUser)
+                            .orElseThrow(() -> new BadRequestException("Invitation not found"));
+
+            if (invitation.getStatus() == InvitationStatus.CANCELLED) {
+                    throw new BadRequestException("Invitation already cancelled");
+            }
+
+            invitation.setStatus(InvitationStatus.CANCELLED);
+
+            invitationRepository.save(invitation);
+
+            return new ApiResponseDTO<>(
+                            true,
+                            "Invitation cancelled successfully",
+                            null);
     }
 
     private User getCurrentUser() {

@@ -20,6 +20,7 @@ import com.socialeventmanager.event.dto.EventParticipantResponseDTO;
 import com.socialeventmanager.event.dto.EventResponseDTO;
 import com.socialeventmanager.event.dto.InvitationResponseDTO;
 import com.socialeventmanager.event.dto.InviteUserRequestDTO;
+import com.socialeventmanager.event.dto.RemoveInvitationRequestDTO;
 import com.socialeventmanager.event.dto.UpdateInvitationStatusRequestDTO;
 import com.socialeventmanager.event.enums.InvitationStatus;
 import com.socialeventmanager.event.service.EventService;
@@ -138,4 +139,10 @@ public class EventController {
         return ResponseEntity.ok(eventService.getAttendingEvents(page, size, sortBy, direction));
     }
 
+    @DeleteMapping("/{eventId}/invite")
+    public ResponseEntity<ApiResponseDTO<Void>> removeInvitation(
+            @PathVariable UUID eventId,
+            @Valid @RequestBody RemoveInvitationRequestDTO request) {
+        return ResponseEntity.ok(eventService.removeInvitation(eventId, request));
+    }
 }
