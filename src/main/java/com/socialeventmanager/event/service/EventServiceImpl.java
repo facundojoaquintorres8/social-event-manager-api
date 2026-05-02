@@ -435,6 +435,7 @@ public class EventServiceImpl implements EventService {
                 .eventDate(event.getEventDate())
                 .location(event.getLocation())
                 .createdBy(event.getCreatedBy().getEmail())
+                .status(event.getStatus())
                 .build();
     }
 
