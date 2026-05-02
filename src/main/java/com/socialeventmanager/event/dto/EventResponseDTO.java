@@ -3,6 +3,8 @@ package com.socialeventmanager.event.dto;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import com.socialeventmanager.event.enums.EventStatus;
+
 import lombok.Builder;
 import lombok.Data;
 
@@ -16,4 +18,5 @@ public class EventResponseDTO {
     private LocalDateTime eventDate;
     private String location;
     private String createdBy;
+    private EventStatus status;
 }
