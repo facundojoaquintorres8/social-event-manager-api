@@ -1,5 +1,7 @@
 package com.socialeventmanager.event.repository;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -9,12 +11,21 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 import com.socialeventmanager.event.entity.Event;
+import com.socialeventmanager.event.enums.EventStatus;
 import com.socialeventmanager.user.entity.User;
 
-public interface EventRepository extends JpaRepository<Event, UUID>, 
+public interface EventRepository extends JpaRepository<Event, UUID>,
         JpaSpecificationExecutor<Event> {
 
     Page<Event> findAllByCreatedBy(User user, Pageable pageable);
 
     Optional<Event> findByIdAndCreatedBy(UUID id, User user);
+
+    long countByUserId(UUID userId);
+
+    long countByUserIdAndStatus(UUID userId, EventStatus status);
+
+    long countByUserIdAndEventDateAfter(UUID userId, LocalDateTime now);
+
+    List<Event> findTop5ByUserIdOrderByCreatedAtDesc(UUID userId);
 }

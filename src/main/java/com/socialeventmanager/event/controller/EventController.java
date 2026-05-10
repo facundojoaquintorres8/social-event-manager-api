@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.socialeventmanager.event.dto.CreateEventRequestDTO;
+import com.socialeventmanager.event.dto.DashboardResponseDTO;
 import com.socialeventmanager.event.dto.EventParticipantResponseDTO;
 import com.socialeventmanager.event.dto.EventResponseDTO;
 import com.socialeventmanager.event.dto.InvitationResponseDTO;
@@ -132,7 +133,7 @@ public class EventController {
                         sortBy,
                         direction));
     }
-    
+
     @GetMapping("/attending")
     public ResponseEntity<ApiResponseDTO<Page<EventResponseDTO>>> getAttendingEvents(
             @RequestParam(defaultValue = "0") int page,
@@ -148,4 +149,10 @@ public class EventController {
             @Valid @RequestBody RemoveInvitationRequestDTO request) {
         return ResponseEntity.ok(eventService.removeInvitation(eventId, request));
     }
+
+    @GetMapping("/dashboard")
+    public ResponseEntity<ApiResponseDTO<DashboardResponseDTO>> getDashboard() {
+        return ResponseEntity.ok(eventService.getDashboard());
+    }
+
 }
