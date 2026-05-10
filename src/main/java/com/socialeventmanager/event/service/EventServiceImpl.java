@@ -421,22 +421,22 @@ public class EventServiceImpl implements EventService {
 
                 User currentUser = getCurrentUser();
 
-                long totalEvents = eventRepository.countByCreatedBy(currentUser.getId());
+                long totalEvents = eventRepository.countByCreatedById(currentUser.getId());
 
-                long activeEvents = eventRepository.countByCreatedByAndStatus(
+                long activeEvents = eventRepository.countByCreatedByIdAndStatus(
                                 currentUser.getId(),
                                 EventStatus.ACTIVE);
 
-                long cancelledEvents = eventRepository.countByCreatedByAndStatus(
+                long cancelledEvents = eventRepository.countByCreatedByIdAndStatus(
                                 currentUser.getId(),
                                 EventStatus.CANCELLED);
 
-                long upcomingEvents = eventRepository.countByCreatedByAndEventDateAfter(
+                long upcomingEvents = eventRepository.countByCreatedByIdAndEventDateAfter(
                                 currentUser.getId(),
                                 LocalDateTime.now());
 
                 List<EventResponseDTO> recentEvents = eventRepository
-                                .findTop5ByCreatedByOrderByCreatedAtDesc(currentUser.getId())
+                                .findTop5ByCreatedByIdOrderByCreatedAtDesc(currentUser.getId())
                                 .stream()
                                 .map(this::mapToResponse)
                                 .toList();
