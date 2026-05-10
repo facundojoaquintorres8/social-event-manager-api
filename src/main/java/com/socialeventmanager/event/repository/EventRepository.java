@@ -21,11 +21,11 @@ public interface EventRepository extends JpaRepository<Event, UUID>,
 
     Optional<Event> findByIdAndCreatedBy(UUID id, User user);
 
-    long countByUserId(UUID userId);
+    long countByCreatedBy(UUID userId);
 
-    long countByUserIdAndStatus(UUID userId, EventStatus status);
+    long countByCreatedByAndStatus(UUID userId, EventStatus status);
 
-    long countByUserIdAndEventDateAfter(UUID userId, LocalDateTime now);
+    long countByCreatedByAndEventDateAfter(UUID userId, LocalDateTime now);
 
-    List<Event> findTop5ByUserIdOrderByCreatedAtDesc(UUID userId);
+    List<Event> findTop5ByCreatedByOrderByCreatedAtDesc(UUID userId);
 }
