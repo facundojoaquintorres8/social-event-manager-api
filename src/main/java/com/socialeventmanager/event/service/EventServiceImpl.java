@@ -191,11 +191,18 @@ public class EventServiceImpl implements EventService {
             throw new BadRequestException("You cannot invite yourself");
         }
 
-        boolean alreadyInvited = invitationRepository
+        EventInvitation existingInvitation = invitationRepository
                 .findByEventAndInvitedUser(event, invitedUser)
-                .isPresent();
-
-        if (alreadyInvited) {
+                .orElse(null);
+        if (existingInvitation != null) {
+            if (existingInvitation.getStatus() == InvitationStatus.CANCELLED) {
+                existingInvitation.setStatus(InvitationStatus.PENDING);
+                invitationRepository.save(existingInvitation);
+                return new ApiResponseDTO<>(
+                        true,
+                        "User invited successfully",
+                        null);
+            }
             throw new BadRequestException("User already invited");
         }
 
