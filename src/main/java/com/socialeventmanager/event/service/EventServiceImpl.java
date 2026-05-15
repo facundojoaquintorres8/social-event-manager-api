@@ -195,7 +195,8 @@ public class EventServiceImpl implements EventService {
                 .findByEventAndInvitedUser(event, invitedUser)
                 .orElse(null);
         if (existingInvitation != null) {
-            if (existingInvitation.getStatus() == InvitationStatus.CANCELLED) {
+            if (existingInvitation.getStatus() == InvitationStatus.CANCELLED
+                    || existingInvitation.getStatus() == InvitationStatus.REJECTED) {
                 existingInvitation.setStatus(InvitationStatus.PENDING);
                 invitationRepository.save(existingInvitation);
                 return new ApiResponseDTO<>(
