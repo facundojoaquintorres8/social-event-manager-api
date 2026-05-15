@@ -1,12 +1,11 @@
 package com.socialeventmanager.event.dto;
 
-import java.time.LocalDateTime;
-import java.util.UUID;
-
 import com.socialeventmanager.event.enums.EventStatus;
-
 import lombok.Builder;
 import lombok.Data;
+
+import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Data
 @Builder

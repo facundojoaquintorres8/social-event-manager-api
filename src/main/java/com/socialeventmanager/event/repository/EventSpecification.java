@@ -1,12 +1,11 @@
 package com.socialeventmanager.event.repository;
 
-import java.time.LocalDateTime;
-
-import org.springframework.data.jpa.domain.Specification;
-
 import com.socialeventmanager.event.entity.Event;
 import com.socialeventmanager.event.enums.EventStatus;
 import com.socialeventmanager.user.entity.User;
+import org.springframework.data.jpa.domain.Specification;
+
+import java.time.LocalDateTime;
 
 public class EventSpecification {
 

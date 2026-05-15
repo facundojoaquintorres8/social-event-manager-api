@@ -1,10 +1,9 @@
 package com.socialeventmanager.event.repository;
 
-import org.springframework.data.jpa.domain.Specification;
-
 import com.socialeventmanager.event.entity.EventInvitation;
 import com.socialeventmanager.event.enums.InvitationStatus;
 import com.socialeventmanager.user.entity.User;
+import org.springframework.data.jpa.domain.Specification;
 
 public class EventInvitationSpecification {
 

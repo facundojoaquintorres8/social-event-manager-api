@@ -1,12 +1,10 @@
 package com.socialeventmanager.user.service;
 
-import org.springframework.stereotype.Service;
-
 import com.socialeventmanager.shared.dto.ApiResponseDTO;
 import com.socialeventmanager.user.dto.UserResponseDTO;
 import com.socialeventmanager.user.entity.User;
-
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor

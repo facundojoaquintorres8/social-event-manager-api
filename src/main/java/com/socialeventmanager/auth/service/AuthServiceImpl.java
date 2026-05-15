@@ -1,12 +1,5 @@
 package com.socialeventmanager.auth.service;
 
-import java.util.List;
-
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-
 import com.socialeventmanager.auth.dto.AuthResponseDTO;
 import com.socialeventmanager.auth.dto.LoginRequestDTO;
 import com.socialeventmanager.auth.dto.RefreshRequestDTO;
@@ -18,8 +11,13 @@ import com.socialeventmanager.token.enums.TokenType;
 import com.socialeventmanager.token.repository.TokenRepository;
 import com.socialeventmanager.user.entity.User;
 import com.socialeventmanager.user.repository.UserRepository;
-
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -115,10 +113,10 @@ public class AuthServiceImpl implements AuthService {
     private AuthResponseDTO buildAuthResponse(User user) {
         String accessToken = jwtService.generateToken(user.getEmail());
         String refreshToken = jwtService.generateRefreshToken(user.getEmail());
-    
+
         revokeAllUserTokens(user);
         saveUserToken(user, accessToken);
-    
+
         return AuthResponseDTO.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
@@ -130,12 +128,12 @@ public class AuthServiceImpl implements AuthService {
 
     private void saveUserToken(User user, String jwtToken) {
         Token token = Token.builder()
-                        .user(user)
-                        .tokenValue(jwtToken)
-                        .tokenType(TokenType.BEARER)
-                        .expired(false)
-                        .revoked(false)
-                        .build();
+                .user(user)
+                .tokenValue(jwtToken)
+                .tokenType(TokenType.BEARER)
+                .expired(false)
+                .revoked(false)
+                .build();
 
         tokenRepository.save(token);
     }
@@ -143,16 +141,16 @@ public class AuthServiceImpl implements AuthService {
     private void revokeAllUserTokens(User user) {
         List<Token> validUserTokens =
                 tokenRepository.findAllByUserIdAndExpiredFalseAndRevokedFalse(user.getId());
-    
+
         if (validUserTokens.isEmpty()) {
             return;
         }
-    
+
         validUserTokens.forEach(token -> {
             token.setExpired(true);
             token.setRevoked(true);
         });
-    
+
         tokenRepository.saveAll(validUserTokens);
     }
 

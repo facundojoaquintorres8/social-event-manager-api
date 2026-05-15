@@ -1,7 +1,6 @@
 package com.socialeventmanager.event.dto;
 
 import com.socialeventmanager.event.enums.InvitationStatus;
-
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 

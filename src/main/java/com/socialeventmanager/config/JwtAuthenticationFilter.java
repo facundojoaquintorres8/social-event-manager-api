@@ -1,7 +1,6 @@
 package com.socialeventmanager.config;
 
 import com.socialeventmanager.auth.service.JwtService;
-
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -49,15 +48,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         try {
-                userEmail = jwtService.extractUsername(jwt);
+            userEmail = jwtService.extractUsername(jwt);
         } catch (JwtException | IllegalArgumentException e) {
-                filterChain.doFilter(request, response);
-                return;
+            filterChain.doFilter(request, response);
+            return;
         }
 
         if (
                 userEmail != null &&
-                SecurityContextHolder.getContext().getAuthentication() == null
+                        SecurityContextHolder.getContext().getAuthentication() == null
         ) {
             UserDetails userDetails =
                     userDetailsService.loadUserByUsername(userEmail);

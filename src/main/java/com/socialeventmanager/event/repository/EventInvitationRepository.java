@@ -1,21 +1,20 @@
 package com.socialeventmanager.event.repository;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
+import com.socialeventmanager.event.entity.Event;
+import com.socialeventmanager.event.entity.EventInvitation;
+import com.socialeventmanager.event.enums.InvitationStatus;
+import com.socialeventmanager.user.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
-import com.socialeventmanager.event.entity.Event;
-import com.socialeventmanager.event.entity.EventInvitation;
-import com.socialeventmanager.event.enums.InvitationStatus;
-import com.socialeventmanager.user.entity.User;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 public interface EventInvitationRepository extends JpaRepository<EventInvitation, UUID>,
-                JpaSpecificationExecutor<EventInvitation> {
+        JpaSpecificationExecutor<EventInvitation> {
 
     Page<EventInvitation> findAllByInvitedUser(User user, Pageable pageable);
 
@@ -24,17 +23,19 @@ public interface EventInvitationRepository extends JpaRepository<EventInvitation
             User invitedUser);
 
     Optional<EventInvitation> findByIdAndInvitedUser(
-                    UUID id,
-                    User invitedUser);
+            UUID id,
+            User invitedUser);
 
     Page<EventInvitation> findAllByEvent(
-                    Event event,
-                    Pageable pageable);
+            Event event,
+            Pageable pageable);
 
     Page<EventInvitation> findAllByInvitedUserAndStatus(
-                    User invitedUser,
-                    InvitationStatus status,
-                    Pageable pageable);
+            User invitedUser,
+            InvitationStatus status,
+            Pageable pageable);
 
     List<EventInvitation> findAllByEvent(Event event);
+
+    boolean existsByEventIdAndInvitedUser(UUID eventId, User currentUser);
 }

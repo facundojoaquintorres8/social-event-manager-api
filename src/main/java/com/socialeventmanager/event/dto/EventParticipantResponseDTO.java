@@ -1,7 +1,6 @@
 package com.socialeventmanager.event.dto;
 
 import com.socialeventmanager.event.enums.InvitationStatus;
-
 import lombok.Builder;
 import lombok.Data;
 

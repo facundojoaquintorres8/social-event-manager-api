@@ -1,35 +1,18 @@
 package com.socialeventmanager.event.controller;
 
-import java.time.LocalDateTime;
-import java.util.UUID;
-
-import org.springframework.data.domain.Page;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
-import com.socialeventmanager.event.dto.CreateEventRequestDTO;
-import com.socialeventmanager.event.dto.DashboardResponseDTO;
-import com.socialeventmanager.event.dto.EventParticipantResponseDTO;
-import com.socialeventmanager.event.dto.EventResponseDTO;
-import com.socialeventmanager.event.dto.InvitationResponseDTO;
-import com.socialeventmanager.event.dto.InviteUserRequestDTO;
-import com.socialeventmanager.event.dto.RemoveInvitationRequestDTO;
-import com.socialeventmanager.event.dto.UpdateInvitationStatusRequestDTO;
+import com.socialeventmanager.event.dto.*;
 import com.socialeventmanager.event.enums.EventStatus;
 import com.socialeventmanager.event.enums.InvitationStatus;
 import com.socialeventmanager.event.service.EventService;
 import com.socialeventmanager.shared.dto.ApiResponseDTO;
-
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDateTime;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/events")
