@@ -4,6 +4,7 @@ import com.socialeventmanager.auth.dto.AuthResponseDTO;
 import com.socialeventmanager.auth.dto.LoginRequestDTO;
 import com.socialeventmanager.auth.dto.RefreshRequestDTO;
 import com.socialeventmanager.auth.dto.RegisterRequestDTO;
+import com.socialeventmanager.event.service.ExternalInvitationService;
 import com.socialeventmanager.shared.dto.ApiResponseDTO;
 import com.socialeventmanager.shared.exception.BadRequestException;
 import com.socialeventmanager.token.entity.Token;
@@ -11,6 +12,8 @@ import com.socialeventmanager.token.enums.TokenType;
 import com.socialeventmanager.token.repository.TokenRepository;
 import com.socialeventmanager.user.entity.User;
 import com.socialeventmanager.user.repository.UserRepository;
+
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -28,8 +31,10 @@ public class AuthServiceImpl implements AuthService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     private final TokenRepository tokenRepository;
+    private final ExternalInvitationService externalInvitationService;
 
     @Override
+    @Transactional
     public ApiResponseDTO<AuthResponseDTO> register(RegisterRequestDTO request) {
 
         String email = request.getEmail().trim().toLowerCase();
@@ -45,6 +50,8 @@ public class AuthServiceImpl implements AuthService {
                 .build();
 
         userRepository.save(user);
+
+        externalInvitationService.claimExternalInvitations(user);
 
         return new ApiResponseDTO<>(
                 true,
@@ -139,8 +146,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     private void revokeAllUserTokens(User user) {
-        List<Token> validUserTokens =
-                tokenRepository.findAllByUserIdAndExpiredFalseAndRevokedFalse(user.getId());
+        List<Token> validUserTokens = tokenRepository.findAllByUserIdAndExpiredFalseAndRevokedFalse(user.getId());
 
         if (validUserTokens.isEmpty()) {
             return;

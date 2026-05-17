@@ -3,12 +3,15 @@ package com.socialeventmanager.event.service;
 import com.socialeventmanager.event.dto.*;
 import com.socialeventmanager.event.entity.Event;
 import com.socialeventmanager.event.entity.EventInvitation;
+import com.socialeventmanager.event.entity.ExternalInvitation;
 import com.socialeventmanager.event.enums.EventStatus;
+import com.socialeventmanager.event.enums.ExternalInvitationStatus;
 import com.socialeventmanager.event.enums.InvitationStatus;
 import com.socialeventmanager.event.repository.EventInvitationRepository;
 import com.socialeventmanager.event.repository.EventInvitationSpecification;
 import com.socialeventmanager.event.repository.EventRepository;
 import com.socialeventmanager.event.repository.EventSpecification;
+import com.socialeventmanager.event.repository.ExternalInvitationRepository;
 import com.socialeventmanager.shared.dto.ApiResponseDTO;
 import com.socialeventmanager.shared.exception.BadRequestException;
 import com.socialeventmanager.user.entity.User;
@@ -34,6 +37,7 @@ public class EventServiceImpl implements EventService {
     private final EventRepository eventRepository;
     private final UserRepository userRepository;
     private final EventInvitationRepository invitationRepository;
+    private final ExternalInvitationRepository externalInvitationRepository;
 
     @Override
     public ApiResponseDTO<EventResponseDTO> createEvent(
@@ -190,44 +194,31 @@ public class EventServiceImpl implements EventService {
                 .findByIdAndCreatedBy(eventId, currentUser)
                 .orElseThrow(() -> new BadRequestException("Event not found"));
 
-        String email = request.getEmail().trim().toLowerCase();
+        String email = request.getEmail()
+                .trim()
+                .toLowerCase();
 
-        User invitedUser = userRepository.findByEmail(email)
-                .orElseThrow(() -> new BadRequestException("User not found"));
+        Optional<User> invitedUserOptional = userRepository.findByEmail(email);
 
-        if (invitedUser.getId().equals(currentUser.getId())) {
-            throw new BadRequestException("You cannot invite yourself");
+        if (invitedUserOptional.isPresent()
+                && invitedUserOptional.get()
+                        .getId()
+                        .equals(currentUser.getId())) {
+            throw new BadRequestException(
+                    "You cannot invite yourself");
         }
 
-        EventInvitation existingInvitation = invitationRepository
-                .findByEventAndInvitedUser(event, invitedUser)
-                .orElse(null);
-        if (existingInvitation != null) {
-            if (existingInvitation.getStatus() == InvitationStatus.CANCELLED
-                    || existingInvitation.getStatus() == InvitationStatus.REJECTED) {
-                existingInvitation.setStatus(InvitationStatus.PENDING);
-                invitationRepository.save(existingInvitation);
-                return new ApiResponseDTO<>(
-                        true,
-                        "User invited successfully",
-                        null);
-            }
-            throw new BadRequestException("User already invited");
+        if (invitedUserOptional.isPresent()) {
+            return inviteExistingUser(
+                    event,
+                    currentUser,
+                    invitedUserOptional.get());
         }
 
-        EventInvitation invitation = EventInvitation.builder()
-                .event(event)
-                .invitedUser(invitedUser)
-                .invitedBy(currentUser)
-                .status(InvitationStatus.PENDING)
-                .build();
-
-        invitationRepository.save(invitation);
-
-        return new ApiResponseDTO<>(
-                true,
-                "User invited successfully",
-                null);
+        return inviteExternalUser(
+                event,
+                currentUser,
+                email);
     }
 
     @Override
@@ -405,27 +396,21 @@ public class EventServiceImpl implements EventService {
                 .findByIdAndCreatedBy(eventId, currentUser)
                 .orElseThrow(() -> new BadRequestException("Event not found"));
 
-        String email = request.getEmail().trim().toLowerCase();
+        String email = request.getEmail()
+                .trim()
+                .toLowerCase();
 
-        User invitedUser = userRepository.findByEmail(email)
-                .orElseThrow(() -> new BadRequestException("User not found"));
+        Optional<User> invitedUserOptional = userRepository.findByEmail(email);
 
-        EventInvitation invitation = invitationRepository
-                .findByEventAndInvitedUser(event, invitedUser)
-                .orElseThrow(() -> new BadRequestException("Invitation not found"));
-
-        if (invitation.getStatus() == InvitationStatus.CANCELLED) {
-            throw new BadRequestException("Invitation already cancelled");
+        if (invitedUserOptional.isPresent()) {
+            return removeExistingInvitation(
+                    event,
+                    invitedUserOptional.get());
         }
 
-        invitation.setStatus(InvitationStatus.CANCELLED);
-
-        invitationRepository.save(invitation);
-
-        return new ApiResponseDTO<>(
-                true,
-                "Invitation cancelled successfully",
-                null);
+        return removeExternalInvitation(
+                event,
+                email);
     }
 
     @Override
@@ -522,5 +507,142 @@ public class EventServiceImpl implements EventService {
         }
 
         throw new BadRequestException("Event not found");
+    }
+
+    private ApiResponseDTO<Void> inviteExistingUser(
+            Event event,
+            User currentUser,
+            User invitedUser) {
+        EventInvitation existingInvitation = invitationRepository
+                .findByEventAndInvitedUser(event, invitedUser)
+                .orElse(null);
+
+        if (existingInvitation != null) {
+
+            if (existingInvitation.getStatus() == InvitationStatus.CANCELLED
+                    || existingInvitation.getStatus() == InvitationStatus.REJECTED) {
+                existingInvitation.setStatus(InvitationStatus.PENDING);
+
+                invitationRepository.save(existingInvitation);
+
+                return new ApiResponseDTO<>(
+                        true,
+                        "User invited successfully",
+                        null);
+            }
+
+            throw new BadRequestException("User already invited");
+        }
+
+        EventInvitation invitation = EventInvitation.builder()
+                .event(event)
+                .invitedUser(invitedUser)
+                .invitedBy(currentUser)
+                .status(InvitationStatus.PENDING)
+                .build();
+
+        invitationRepository.save(invitation);
+
+        return new ApiResponseDTO<>(
+                true,
+                "User invited successfully",
+                null);
+    }
+
+    private ApiResponseDTO<Void> inviteExternalUser(
+            Event event,
+            User currentUser,
+            String email) {
+        ExternalInvitation existingInvitation = externalInvitationRepository
+                .findByEventAndInvitedEmail(event, email)
+                .orElse(null);
+
+        if (existingInvitation != null) {
+
+            if (existingInvitation.getStatus() == ExternalInvitationStatus.CANCELLED
+                    || existingInvitation.getStatus() == ExternalInvitationStatus.EXPIRED) {
+
+                existingInvitation.setStatus(ExternalInvitationStatus.PENDING);
+
+                existingInvitation.setExpiresAt(event.getEventDate().plusDays(1));
+
+                externalInvitationRepository.save(existingInvitation);
+
+                return new ApiResponseDTO<>(
+                        true,
+                        "Invitation sent successfully",
+                        null);
+            }
+
+            throw new BadRequestException("User already invited");
+        }
+
+        ExternalInvitation invitation = ExternalInvitation.builder()
+                .event(event)
+                .invitedBy(currentUser)
+                .invitedEmail(email)
+                .token(UUID.randomUUID().toString())
+                .status(ExternalInvitationStatus.PENDING)
+                .expiresAt(event.getEventDate().plusDays(1))
+                .build();
+
+        externalInvitationRepository.save(invitation);
+
+        return new ApiResponseDTO<>(
+                true,
+                "Invitation sent successfully",
+                null);
+    }
+
+    private ApiResponseDTO<Void> removeExistingInvitation(
+            Event event,
+            User invitedUser) {
+        EventInvitation invitation = invitationRepository
+                .findByEventAndInvitedUser(
+                        event,
+                        invitedUser)
+                .orElseThrow(() -> new BadRequestException(
+                        "Invitation not found"));
+
+        if (invitation.getStatus() == InvitationStatus.CANCELLED) {
+            throw new BadRequestException(
+                    "Invitation already cancelled");
+        }
+
+        invitation.setStatus(
+                InvitationStatus.CANCELLED);
+
+        invitationRepository.save(invitation);
+
+        return new ApiResponseDTO<>(
+                true,
+                "Invitation cancelled successfully",
+                null);
+    }
+
+    private ApiResponseDTO<Void> removeExternalInvitation(
+            Event event,
+            String email) {
+        ExternalInvitation invitation = externalInvitationRepository
+                .findByEventAndInvitedEmail(
+                        event,
+                        email)
+                .orElseThrow(() -> new BadRequestException(
+                        "Invitation not found"));
+
+        if (invitation.getStatus() == ExternalInvitationStatus.CANCELLED) {
+            throw new BadRequestException(
+                    "Invitation already cancelled");
+        }
+
+        invitation.setStatus(
+                ExternalInvitationStatus.CANCELLED);
+
+        externalInvitationRepository.save(invitation);
+
+        return new ApiResponseDTO<>(
+                true,
+                "Invitation cancelled successfully",
+                null);
     }
 }
