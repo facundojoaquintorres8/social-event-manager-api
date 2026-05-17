@@ -19,4 +19,16 @@ public class CreateEventRequestDTO {
 
     @NotBlank(message = "Location is required")
     private String location;
+
+    @NotBlank(message = "Location address is required")
+    private String locationAddress;
+
+    @NotBlank(message = "Place id is required")
+    private String placeId;
+
+    @NotNull(message = "Latitude is required")
+    private Double latitude;
+
+    @NotNull(message = "Longitude is required")
+    private Double longitude;
 }

@@ -45,6 +45,10 @@ public class EventServiceImpl implements EventService {
                 .description(request.getDescription())
                 .eventDate(request.getEventDate())
                 .location(request.getLocation())
+                .locationAddress(request.getLocationAddress())
+                .placeId(request.getPlaceId())
+                .latitude(request.getLatitude())
+                .longitude(request.getLongitude())
                 .createdBy(currentUser)
                 .status(EventStatus.ACTIVE)
                 .build();
@@ -137,6 +141,10 @@ public class EventServiceImpl implements EventService {
         event.setDescription(request.getDescription());
         event.setEventDate(request.getEventDate());
         event.setLocation(request.getLocation());
+        event.setLocationAddress(request.getLocationAddress());
+        event.setPlaceId(request.getPlaceId());
+        event.setLatitude(request.getLatitude());
+        event.setLongitude(request.getLongitude());
 
         eventRepository.save(event);
 
@@ -263,6 +271,10 @@ public class EventServiceImpl implements EventService {
                         .title(invitation.getEvent().getTitle())
                         .eventDate(invitation.getEvent().getEventDate())
                         .location(invitation.getEvent().getLocation())
+                        .locationAddress(invitation.getEvent().getLocationAddress())
+                        .placeId(invitation.getEvent().getPlaceId())
+                        .latitude(invitation.getEvent().getLatitude())
+                        .longitude(invitation.getEvent().getLongitude())
                         .invitedBy(invitation.getInvitedBy().getEmail())
                         .status(invitation.getStatus())
                         .build());
@@ -471,6 +483,10 @@ public class EventServiceImpl implements EventService {
                 .description(event.getDescription())
                 .eventDate(event.getEventDate())
                 .location(event.getLocation())
+                .locationAddress(event.getLocationAddress())
+                .placeId(event.getPlaceId())
+                .latitude(event.getLatitude())
+                .longitude(event.getLongitude())
                 .createdBy(event.getCreatedBy().getFirstName() + " "
                         + event.getCreatedBy().getLastName())
                 .status(event.getStatus())

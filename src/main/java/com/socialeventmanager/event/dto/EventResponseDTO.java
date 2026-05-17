@@ -16,6 +16,10 @@ public class EventResponseDTO {
     private String description;
     private LocalDateTime eventDate;
     private String location;
+    private String locationAddress;
+    private String placeId;
+    private Double latitude;
+    private Double longitude;
     private String createdBy;
     private EventStatus status;
 }

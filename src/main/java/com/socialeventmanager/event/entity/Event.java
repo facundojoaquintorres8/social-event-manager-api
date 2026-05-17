@@ -29,6 +29,18 @@ public class Event extends BaseEntity {
     @Column(nullable = false)
     private String location;
 
+    @Column(name = "location_address", nullable = false)
+    private String locationAddress;
+
+    @Column(name = "place_id", nullable = false)
+    private String placeId;
+
+    @Column(nullable = false)
+    private Double latitude;
+
+    @Column(nullable = false)
+    private Double longitude;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by", nullable = false)
     private User createdBy;

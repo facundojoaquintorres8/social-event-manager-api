@@ -16,6 +16,10 @@ public class InvitationResponseDTO {
     private String title;
     private LocalDateTime eventDate;
     private String location;
+    private String locationAddress;
+    private String placeId;
+    private Double latitude;
+    private Double longitude;
     private String invitedBy;
     private InvitationStatus status;
 }
