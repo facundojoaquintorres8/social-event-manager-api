@@ -14,6 +14,7 @@ import com.socialeventmanager.event.repository.EventSpecification;
 import com.socialeventmanager.event.repository.ExternalInvitationRepository;
 import com.socialeventmanager.shared.dto.ApiResponseDTO;
 import com.socialeventmanager.shared.exception.BadRequestException;
+import com.socialeventmanager.shared.exception.ForbiddenException;
 import com.socialeventmanager.user.entity.User;
 import com.socialeventmanager.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -133,6 +134,28 @@ public class EventServiceImpl implements EventService {
                 true,
                 "Event retrieved successfully",
                 mapToResponse(event));
+    }
+
+    @Override
+    public ApiResponseDTO<EventDetailsFullResponseDTO> getEventByIdFull(UUID eventId) {
+        Event event = getAccessibleEvent(eventId);
+
+        List<EventParticipantResponseDTO> participants = invitationRepository
+                .findAllByEvent(event)
+                .stream()
+                .map(invitation -> EventParticipantResponseDTO
+                        .builder()
+                        .firstName(invitation.getInvitedUser().getFirstName())
+                        .lastName(invitation.getInvitedUser().getLastName())
+                        .email(invitation.getInvitedUser().getEmail())
+                        .status(invitation.getStatus())
+                        .build())
+                .toList();
+
+        return new ApiResponseDTO<>(
+                true,
+                "Event retrieved successfully",
+                mapToFullResponse(event, participants));
     }
 
     @Override
@@ -309,46 +332,6 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public ApiResponseDTO<Page<EventParticipantResponseDTO>> getEventParticipants(
-            UUID eventId,
-            int page,
-            int size,
-            String sortBy,
-            String direction) {
-        Event event = getOwnedEvent(eventId);
-
-        size = Math.min(size, 50);
-
-        List<String> allowedSortFields = List.of(
-                "status",
-                "createdAt");
-
-        if (!allowedSortFields.contains(sortBy)) {
-            throw new BadRequestException("Invalid sort field");
-        }
-
-        Sort sort = direction.equalsIgnoreCase("asc")
-                ? Sort.by(sortBy).ascending()
-                : Sort.by(sortBy).descending();
-
-        Pageable pageable = PageRequest.of(page, size, sort);
-
-        Page<EventParticipantResponseDTO> participants = invitationRepository
-                .findAllByEvent(event, pageable)
-                .map(invitation -> EventParticipantResponseDTO.builder()
-                        .firstName(invitation.getInvitedUser().getFirstName())
-                        .lastName(invitation.getInvitedUser().getLastName())
-                        .email(invitation.getInvitedUser().getEmail())
-                        .status(invitation.getStatus())
-                        .build());
-
-        return new ApiResponseDTO<>(
-                true,
-                "Participants retrieved successfully",
-                participants);
-    }
-
-    @Override
     public ApiResponseDTO<Page<EventResponseDTO>> getAttendingEvents(
             int page,
             int size,
@@ -478,6 +461,24 @@ public class EventServiceImpl implements EventService {
                 .build();
     }
 
+    private EventDetailsFullResponseDTO mapToFullResponse(Event event, List<EventParticipantResponseDTO> participants) {
+        return EventDetailsFullResponseDTO.builder()
+                .id(event.getId())
+                .title(event.getTitle())
+                .description(event.getDescription())
+                .eventDate(event.getEventDate())
+                .location(event.getLocation())
+                .locationAddress(event.getLocationAddress())
+                .placeId(event.getPlaceId())
+                .latitude(event.getLatitude())
+                .longitude(event.getLongitude())
+                .createdBy(event.getCreatedBy().getFirstName() + " "
+                        + event.getCreatedBy().getLastName())
+                .status(event.getStatus())
+                .participants(participants)
+                .build();
+    }
+
     private Event getOwnedEvent(UUID eventId) {
         User currentUser = getCurrentUser();
 
@@ -506,7 +507,7 @@ public class EventServiceImpl implements EventService {
                     .orElseThrow(() -> new BadRequestException("Event not found"));
         }
 
-        throw new BadRequestException("Event not found");
+        throw new ForbiddenException("You do not have access to this event");
     }
 
     private ApiResponseDTO<Void> inviteExistingUser(

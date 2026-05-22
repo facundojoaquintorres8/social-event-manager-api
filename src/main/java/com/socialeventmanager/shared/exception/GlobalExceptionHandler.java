@@ -46,35 +46,38 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(BadCredentialsException.class)
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    public ApiResponseDTO<Void> handleBadCredentials(
-            BadCredentialsException ex) {
+    public ApiResponseDTO<Void> handleBadCredentials(BadCredentialsException ex) {
         return new ApiResponseDTO<>(
                 false,
                 "Invalid email or password",
-                null
-        );
+                null);
     }
 
     @ExceptionHandler(UsernameNotFoundException.class)
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    public ApiResponseDTO<Void> handleUsernameNotFound(
-            UsernameNotFoundException ex) {
+    public ApiResponseDTO<Void> handleUsernameNotFound(UsernameNotFoundException ex) {
         return new ApiResponseDTO<>(
                 false,
                 "Invalid email or password",
-                null
-        );
+                null);
     }
 
     @ExceptionHandler(JwtException.class)
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    public ApiResponseDTO<Void> handleJwtException(
-            JwtException ex) {
+    public ApiResponseDTO<Void> handleJwtException(JwtException ex) {
         return new ApiResponseDTO<>(
                 false,
                 "Invalid or expired token",
-                null
-        );
+                null);
+    }
+
+    @ExceptionHandler(ForbiddenException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public ApiResponseDTO<Void> handleForbidden(ForbiddenException ex) {
+        return new ApiResponseDTO<>(
+                false,
+                ex.getMessage(),
+                null);
     }
 
 }

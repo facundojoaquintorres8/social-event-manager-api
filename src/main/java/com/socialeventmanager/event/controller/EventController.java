@@ -49,6 +49,12 @@ public class EventController {
                         status));
     }
 
+    @GetMapping("/{eventId}/full")
+    public ResponseEntity<ApiResponseDTO<EventDetailsFullResponseDTO>> getEventByIdFull(
+            @PathVariable UUID eventId) {
+        return ResponseEntity.ok(eventService.getEventByIdFull(eventId));
+    }
+
     @GetMapping("/{eventId}")
     public ResponseEntity<ApiResponseDTO<EventResponseDTO>> getEventById(
             @PathVariable UUID eventId) {
@@ -99,22 +105,6 @@ public class EventController {
                 eventService.updateInvitationStatus(
                         invitationId,
                         request));
-    }
-
-    @GetMapping("/{eventId}/participants")
-    public ResponseEntity<ApiResponseDTO<Page<EventParticipantResponseDTO>>> getEventParticipants(
-            @PathVariable UUID eventId,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "createdAt") String sortBy,
-            @RequestParam(defaultValue = "desc") String direction) {
-        return ResponseEntity.ok(
-                eventService.getEventParticipants(
-                        eventId,
-                        page,
-                        size,
-                        sortBy,
-                        direction));
     }
 
     @GetMapping("/attending")

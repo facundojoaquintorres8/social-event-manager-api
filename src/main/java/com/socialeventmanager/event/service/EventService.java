@@ -25,6 +25,8 @@ public interface EventService {
 
     ApiResponseDTO<EventResponseDTO> getEventById(UUID eventId);
 
+    ApiResponseDTO<EventDetailsFullResponseDTO> getEventByIdFull(UUID eventId);
+
     ApiResponseDTO<EventResponseDTO> updateEvent(
             UUID eventId,
             CreateEventRequestDTO request);
@@ -45,13 +47,6 @@ public interface EventService {
     ApiResponseDTO<Void> updateInvitationStatus(
             UUID invitationId,
             UpdateInvitationStatusRequestDTO request);
-
-    ApiResponseDTO<Page<EventParticipantResponseDTO>> getEventParticipants(
-            UUID eventId,
-            int page,
-            int size,
-            String sortBy,
-            String direction);
 
     ApiResponseDTO<Page<EventResponseDTO>> getAttendingEvents(
             int page,
