@@ -164,6 +164,8 @@ public class EventServiceImpl implements EventService {
             CreateEventRequestDTO request) {
         Event event = getOwnedEvent(eventId);
 
+        validateEventIsEditable(event);
+
         event.setTitle(request.getTitle());
         event.setDescription(request.getDescription());
         event.setEventDate(request.getEventDate());
@@ -194,12 +196,16 @@ public class EventServiceImpl implements EventService {
         eventRepository.save(event);
 
         List<EventInvitation> invitations = invitationRepository.findAllByEvent(event);
-
         for (EventInvitation invitation : invitations) {
             invitation.setStatus(InvitationStatus.CANCELLED);
         }
-
         invitationRepository.saveAll(invitations);
+
+        List<ExternalInvitation> externalInvitations = externalInvitationRepository.findAllByEvent(event);
+        for (ExternalInvitation invitation : externalInvitations) {
+            invitation.setStatus(ExternalInvitationStatus.CANCELLED);
+        }
+        externalInvitationRepository.saveAll(externalInvitations);
 
         return new ApiResponseDTO<>(
                 true,
@@ -216,6 +222,8 @@ public class EventServiceImpl implements EventService {
         Event event = eventRepository
                 .findByIdAndCreatedBy(eventId, currentUser)
                 .orElseThrow(() -> new BadRequestException("Event not found"));
+
+        validateEventIsEditable(event);
 
         String email = request.getEmail()
                 .trim()
@@ -292,6 +300,7 @@ public class EventServiceImpl implements EventService {
                         .longitude(invitation.getEvent().getLongitude())
                         .invitedBy(invitation.getInvitedBy().getEmail())
                         .status(invitation.getStatus())
+                        .eventStatus(invitation.getEvent().getStatus())
                         .build());
 
         return new ApiResponseDTO<>(
@@ -313,6 +322,8 @@ public class EventServiceImpl implements EventService {
         EventInvitation invitation = invitationRepository
                 .findByIdAndInvitedUser(invitationId, currentUser)
                 .orElseThrow(() -> new BadRequestException("Invitation not found"));
+
+        validateEventIsEditable(invitation.getEvent());
 
         if (invitation.getStatus() == InvitationStatus.CANCELLED) {
             throw new BadRequestException("Invitation is cancelled");
@@ -379,6 +390,8 @@ public class EventServiceImpl implements EventService {
         Event event = eventRepository
                 .findByIdAndCreatedBy(eventId, currentUser)
                 .orElseThrow(() -> new BadRequestException("Event not found"));
+
+        validateEventIsEditable(event);
 
         String email = request.getEmail()
                 .trim()
@@ -648,5 +661,12 @@ public class EventServiceImpl implements EventService {
                 true,
                 "Invitation cancelled successfully",
                 null);
+    }
+
+    private void validateEventIsEditable(Event event) {
+        if (event.getStatus() == EventStatus.CANCELLED) {
+            throw new BadRequestException(
+                    "Cancelled events cannot be modified");
+        }
     }
 }

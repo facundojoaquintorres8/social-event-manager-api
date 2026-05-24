@@ -1,5 +1,6 @@
 package com.socialeventmanager.event.dto;
 
+import com.socialeventmanager.event.enums.EventStatus;
 import com.socialeventmanager.event.enums.InvitationStatus;
 import lombok.Builder;
 import lombok.Data;
@@ -22,4 +23,5 @@ public class InvitationResponseDTO {
     private Double longitude;
     private String invitedBy;
     private InvitationStatus status;
+    private EventStatus eventStatus;
 }
