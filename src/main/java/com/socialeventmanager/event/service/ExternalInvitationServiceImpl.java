@@ -172,10 +172,10 @@ public class ExternalInvitationServiceImpl implements ExternalInvitationService 
     }
 
     @Override
-    public List<EventParticipantResponseDTO> findAllByEventAndNotCancelled(Event event) {
+    public List<EventParticipantResponseDTO> findAllByEventAndPending(Event event) {
 
         return externalInvitationRepository
-                .findAllByEventAndStatusNot(event, ExternalInvitationStatus.CANCELLED)
+                .findAllByEventAndStatus(event, ExternalInvitationStatus.PENDING)
                 .stream()
                 .map(invitation -> EventParticipantResponseDTO.builder()
                         .email(invitation.getInvitedEmail())

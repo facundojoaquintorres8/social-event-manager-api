@@ -222,11 +222,9 @@ public class EventServiceImpl implements EventService {
 
         List<EventParticipantResponseDTO> participants = new ArrayList<>();
 
-        participants.addAll(
-                invitationService.findAllByEventAndNotCancelled(event));
+        participants.addAll(invitationService.findAllByEventAndNotCancelled(event));
 
-        participants.addAll(
-                externalInvitationService.findAllByEventAndNotCancelled(event));
+        participants.addAll(externalInvitationService.findAllByEventAndPending(event));
 
         return new ApiResponseDTO<>(
                 true,

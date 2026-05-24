@@ -10,7 +10,7 @@ import com.socialeventmanager.shared.dto.ApiResponseDTO;
 import com.socialeventmanager.user.entity.User;
 
 public interface ExternalInvitationService {
-    List<EventParticipantResponseDTO> findAllByEventAndNotCancelled(Event event);
+    List<EventParticipantResponseDTO> findAllByEventAndPending(Event event);
 
     ApiResponseDTO<Void> inviteExternalUser(Event event, User currentUser, String email);
 
