@@ -1,12 +1,9 @@
 package com.socialeventmanager.event.controller;
 
-import java.util.UUID;
-
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -30,7 +27,7 @@ public class InvitationController {
 
     private final InvitationService invitationService;
 
-    @GetMapping("/invitations")
+    @GetMapping("/me")
     public ResponseEntity<ApiResponseDTO<Page<InvitationResponseDTO>>> getMyInvitations(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -46,21 +43,16 @@ public class InvitationController {
                         status));
     }
 
-    @PutMapping("/{eventId}/invitations")
+    @PutMapping()
     public ResponseEntity<ApiResponseDTO<Void>> updateInvitationStatus(
-            @PathVariable UUID eventId,
             @Valid @RequestBody UpdateInvitationStatusRequestDTO request) {
-        return ResponseEntity.ok(
-                invitationService.updateInvitationStatus(
-                        eventId,
-                        request));
+        return ResponseEntity.ok(invitationService.updateInvitationStatus(request));
     }
 
-    @DeleteMapping("/{eventId}/invite")
+    @DeleteMapping()
     public ResponseEntity<ApiResponseDTO<Void>> removeInvitation(
-            @PathVariable UUID eventId,
             @Valid @RequestBody RemoveInvitationRequestDTO request) {
-        return ResponseEntity.ok(invitationService.removeInvitation(eventId, request));
+        return ResponseEntity.ok(invitationService.removeInvitation(request));
     }
 
 }

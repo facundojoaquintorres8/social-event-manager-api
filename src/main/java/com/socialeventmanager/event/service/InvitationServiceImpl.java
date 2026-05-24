@@ -11,7 +11,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.socialeventmanager.auth.service.CurrentUserService;
 import com.socialeventmanager.event.dto.EventParticipantResponseDTO;
@@ -39,7 +38,6 @@ public class InvitationServiceImpl implements InvitationService {
     private final InvitationRepository invitationRepository;
     private final UserRepository userRepository;
     private final CurrentUserService currentUserService;
-    private final ExternalInvitationService externalInvitationService;
     private final EventRepository eventRepository;
     private final EventValidator eventValidator;
 
@@ -216,9 +214,7 @@ public class InvitationServiceImpl implements InvitationService {
     }
 
     @Override
-    public ApiResponseDTO<Void> updateInvitationStatus(
-            UUID eventId,
-            UpdateInvitationStatusRequestDTO request) {
+    public ApiResponseDTO<Void> updateInvitationStatus(UpdateInvitationStatusRequestDTO request) {
         User currentUser = getCurrentUser();
 
         if (request.getStatus() == InvitationStatus.PENDING) {
@@ -226,7 +222,7 @@ public class InvitationServiceImpl implements InvitationService {
         }
 
         EventInvitation invitation = invitationRepository
-                .findByEventIdAndInvitedUser(eventId, currentUser)
+                .findByEventIdAndInvitedUser(request.getEventId(), currentUser)
                 .orElseThrow(() -> new BadRequestException("Invitation not found"));
 
         eventValidator.validateEventAllowsInteraction(invitation.getEvent());
@@ -250,13 +246,10 @@ public class InvitationServiceImpl implements InvitationService {
     }
 
     @Override
-    @Transactional
-    public ApiResponseDTO<Void> removeInvitation(
-            UUID eventId,
-            RemoveInvitationRequestDTO request) {
+    public ApiResponseDTO<Void> removeInvitation(RemoveInvitationRequestDTO request) {
         User currentUser = getCurrentUser();
 
-        Event event = eventRepository.findByIdAndCreatedBy(eventId, currentUser)
+        Event event = eventRepository.findByIdAndCreatedBy(request.getEventId(), currentUser)
                 .orElseThrow(() -> new BadRequestException("Event not found"));
 
         eventValidator.validateEventAllowsInteraction(event);
@@ -269,7 +262,7 @@ public class InvitationServiceImpl implements InvitationService {
             return removeExistingInvitation(event, invitedUserOptional.get());
         }
 
-        return externalInvitationService.removeExternalInvitation(event, email);
+        throw new BadRequestException("Invited user not found");
     }
 
     @Override
@@ -301,8 +294,7 @@ public class InvitationServiceImpl implements InvitationService {
                     "Invitation already cancelled");
         }
 
-        invitation.setStatus(
-                InvitationStatus.CANCELLED);
+        invitation.setStatus(InvitationStatus.CANCELLED);
 
         invitationRepository.save(invitation);
 

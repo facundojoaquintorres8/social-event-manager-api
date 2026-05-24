@@ -39,13 +39,9 @@ public interface InvitationService {
             String direction,
             InvitationStatus status);
 
-    ApiResponseDTO<Void> updateInvitationStatus(
-            UUID eventId,
-            UpdateInvitationStatusRequestDTO request);
+    ApiResponseDTO<Void> updateInvitationStatus(UpdateInvitationStatusRequestDTO request);
 
-    ApiResponseDTO<Void> removeInvitation(
-            UUID eventId,
-            RemoveInvitationRequestDTO request);
+    ApiResponseDTO<Void> removeInvitation(RemoveInvitationRequestDTO request);
 
     boolean existsByEventIdAndInvitedUserAndNotCancelled(UUID eventId, User currentUser);
 

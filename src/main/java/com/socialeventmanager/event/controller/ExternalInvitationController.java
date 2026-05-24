@@ -1,15 +1,19 @@
 package com.socialeventmanager.event.controller;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.socialeventmanager.event.dto.ExternalInvitationPreviewResponseDTO;
+import com.socialeventmanager.event.dto.RemoveInvitationRequestDTO;
 import com.socialeventmanager.event.service.ExternalInvitationService;
 import com.socialeventmanager.shared.dto.ApiResponseDTO;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -23,6 +27,12 @@ public class ExternalInvitationController {
     public ResponseEntity<ApiResponseDTO<ExternalInvitationPreviewResponseDTO>> getInvitationPreview(
             @PathVariable String token) {
         return ResponseEntity.ok(externalInvitationService.getInvitationPreview(token));
+    }
+
+    @DeleteMapping()
+    public ResponseEntity<ApiResponseDTO<Void>> removeInvitation(
+            @Valid @RequestBody RemoveInvitationRequestDTO request) {
+        return ResponseEntity.ok(externalInvitationService.removeExternalInvitation(request));
     }
 
 }

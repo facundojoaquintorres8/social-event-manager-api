@@ -6,15 +6,19 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
+import com.socialeventmanager.auth.service.CurrentUserService;
 import com.socialeventmanager.event.dto.EventParticipantResponseDTO;
 import com.socialeventmanager.event.dto.ExternalInvitationPreviewResponseDTO;
+import com.socialeventmanager.event.dto.RemoveInvitationRequestDTO;
 import com.socialeventmanager.event.entity.Event;
 import com.socialeventmanager.event.entity.ExternalInvitation;
 import com.socialeventmanager.event.enums.EventStatus;
 import com.socialeventmanager.event.enums.ExternalInvitationStatus;
+import com.socialeventmanager.event.repository.EventRepository;
 import com.socialeventmanager.event.repository.ExternalInvitationRepository;
 import com.socialeventmanager.shared.dto.ApiResponseDTO;
 import com.socialeventmanager.shared.exception.BadRequestException;
+import com.socialeventmanager.shared.util.EventValidator;
 import com.socialeventmanager.user.entity.User;
 
 import lombok.RequiredArgsConstructor;
@@ -25,6 +29,9 @@ public class ExternalInvitationServiceImpl implements ExternalInvitationService 
 
     private final ExternalInvitationRepository externalInvitationRepository;
     private final InvitationService invitationService;
+    private final CurrentUserService currentUserService;
+    private final EventRepository eventRepository;
+    private final EventValidator eventValidator;
 
     @Override
     public ApiResponseDTO<Void> inviteExternalUser(
@@ -57,7 +64,16 @@ public class ExternalInvitationServiceImpl implements ExternalInvitationService 
     }
 
     @Override
-    public ApiResponseDTO<Void> removeExternalInvitation(Event event, String email) {
+    public ApiResponseDTO<Void> removeExternalInvitation(RemoveInvitationRequestDTO request) {
+        User currentUser = getCurrentUser();
+
+        Event event = eventRepository.findByIdAndCreatedBy(request.getEventId(), currentUser)
+                .orElseThrow(() -> new BadRequestException("Event not found"));
+
+        eventValidator.validateEventAllowsInteraction(event);
+
+        String email = request.getEmail().trim().toLowerCase();
+
         ExternalInvitation invitation = externalInvitationRepository
                 .findByEventAndInvitedEmail(event, email)
                 .orElseThrow(() -> new BadRequestException("Invitation not found"));
@@ -154,6 +170,10 @@ public class ExternalInvitationServiceImpl implements ExternalInvitationService 
                         .external(true)
                         .build())
                 .toList();
+    }
+
+    private User getCurrentUser() {
+        return currentUserService.getCurrentUser();
     }
 
     private ExternalInvitation validateExternalInvitation(String token) {
