@@ -14,4 +14,8 @@ public class EventInvitationSpecification {
     public static Specification<EventInvitation> hasStatus(InvitationStatus status) {
         return (root, query, cb) -> cb.equal(root.get("status"), status);
     }
+
+    public static Specification<EventInvitation> hasNotStatus(InvitationStatus status) {
+        return (root, query, cb) -> cb.notEqual(root.get("status"), status);
+    }
 }

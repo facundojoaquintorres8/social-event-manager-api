@@ -141,7 +141,7 @@ public class EventServiceImpl implements EventService {
         Event event = getAccessibleEvent(eventId);
 
         List<EventParticipantResponseDTO> participants = invitationRepository
-                .findAllByEvent(event)
+                .findAllByEventAndStatusNot(event, InvitationStatus.CANCELLED)
                 .stream()
                 .map(invitation -> EventParticipantResponseDTO
                         .builder()
@@ -273,8 +273,9 @@ public class EventServiceImpl implements EventService {
                 .and(EventInvitationSpecification.hasUser(currentUser));
 
         if (status != null) {
-            spec = spec.and(
-                    EventInvitationSpecification.hasStatus(status));
+            spec = spec.and(EventInvitationSpecification.hasStatus(status));
+        } else {
+            spec = spec.and(EventInvitationSpecification.hasNotStatus(InvitationStatus.CANCELLED));
         }
 
         Page<InvitationResponseDTO> invitations = invitationRepository
@@ -499,9 +500,10 @@ public class EventServiceImpl implements EventService {
             return ownedEvent.get();
         }
 
-        boolean invited = invitationRepository.existsByEventIdAndInvitedUser(
+        boolean invited = invitationRepository.existsByEventIdAndInvitedUserAndStatusNot(
                 eventId,
-                currentUser);
+                currentUser,
+                InvitationStatus.CANCELLED);
 
         if (invited) {
             return eventRepository.findById(eventId)
