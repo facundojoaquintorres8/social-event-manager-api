@@ -1,0 +1,315 @@
+package com.socialeventmanager.event.service;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.socialeventmanager.auth.service.CurrentUserService;
+import com.socialeventmanager.event.dto.EventParticipantResponseDTO;
+import com.socialeventmanager.event.dto.InvitationResponseDTO;
+import com.socialeventmanager.event.dto.RemoveInvitationRequestDTO;
+import com.socialeventmanager.event.dto.UpdateInvitationStatusRequestDTO;
+import com.socialeventmanager.event.entity.Event;
+import com.socialeventmanager.event.entity.EventInvitation;
+import com.socialeventmanager.event.enums.InvitationStatus;
+import com.socialeventmanager.event.repository.EventRepository;
+import com.socialeventmanager.event.repository.InvitationRepository;
+import com.socialeventmanager.event.repository.InvitationSpecification;
+import com.socialeventmanager.shared.dto.ApiResponseDTO;
+import com.socialeventmanager.shared.exception.BadRequestException;
+import com.socialeventmanager.shared.util.EventValidator;
+import com.socialeventmanager.user.entity.User;
+import com.socialeventmanager.user.repository.UserRepository;
+
+import lombok.RequiredArgsConstructor;
+
+@Service
+@RequiredArgsConstructor
+public class InvitationServiceImpl implements InvitationService {
+
+    private final InvitationRepository invitationRepository;
+    private final UserRepository userRepository;
+    private final CurrentUserService currentUserService;
+    private final ExternalInvitationService externalInvitationService;
+    private final EventRepository eventRepository;
+    private final EventValidator eventValidator;
+
+    @Override
+    public List<EventParticipantResponseDTO> findAllByEventAndNotCancelled(Event event) {
+        return invitationRepository
+                .findAllByEventAndStatusNot(event, InvitationStatus.CANCELLED)
+                .stream()
+                .map(invitation -> EventParticipantResponseDTO
+                        .builder()
+                        .firstName(invitation.getInvitedUser().getFirstName())
+                        .lastName(invitation.getInvitedUser().getLastName())
+                        .email(invitation.getInvitedUser().getEmail())
+                        .status(invitation.getStatus().name())
+                        .external(false)
+                        .build())
+                .toList();
+    }
+
+    @Override
+    public ApiResponseDTO<Void> inviteExistingUser(
+            Event event,
+            User invitedBy,
+            User invitedUser) {
+        EventInvitation existingInvitation = invitationRepository
+                .findByEventAndInvitedUser(event, invitedUser)
+                .orElse(null);
+
+        if (existingInvitation != null) {
+
+            if (existingInvitation.getStatus() == InvitationStatus.CANCELLED
+                    || existingInvitation.getStatus() == InvitationStatus.REJECTED) {
+                existingInvitation.setStatus(InvitationStatus.PENDING);
+
+                invitationRepository.save(existingInvitation);
+
+                return new ApiResponseDTO<>(
+                        true,
+                        "User invited successfully",
+                        null);
+            }
+
+            throw new BadRequestException("User already invited");
+        }
+
+        EventInvitation invitation = EventInvitation.builder()
+                .event(event)
+                .invitedUser(invitedUser)
+                .invitedBy(invitedBy)
+                .status(InvitationStatus.PENDING)
+                .build();
+
+        invitationRepository.save(invitation);
+
+        return new ApiResponseDTO<>(
+                true,
+                "User invited successfully",
+                null);
+    }
+
+    @Override
+    public Page<EventInvitation> findAllAccepted(
+            int page,
+            int size,
+            String sortBy,
+            String direction) {
+
+        User currentUser = getCurrentUser();
+
+        size = Math.min(size, 50);
+
+        List<String> allowedSortFields = List.of(
+                "eventDate",
+                "title",
+                "location");
+
+        if (!allowedSortFields.contains(sortBy)) {
+            throw new BadRequestException("Invalid sort field");
+        }
+
+        Sort sort = direction.equalsIgnoreCase("asc")
+                ? Sort.by("event." + sortBy).ascending()
+                : Sort.by("event." + sortBy).descending();
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        return invitationRepository
+                .findAllByInvitedUserAndStatus(
+                        currentUser,
+                        InvitationStatus.ACCEPTED,
+                        pageable);
+    }
+
+    @Override
+    public List<EventInvitation> findAllToCalendarEvents(
+            User currentUser,
+            LocalDateTime from,
+            LocalDateTime to) {
+        return invitationRepository
+                .findAllByInvitedUserAndStatusInAndEvent_EventDateBetween(
+                        currentUser,
+                        List.of(
+                                InvitationStatus.PENDING,
+                                InvitationStatus.ACCEPTED,
+                                InvitationStatus.REJECTED),
+                        from,
+                        to);
+    }
+
+    @Override
+    public void cancelInvitationsForEvent(Event event) {
+        List<EventInvitation> invitations = invitationRepository.findAllByEvent(event);
+        for (EventInvitation invitation : invitations) {
+            invitation.setStatus(InvitationStatus.CANCELLED);
+        }
+        invitationRepository.saveAll(invitations);
+    }
+
+    @Override
+    public ApiResponseDTO<Page<InvitationResponseDTO>> getMyInvitations(
+            int page,
+            int size,
+            String sortBy,
+            String direction,
+            InvitationStatus status) {
+        User currentUser = getCurrentUser();
+
+        size = Math.min(size, 50);
+
+        List<String> allowedSortFields = List.of(
+                "status",
+                "createdAt");
+
+        if (!allowedSortFields.contains(sortBy)) {
+            throw new BadRequestException("Invalid sort field");
+        }
+
+        Sort sort = direction.equalsIgnoreCase("asc")
+                ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        Specification<EventInvitation> spec = Specification.<EventInvitation>unrestricted()
+                .and(InvitationSpecification.hasUser(currentUser));
+
+        if (status != null) {
+            spec = spec.and(InvitationSpecification.hasStatus(status));
+        } else {
+            spec = spec.and(InvitationSpecification.hasNotStatus(InvitationStatus.CANCELLED));
+        }
+
+        Page<InvitationResponseDTO> invitations = invitationRepository
+                .findAll(spec, pageable)
+                .map(invitation -> InvitationResponseDTO.builder()
+                        .invitationId(invitation.getId())
+                        .eventId(invitation.getEvent().getId())
+                        .title(invitation.getEvent().getTitle())
+                        .eventDate(invitation.getEvent().getEventDate())
+                        .location(invitation.getEvent().getLocation())
+                        .locationAddress(invitation.getEvent().getLocationAddress())
+                        .placeId(invitation.getEvent().getPlaceId())
+                        .latitude(invitation.getEvent().getLatitude())
+                        .longitude(invitation.getEvent().getLongitude())
+                        .invitedBy(invitation.getInvitedBy().getEmail())
+                        .status(invitation.getStatus())
+                        .eventStatus(invitation.getEvent().getStatus())
+                        .build());
+
+        return new ApiResponseDTO<>(
+                true,
+                "Invitations retrieved successfully",
+                invitations);
+    }
+
+    @Override
+    public ApiResponseDTO<Void> updateInvitationStatus(
+            UUID eventId,
+            UpdateInvitationStatusRequestDTO request) {
+        User currentUser = getCurrentUser();
+
+        if (request.getStatus() == InvitationStatus.PENDING) {
+            throw new BadRequestException("Invalid invitation status");
+        }
+
+        EventInvitation invitation = invitationRepository
+                .findByEventIdAndInvitedUser(eventId, currentUser)
+                .orElseThrow(() -> new BadRequestException("Invitation not found"));
+
+        eventValidator.validateEventAllowsInteraction(invitation.getEvent());
+
+        if (invitation.getStatus() == InvitationStatus.CANCELLED) {
+            throw new BadRequestException("Invitation is cancelled");
+        }
+
+        if (invitation.getStatus() == request.getStatus()) {
+            throw new BadRequestException("Invitation already has this status");
+        }
+
+        invitation.setStatus(request.getStatus());
+
+        invitationRepository.save(invitation);
+
+        return new ApiResponseDTO<>(
+                true,
+                "Invitation updated successfully",
+                null);
+    }
+
+    @Override
+    @Transactional
+    public ApiResponseDTO<Void> removeInvitation(
+            UUID eventId,
+            RemoveInvitationRequestDTO request) {
+        User currentUser = getCurrentUser();
+
+        Event event = eventRepository.findByIdAndCreatedBy(eventId, currentUser)
+                .orElseThrow(() -> new BadRequestException("Event not found"));
+
+        eventValidator.validateEventAllowsInteraction(event);
+
+        String email = request.getEmail().trim().toLowerCase();
+
+        Optional<User> invitedUserOptional = userRepository.findByEmail(email);
+
+        if (invitedUserOptional.isPresent()) {
+            return removeExistingInvitation(event, invitedUserOptional.get());
+        }
+
+        return externalInvitationService.removeExternalInvitation(event, email);
+    }
+
+    @Override
+    public boolean existsByEventIdAndInvitedUserAndNotCancelled(
+            UUID eventId,
+            User currentUser) {
+        return invitationRepository.existsByEventIdAndInvitedUserAndStatusNot(
+                eventId,
+                currentUser,
+                InvitationStatus.CANCELLED);
+    }
+
+    private User getCurrentUser() {
+        return currentUserService.getCurrentUser();
+    }
+
+    private ApiResponseDTO<Void> removeExistingInvitation(
+            Event event,
+            User invitedUser) {
+        EventInvitation invitation = invitationRepository
+                .findByEventAndInvitedUser(
+                        event,
+                        invitedUser)
+                .orElseThrow(() -> new BadRequestException(
+                        "Invitation not found"));
+
+        if (invitation.getStatus() == InvitationStatus.CANCELLED) {
+            throw new BadRequestException(
+                    "Invitation already cancelled");
+        }
+
+        invitation.setStatus(
+                InvitationStatus.CANCELLED);
+
+        invitationRepository.save(invitation);
+
+        return new ApiResponseDTO<>(
+                true,
+                "Invitation cancelled successfully",
+                null);
+    }
+
+}

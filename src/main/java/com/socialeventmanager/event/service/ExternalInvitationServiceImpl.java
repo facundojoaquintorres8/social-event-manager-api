@@ -2,17 +2,16 @@ package com.socialeventmanager.event.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
+import com.socialeventmanager.event.dto.EventParticipantResponseDTO;
 import com.socialeventmanager.event.dto.ExternalInvitationPreviewResponseDTO;
 import com.socialeventmanager.event.entity.Event;
-import com.socialeventmanager.event.entity.EventInvitation;
 import com.socialeventmanager.event.entity.ExternalInvitation;
 import com.socialeventmanager.event.enums.EventStatus;
 import com.socialeventmanager.event.enums.ExternalInvitationStatus;
-import com.socialeventmanager.event.enums.InvitationStatus;
-import com.socialeventmanager.event.repository.EventInvitationRepository;
 import com.socialeventmanager.event.repository.ExternalInvitationRepository;
 import com.socialeventmanager.shared.dto.ApiResponseDTO;
 import com.socialeventmanager.shared.exception.BadRequestException;
@@ -25,41 +24,57 @@ import lombok.RequiredArgsConstructor;
 public class ExternalInvitationServiceImpl implements ExternalInvitationService {
 
     private final ExternalInvitationRepository externalInvitationRepository;
-
-    private final EventInvitationRepository invitationRepository;
+    private final InvitationService invitationService;
 
     @Override
-    public void claimExternalInvitations(User user) {
+    public ApiResponseDTO<Void> inviteExternalUser(
+            Event event,
+            User currentUser,
+            String email) {
+        ExternalInvitation existingInvitation = externalInvitationRepository
+                .findByEventAndInvitedEmail(event, email)
+                .orElse(null);
 
-        List<ExternalInvitation> invitations = externalInvitationRepository
-                .findAllByInvitedEmailAndStatus(
-                        user.getEmail(),
-                        ExternalInvitationStatus.PENDING);
-
-        for (ExternalInvitation externalInvitation : invitations) {
-
-            boolean alreadyExists = invitationRepository
-                    .findByEventAndInvitedUser(
-                            externalInvitation.getEvent(),
-                            user)
-                    .isPresent();
-
-            if (!alreadyExists) {
-
-                EventInvitation invitation = EventInvitation.builder()
-                        .event(externalInvitation.getEvent())
-                        .invitedUser(user)
-                        .invitedBy(externalInvitation.getInvitedBy())
-                        .status(InvitationStatus.PENDING)
-                        .build();
-
-                invitationRepository.save(invitation);
-            }
-
-            externalInvitation.setStatus(ExternalInvitationStatus.CLAIMED);
-            externalInvitation.setClaimedAt(LocalDateTime.now());
-            externalInvitationRepository.save(externalInvitation);
+        if (existingInvitation != null) {
+            throw new BadRequestException("User already invited");
         }
+
+        ExternalInvitation invitation = ExternalInvitation.builder()
+                .event(event)
+                .invitedBy(currentUser)
+                .invitedEmail(email)
+                .token(UUID.randomUUID().toString())
+                .status(ExternalInvitationStatus.PENDING)
+                .expiresAt(event.getEventDate())
+                .build();
+
+        externalInvitationRepository.save(invitation);
+
+        return new ApiResponseDTO<>(
+                true,
+                "Invitation sent successfully",
+                null);
+    }
+
+    @Override
+    public ApiResponseDTO<Void> removeExternalInvitation(Event event, String email) {
+        ExternalInvitation invitation = externalInvitationRepository
+                .findByEventAndInvitedEmail(event, email)
+                .orElseThrow(() -> new BadRequestException("Invitation not found"));
+
+        if (invitation.getStatus() == ExternalInvitationStatus.CANCELLED) {
+            throw new BadRequestException(
+                    "Invitation already cancelled");
+        }
+
+        invitation.setStatus(ExternalInvitationStatus.CANCELLED);
+
+        externalInvitationRepository.save(invitation);
+
+        return new ApiResponseDTO<>(
+                true,
+                "Invitation cancelled successfully",
+                null);
     }
 
     @Override
@@ -87,6 +102,60 @@ public class ExternalInvitationServiceImpl implements ExternalInvitationService 
                 response);
     }
 
+    @Override
+    public void claimExternalInvitations(User user) {
+
+        List<ExternalInvitation> invitations = externalInvitationRepository
+                .findAllByInvitedEmailAndStatus(
+                        user.getEmail(),
+                        ExternalInvitationStatus.PENDING);
+
+        for (ExternalInvitation externalInvitation : invitations) {
+            if (externalInvitation.getEvent().getStatus() == EventStatus.CANCELLED
+                    || externalInvitation.getEvent().getEventDate().isBefore(LocalDateTime.now())) {
+                continue;
+            }
+
+            invitationService.inviteExistingUser(externalInvitation.getEvent(), externalInvitation.getInvitedBy(),
+                    user);
+
+            externalInvitation.setStatus(ExternalInvitationStatus.CLAIMED);
+            externalInvitation.setClaimedAt(LocalDateTime.now());
+            externalInvitationRepository.save(externalInvitation);
+        }
+    }
+
+    @Override
+    public void updateExternalInvitationExpiryDates(Event event) {
+        List<ExternalInvitation> invitations = externalInvitationRepository.findAllByEventAndStatus(event,
+                ExternalInvitationStatus.PENDING);
+        invitations.forEach(invitation -> invitation.setExpiresAt(event.getEventDate()));
+        externalInvitationRepository.saveAll(invitations);
+    }
+
+    @Override
+    public void cancelExternalInvitationsForEvent(Event event) {
+        List<ExternalInvitation> externalInvitations = externalInvitationRepository.findAllByEvent(event);
+        for (ExternalInvitation invitation : externalInvitations) {
+            invitation.setStatus(ExternalInvitationStatus.CANCELLED);
+        }
+        externalInvitationRepository.saveAll(externalInvitations);
+    }
+
+    @Override
+    public List<EventParticipantResponseDTO> findAllByEventAndNotCancelled(Event event) {
+
+        return externalInvitationRepository
+                .findAllByEventAndStatusNot(event, ExternalInvitationStatus.CANCELLED)
+                .stream()
+                .map(invitation -> EventParticipantResponseDTO.builder()
+                        .email(invitation.getInvitedEmail())
+                        .status(invitation.getStatus().name())
+                        .external(true)
+                        .build())
+                .toList();
+    }
+
     private ExternalInvitation validateExternalInvitation(String token) {
 
         ExternalInvitation invitation = externalInvitationRepository
@@ -97,7 +166,7 @@ public class ExternalInvitationServiceImpl implements ExternalInvitationService 
             throw new BadRequestException("Invitation cancelled");
         }
 
-        if (invitation.getExpiresAt().isBefore(LocalDateTime.now())) {
+        if (!invitation.getExpiresAt().isAfter(LocalDateTime.now())) {
             throw new BadRequestException("Invitation expired");
         }
 
@@ -107,4 +176,5 @@ public class ExternalInvitationServiceImpl implements ExternalInvitationService 
 
         return invitation;
     }
+
 }

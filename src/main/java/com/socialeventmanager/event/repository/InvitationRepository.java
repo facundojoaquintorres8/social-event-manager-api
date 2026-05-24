@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface EventInvitationRepository extends JpaRepository<EventInvitation, UUID>,
+public interface InvitationRepository extends JpaRepository<EventInvitation, UUID>,
         JpaSpecificationExecutor<EventInvitation> {
 
     Page<EventInvitation> findAllByInvitedUser(User user, Pageable pageable);

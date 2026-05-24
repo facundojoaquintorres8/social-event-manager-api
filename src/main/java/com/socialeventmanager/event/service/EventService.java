@@ -1,14 +1,19 @@
 package com.socialeventmanager.event.service;
 
-import com.socialeventmanager.event.dto.*;
-import com.socialeventmanager.event.enums.EventStatus;
-import com.socialeventmanager.event.enums.InvitationStatus;
-import com.socialeventmanager.shared.dto.ApiResponseDTO;
-import org.springframework.data.domain.Page;
-
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+
+import org.springframework.data.domain.Page;
+
+import com.socialeventmanager.event.dto.CalendarEventResponseDTO;
+import com.socialeventmanager.event.dto.CreateEventRequestDTO;
+import com.socialeventmanager.event.dto.DashboardResponseDTO;
+import com.socialeventmanager.event.dto.EventDetailsFullResponseDTO;
+import com.socialeventmanager.event.dto.EventResponseDTO;
+import com.socialeventmanager.event.dto.InviteUserRequestDTO;
+import com.socialeventmanager.event.enums.EventStatus;
+import com.socialeventmanager.shared.dto.ApiResponseDTO;
 
 public interface EventService {
 
@@ -23,6 +28,12 @@ public interface EventService {
             LocalDateTime fromDate,
             LocalDateTime toDate,
             EventStatus status);
+
+    ApiResponseDTO<Page<EventResponseDTO>> getAttendingEvents(
+            int page,
+            int size,
+            String sortBy,
+            String direction);
 
     ApiResponseDTO<List<CalendarEventResponseDTO>> getCalendarEvents(
             LocalDateTime fromDate,
@@ -42,26 +53,6 @@ public interface EventService {
             UUID eventId,
             InviteUserRequestDTO request);
 
-    ApiResponseDTO<Page<InvitationResponseDTO>> getMyInvitations(
-            int page,
-            int size,
-            String sortBy,
-            String direction,
-            InvitationStatus status);
-
-    ApiResponseDTO<Void> updateInvitationStatus(
-            UUID eventId,
-            UpdateInvitationStatusRequestDTO request);
-
-    ApiResponseDTO<Page<EventResponseDTO>> getAttendingEvents(
-            int page,
-            int size,
-            String sortBy,
-            String direction);
-
-    ApiResponseDTO<Void> removeInvitation(
-            UUID eventId,
-            RemoveInvitationRequestDTO request);
-
     ApiResponseDTO<DashboardResponseDTO> getDashboard();
+
 }

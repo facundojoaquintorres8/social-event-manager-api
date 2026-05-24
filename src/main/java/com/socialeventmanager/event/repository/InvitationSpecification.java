@@ -5,7 +5,7 @@ import com.socialeventmanager.event.enums.InvitationStatus;
 import com.socialeventmanager.user.entity.User;
 import org.springframework.data.jpa.domain.Specification;
 
-public class EventInvitationSpecification {
+public class InvitationSpecification {
 
     public static Specification<EventInvitation> hasUser(User user) {
         return (root, query, cb) -> cb.equal(root.get("invitedUser"), user);
