@@ -43,6 +43,18 @@ public class ExternalInvitationServiceImpl implements ExternalInvitationService 
                 .orElse(null);
 
         if (existingInvitation != null) {
+
+            if (existingInvitation.getStatus() == ExternalInvitationStatus.CANCELLED) {
+                existingInvitation.setStatus(ExternalInvitationStatus.PENDING);
+
+                externalInvitationRepository.save(existingInvitation);
+
+                return new ApiResponseDTO<>(
+                        true,
+                        "User invited successfully",
+                        null);
+            }
+
             throw new BadRequestException("User already invited");
         }
 
