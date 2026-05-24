@@ -24,4 +24,6 @@ public interface ExternalInvitationRepository extends JpaRepository<ExternalInvi
 
     List<ExternalInvitation> findAllByEvent(Event event);
 
+    List<ExternalInvitation> findAllByEventAndStatus(Event event, ExternalInvitationStatus pending);
+
 }

@@ -243,6 +243,11 @@ public class EventServiceImpl implements EventService {
 
         eventRepository.save(event);
 
+        List<ExternalInvitation> invitations = externalInvitationRepository.findAllByEventAndStatus(event,
+                ExternalInvitationStatus.PENDING);
+        invitations.forEach(invitation -> invitation.setExpiresAt(event.getEventDate()));
+        externalInvitationRepository.saveAll(invitations);
+
         return new ApiResponseDTO<>(
                 true,
                 "Event updated successfully",
@@ -297,25 +302,15 @@ public class EventServiceImpl implements EventService {
 
         Optional<User> invitedUserOptional = userRepository.findByEmail(email);
 
-        if (invitedUserOptional.isPresent()
-                && invitedUserOptional.get()
-                        .getId()
-                        .equals(currentUser.getId())) {
-            throw new BadRequestException(
-                    "You cannot invite yourself");
-        }
-
         if (invitedUserOptional.isPresent()) {
-            return inviteExistingUser(
-                    event,
-                    currentUser,
-                    invitedUserOptional.get());
+            User invitedUser = invitedUserOptional.get();
+            if (invitedUser.getId().equals(currentUser.getId())) {
+                throw new BadRequestException("You cannot invite yourself");
+            }
+            return inviteExistingUser(event, currentUser, invitedUser);
         }
 
-        return inviteExternalUser(
-                event,
-                currentUser,
-                email);
+        return inviteExternalUser(event, currentUser, email);
     }
 
     @Override
@@ -641,22 +636,6 @@ public class EventServiceImpl implements EventService {
                 .orElse(null);
 
         if (existingInvitation != null) {
-
-            if (existingInvitation.getStatus() == ExternalInvitationStatus.CANCELLED
-                    || existingInvitation.getStatus() == ExternalInvitationStatus.EXPIRED) {
-
-                existingInvitation.setStatus(ExternalInvitationStatus.PENDING);
-
-                existingInvitation.setExpiresAt(event.getEventDate().plusDays(1));
-
-                externalInvitationRepository.save(existingInvitation);
-
-                return new ApiResponseDTO<>(
-                        true,
-                        "Invitation sent successfully",
-                        null);
-            }
-
             throw new BadRequestException("User already invited");
         }
 
@@ -666,7 +645,7 @@ public class EventServiceImpl implements EventService {
                 .invitedEmail(email)
                 .token(UUID.randomUUID().toString())
                 .status(ExternalInvitationStatus.PENDING)
-                .expiresAt(event.getEventDate().plusDays(1))
+                .expiresAt(event.getEventDate())
                 .build();
 
         externalInvitationRepository.save(invitation);
@@ -707,19 +686,15 @@ public class EventServiceImpl implements EventService {
             Event event,
             String email) {
         ExternalInvitation invitation = externalInvitationRepository
-                .findByEventAndInvitedEmail(
-                        event,
-                        email)
-                .orElseThrow(() -> new BadRequestException(
-                        "Invitation not found"));
+                .findByEventAndInvitedEmail(event, email)
+                .orElseThrow(() -> new BadRequestException("Invitation not found"));
 
         if (invitation.getStatus() == ExternalInvitationStatus.CANCELLED) {
             throw new BadRequestException(
                     "Invitation already cancelled");
         }
 
-        invitation.setStatus(
-                ExternalInvitationStatus.CANCELLED);
+        invitation.setStatus(ExternalInvitationStatus.CANCELLED);
 
         externalInvitationRepository.save(invitation);
 
@@ -733,6 +708,11 @@ public class EventServiceImpl implements EventService {
         if (event.getStatus() == EventStatus.CANCELLED) {
             throw new BadRequestException(
                     "Cancelled events cannot be modified");
+        }
+
+        if (event.getEventDate().isBefore(LocalDateTime.now())) {
+            throw new BadRequestException(
+                    "Past events cannot be modified");
         }
     }
 }
