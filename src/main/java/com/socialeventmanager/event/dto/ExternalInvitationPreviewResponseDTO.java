@@ -20,4 +20,5 @@ public class ExternalInvitationPreviewResponseDTO {
     private ExternalInvitationStatus status;
     private LocalDateTime expiresAt;
     private boolean alreadyClaimed;
+    private String invitedEmail;
 }

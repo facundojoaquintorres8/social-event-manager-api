@@ -122,6 +122,7 @@ public class ExternalInvitationServiceImpl implements ExternalInvitationService 
                 .status(invitation.getStatus())
                 .expiresAt(invitation.getExpiresAt())
                 .alreadyClaimed(invitation.getStatus() == ExternalInvitationStatus.CLAIMED)
+                .invitedEmail(invitation.getInvitedEmail())
                 .build();
 
         return new ApiResponseDTO<>(
