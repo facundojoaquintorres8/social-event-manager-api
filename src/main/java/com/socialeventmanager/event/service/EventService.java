@@ -50,7 +50,7 @@ public interface EventService {
             InvitationStatus status);
 
     ApiResponseDTO<Void> updateInvitationStatus(
-            UUID invitationId,
+            UUID eventId,
             UpdateInvitationStatusRequestDTO request);
 
     ApiResponseDTO<Page<EventResponseDTO>> getAttendingEvents(

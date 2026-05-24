@@ -23,8 +23,8 @@ public interface EventInvitationRepository extends JpaRepository<EventInvitation
             Event event,
             User invitedUser);
 
-    Optional<EventInvitation> findByIdAndInvitedUser(
-            UUID id,
+    Optional<EventInvitation> findByEventIdAndInvitedUser(
+            UUID eventId,
             User invitedUser);
 
     Page<EventInvitation> findAllByEvent(

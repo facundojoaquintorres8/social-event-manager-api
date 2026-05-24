@@ -377,7 +377,7 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public ApiResponseDTO<Void> updateInvitationStatus(
-            UUID invitationId,
+            UUID eventId,
             UpdateInvitationStatusRequestDTO request) {
         User currentUser = getCurrentUser();
 
@@ -386,7 +386,7 @@ public class EventServiceImpl implements EventService {
         }
 
         EventInvitation invitation = invitationRepository
-                .findByIdAndInvitedUser(invitationId, currentUser)
+                .findByEventIdAndInvitedUser(eventId, currentUser)
                 .orElseThrow(() -> new BadRequestException("Invitation not found"));
 
         validateEventIsEditable(invitation.getEvent());

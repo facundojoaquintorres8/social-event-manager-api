@@ -105,13 +105,13 @@ public class EventController {
                         status));
     }
 
-    @PutMapping("/invitations/{invitationId}")
+    @PutMapping("/{eventId}/invitations")
     public ResponseEntity<ApiResponseDTO<Void>> updateInvitationStatus(
-            @PathVariable UUID invitationId,
+            @PathVariable UUID eventId,
             @Valid @RequestBody UpdateInvitationStatusRequestDTO request) {
         return ResponseEntity.ok(
                 eventService.updateInvitationStatus(
-                        invitationId,
+                        eventId,
                         request));
     }
 
