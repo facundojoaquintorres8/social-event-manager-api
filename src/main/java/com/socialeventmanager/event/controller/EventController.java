@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -47,6 +48,13 @@ public class EventController {
                         fromDate,
                         toDate,
                         status));
+    }
+
+    @GetMapping("/calendar")
+    public ResponseEntity<ApiResponseDTO<List<CalendarEventResponseDTO>>> getCalendarEvents(
+            @RequestParam(required = false) LocalDateTime from,
+            @RequestParam(required = false) LocalDateTime to) {
+        return ResponseEntity.ok(eventService.getCalendarEvents(from, to));
     }
 
     @GetMapping("/{eventId}/full")

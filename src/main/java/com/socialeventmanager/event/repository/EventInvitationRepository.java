@@ -9,6 +9,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -45,4 +46,10 @@ public interface EventInvitationRepository extends JpaRepository<EventInvitation
             UUID eventId,
             User invitedUser,
             InvitationStatus status);
+
+    List<EventInvitation> findAllByInvitedUserAndStatusInAndEvent_EventDateBetween(
+            User invitedUser,
+            List<InvitationStatus> statuses,
+            LocalDateTime from,
+            LocalDateTime to);
 }

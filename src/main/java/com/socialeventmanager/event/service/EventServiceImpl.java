@@ -26,10 +26,14 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -124,6 +128,68 @@ public class EventServiceImpl implements EventService {
                 true,
                 "Events retrieved successfully",
                 events);
+    }
+
+    @Override
+    public ApiResponseDTO<List<CalendarEventResponseDTO>> getCalendarEvents(
+            LocalDateTime from,
+            LocalDateTime to) {
+
+        User currentUser = getCurrentUser();
+
+        if (from == null || to == null) {
+            LocalDate now = LocalDate.now();
+
+            from = now.withDayOfMonth(1).atStartOfDay();
+
+            to = now.withDayOfMonth(now.lengthOfMonth())
+                    .atTime(LocalTime.MAX);
+        }
+
+        List<Event> ownedEvents = eventRepository
+                .findAllByCreatedByAndStatusNotAndEventDateBetween(
+                        currentUser,
+                        EventStatus.CANCELLED,
+                        from,
+                        to);
+
+        List<EventInvitation> invitedEvents = invitationRepository
+                .findAllByInvitedUserAndStatusInAndEvent_EventDateBetween(
+                        currentUser,
+                        List.of(
+                                InvitationStatus.PENDING,
+                                InvitationStatus.ACCEPTED,
+                                InvitationStatus.REJECTED),
+                        from,
+                        to);
+
+        List<CalendarEventResponseDTO> response = Stream.concat(
+                ownedEvents.stream()
+                        .map(event -> CalendarEventResponseDTO.builder()
+                                .id(event.getId())
+                                .title(event.getTitle())
+                                .eventDate(event.getEventDate())
+                                .location(event.getLocation())
+                                .eventStatus(event.getStatus())
+                                .owner(true)
+                                .build()),
+                invitedEvents.stream()
+                        .map(invitation -> CalendarEventResponseDTO.builder()
+                                .id(invitation.getEvent().getId())
+                                .title(invitation.getEvent().getTitle())
+                                .eventDate(invitation.getEvent().getEventDate())
+                                .location(invitation.getEvent().getLocation())
+                                .eventStatus(invitation.getEvent().getStatus())
+                                .invitationStatus(invitation.getStatus())
+                                .owner(false)
+                                .build()))
+                .sorted(Comparator.comparing(CalendarEventResponseDTO::getEventDate))
+                .toList();
+
+        return new ApiResponseDTO<>(
+                true,
+                "Calendar events retrieved successfully",
+                response);
     }
 
     @Override

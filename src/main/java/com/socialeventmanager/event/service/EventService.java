@@ -7,6 +7,7 @@ import com.socialeventmanager.shared.dto.ApiResponseDTO;
 import org.springframework.data.domain.Page;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 public interface EventService {
@@ -22,6 +23,10 @@ public interface EventService {
             LocalDateTime fromDate,
             LocalDateTime toDate,
             EventStatus status);
+
+    ApiResponseDTO<List<CalendarEventResponseDTO>> getCalendarEvents(
+            LocalDateTime fromDate,
+            LocalDateTime toDate);
 
     ApiResponseDTO<EventResponseDTO> getEventById(UUID eventId);
 

@@ -18,6 +18,12 @@ public interface EventRepository extends JpaRepository<Event, UUID>,
 
     Page<Event> findAllByCreatedBy(User user, Pageable pageable);
 
+    List<Event> findAllByCreatedByAndStatusNotAndEventDateBetween(
+            User createdBy,
+            EventStatus status,
+            LocalDateTime from,
+            LocalDateTime to);
+
     Optional<Event> findByIdAndCreatedBy(UUID id, User user);
 
     long countByCreatedById(UUID createdById);
