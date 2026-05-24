@@ -230,7 +230,7 @@ public class EventServiceImpl implements EventService {
             CreateEventRequestDTO request) {
         Event event = getOwnedEvent(eventId);
 
-        validateEventIsEditable(event);
+        validateEventAllowsInteraction(event);
 
         event.setTitle(request.getTitle());
         event.setDescription(request.getDescription());
@@ -289,7 +289,7 @@ public class EventServiceImpl implements EventService {
                 .findByIdAndCreatedBy(eventId, currentUser)
                 .orElseThrow(() -> new BadRequestException("Event not found"));
 
-        validateEventIsEditable(event);
+        validateEventAllowsInteraction(event);
 
         String email = request.getEmail()
                 .trim()
@@ -389,7 +389,7 @@ public class EventServiceImpl implements EventService {
                 .findByEventIdAndInvitedUser(eventId, currentUser)
                 .orElseThrow(() -> new BadRequestException("Invitation not found"));
 
-        validateEventIsEditable(invitation.getEvent());
+        validateEventAllowsInteraction(invitation.getEvent());
 
         if (invitation.getStatus() == InvitationStatus.CANCELLED) {
             throw new BadRequestException("Invitation is cancelled");
@@ -457,7 +457,7 @@ public class EventServiceImpl implements EventService {
                 .findByIdAndCreatedBy(eventId, currentUser)
                 .orElseThrow(() -> new BadRequestException("Event not found"));
 
-        validateEventIsEditable(event);
+        validateEventAllowsInteraction(event);
 
         String email = request.getEmail()
                 .trim()
@@ -729,7 +729,7 @@ public class EventServiceImpl implements EventService {
                 null);
     }
 
-    private void validateEventIsEditable(Event event) {
+    private void validateEventAllowsInteraction(Event event) {
         if (event.getStatus() == EventStatus.CANCELLED) {
             throw new BadRequestException(
                     "Cancelled events cannot be modified");
