@@ -476,6 +476,7 @@ public class EventServiceImpl implements EventService {
                         + event.getCreatedBy().getLastName())
                 .status(event.getStatus())
                 .participants(participants)
+                .owner(event.getCreatedBy().getId().equals(getCurrentUser().getId()))
                 .build();
     }
 
