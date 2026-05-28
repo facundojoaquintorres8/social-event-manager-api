@@ -42,6 +42,7 @@ public class EventServiceImpl implements EventService {
     private final CurrentUserService currentUserService;
     private final ExternalInvitationService externalInvitationService;
     private final InvitationService invitationService;
+    private final ContributionService contributionService;
     private final EventValidator eventValidator;
 
     @Override
@@ -221,15 +222,15 @@ public class EventServiceImpl implements EventService {
         Event event = getAccessibleEvent(eventId);
 
         List<EventParticipantResponseDTO> participants = new ArrayList<>();
-
         participants.addAll(invitationService.findAllByEventAndNotCancelled(event));
-
         participants.addAll(externalInvitationService.findAllByEventAndPending(event));
+
+        List<ContributionResponseDTO> contributions = contributionService.findAllByEvent(event);
 
         return new ApiResponseDTO<>(
                 true,
                 "Event retrieved successfully",
-                mapToFullResponse(event, participants));
+                mapToFullResponse(event, participants, contributions));
     }
 
     @Override
@@ -372,7 +373,8 @@ public class EventServiceImpl implements EventService {
                 .build();
     }
 
-    private EventDetailsFullResponseDTO mapToFullResponse(Event event, List<EventParticipantResponseDTO> participants) {
+    private EventDetailsFullResponseDTO mapToFullResponse(Event event, List<EventParticipantResponseDTO> participants,
+            List<ContributionResponseDTO> contributions) {
         return EventDetailsFullResponseDTO.builder()
                 .id(event.getId())
                 .title(event.getTitle())
@@ -387,6 +389,7 @@ public class EventServiceImpl implements EventService {
                         + event.getCreatedBy().getLastName())
                 .status(event.getStatus())
                 .participants(participants)
+                .contributions(contributions)
                 .owner(event.getCreatedBy().getId().equals(getCurrentUser().getId()))
                 .build();
     }

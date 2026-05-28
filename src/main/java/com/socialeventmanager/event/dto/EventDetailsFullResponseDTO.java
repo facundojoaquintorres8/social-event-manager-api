@@ -24,5 +24,6 @@ public class EventDetailsFullResponseDTO {
     private String createdBy;
     private EventStatus status;
     private List<EventParticipantResponseDTO> participants;
+    private List<ContributionResponseDTO> contributions;
     private Boolean owner;
 }
