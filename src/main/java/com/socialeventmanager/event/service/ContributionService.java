@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import com.socialeventmanager.event.dto.ContributionResponseDTO;
 import com.socialeventmanager.event.dto.CreateContributionRequestDTO;
+import com.socialeventmanager.event.dto.UpdateContributionStatusRequestDTO;
 import com.socialeventmanager.event.entity.Event;
 import com.socialeventmanager.shared.dto.ApiResponseDTO;
 
@@ -18,6 +19,11 @@ public interface ContributionService {
             UUID eventId,
             UUID contributionId,
             CreateContributionRequestDTO request);
+
+    ApiResponseDTO<Void> updateContributionStatus(
+            UUID eventId,
+            UUID contributionId,
+            UpdateContributionStatusRequestDTO request);
 
     ApiResponseDTO<Void> deleteContribution(
             UUID eventId,

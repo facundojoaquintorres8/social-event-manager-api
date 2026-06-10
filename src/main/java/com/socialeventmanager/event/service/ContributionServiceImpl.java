@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import com.socialeventmanager.auth.service.CurrentUserService;
 import com.socialeventmanager.event.dto.ContributionResponseDTO;
 import com.socialeventmanager.event.dto.CreateContributionRequestDTO;
+import com.socialeventmanager.event.dto.UpdateContributionStatusRequestDTO;
 import com.socialeventmanager.event.entity.Contribution;
 import com.socialeventmanager.event.entity.Event;
 import com.socialeventmanager.event.entity.EventInvitation;
@@ -106,6 +107,40 @@ public class ContributionServiceImpl implements ContributionService {
         return new ApiResponseDTO<>(
                 true,
                 "Contribution updated successfully",
+                null);
+    }
+
+    @Override
+    public ApiResponseDTO<Void> updateContributionStatus(
+            UUID eventId,
+            UUID contributionId,
+            UpdateContributionStatusRequestDTO request) {
+
+        User currentUser = currentUserService.getCurrentUser();
+
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new BadRequestException("Event not found"));
+
+        eventValidator.validateEventAllowsInteraction(event);
+
+        Contribution contribution = contributionRepository.findById(contributionId)
+                .orElseThrow(() -> new BadRequestException("Contribution not found"));
+
+        if (!contribution.getEvent().getId().equals(event.getId())) {
+            throw new BadRequestException("Contribution does not belong to this event");
+        }
+
+        validateUserCanEditContribution(
+                event,
+                contribution,
+                currentUser);
+
+        contribution.setCompleted(request.getCompleted());
+        contributionRepository.save(contribution);
+
+        return new ApiResponseDTO<>(
+                true,
+                "Contribution status updated",
                 null);
     }
 
