@@ -22,6 +22,7 @@ public class EventDetailsFullResponseDTO {
     private Double latitude;
     private Double longitude;
     private String createdBy;
+    private UUID createdById;
     private EventStatus status;
     private List<EventParticipantResponseDTO> participants;
     private List<ContributionResponseDTO> contributions;

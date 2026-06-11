@@ -537,6 +537,7 @@ public class EventServiceImpl implements EventService {
                 .placeId(event.getPlaceId())
                 .latitude(event.getLatitude())
                 .longitude(event.getLongitude())
+                .createdById(event.getCreatedBy().getId())
                 .createdBy(event.getCreatedBy().getFirstName() + " "
                         + event.getCreatedBy().getLastName())
                 .status(event.getStatus())
