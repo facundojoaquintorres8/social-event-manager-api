@@ -6,6 +6,8 @@ import java.util.UUID;
 
 import org.springframework.data.domain.Page;
 
+import com.socialeventmanager.event.dto.BalanceRequestDTO;
+import com.socialeventmanager.event.dto.BalanceResponseDTO;
 import com.socialeventmanager.event.dto.CalendarEventResponseDTO;
 import com.socialeventmanager.event.dto.CreateEventRequestDTO;
 import com.socialeventmanager.event.dto.DashboardResponseDTO;
@@ -54,5 +56,9 @@ public interface EventService {
             InviteUserRequestDTO request);
 
     ApiResponseDTO<DashboardResponseDTO> getDashboard();
+
+    ApiResponseDTO<BalanceResponseDTO> calculateBalance(
+            UUID eventId,
+            BalanceRequestDTO request);
 
 }

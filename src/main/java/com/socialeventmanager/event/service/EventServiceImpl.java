@@ -1,7 +1,41 @@
 package com.socialeventmanager.event.service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Stream;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.socialeventmanager.auth.service.CurrentUserService;
-import com.socialeventmanager.event.dto.*;
+import com.socialeventmanager.event.dto.BalanceParticipantDTO;
+import com.socialeventmanager.event.dto.BalanceRequestDTO;
+import com.socialeventmanager.event.dto.BalanceResponseDTO;
+import com.socialeventmanager.event.dto.CalendarEventResponseDTO;
+import com.socialeventmanager.event.dto.ContributionResponseDTO;
+import com.socialeventmanager.event.dto.CreateEventRequestDTO;
+import com.socialeventmanager.event.dto.DashboardResponseDTO;
+import com.socialeventmanager.event.dto.EventDetailsFullResponseDTO;
+import com.socialeventmanager.event.dto.EventParticipantResponseDTO;
+import com.socialeventmanager.event.dto.EventResponseDTO;
+import com.socialeventmanager.event.dto.InviteUserRequestDTO;
+import com.socialeventmanager.event.dto.SettlementDTO;
 import com.socialeventmanager.event.entity.Event;
 import com.socialeventmanager.event.entity.EventInvitation;
 import com.socialeventmanager.event.enums.EventStatus;
@@ -15,23 +49,6 @@ import com.socialeventmanager.user.entity.User;
 import com.socialeventmanager.user.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.domain.Specification;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -350,6 +367,141 @@ public class EventServiceImpl implements EventService {
                 "Dashboard data retrieved successfully",
                 dashboard);
 
+    }
+
+    @Override
+    public ApiResponseDTO<BalanceResponseDTO> calculateBalance(
+            UUID eventId,
+            BalanceRequestDTO request) {
+        if (request.getParticipants().isEmpty()) {
+            throw new BadRequestException("At least one participant is required");
+        }
+
+        Event event = getAccessibleEvent(eventId);
+
+        List<ContributionResponseDTO> contributions = contributionService.findAllByEvent(event);
+
+        BigDecimal totalCost = contributions.stream()
+                .filter(ContributionResponseDTO::isSplitCost)
+                .map(ContributionResponseDTO::getCost)
+                .filter(Objects::nonNull)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        int participantCount = request.getParticipants().size();
+
+        BigDecimal costPerPerson = participantCount == 0
+                ? BigDecimal.ZERO
+                : totalCost.divide(
+                        BigDecimal.valueOf(participantCount),
+                        2,
+                        RoundingMode.HALF_UP);
+
+        Map<UUID, BigDecimal> paidByUser = new HashMap<>();
+        for (ContributionResponseDTO contribution : contributions) {
+            if (!contribution.isSplitCost() || contribution.getCost() == null) {
+                continue;
+            }
+            paidByUser.merge(
+                    contribution.getCreatedById(),
+                    contribution.getCost(),
+                    BigDecimal::add);
+        }
+
+        List<BalanceParticipantDTO> balances = request.getParticipants()
+                .stream()
+                .map(participant -> {
+
+                    BigDecimal paid = participant.getUserId() != null
+                            ? paidByUser.getOrDefault(
+                                    participant.getUserId(),
+                                    BigDecimal.ZERO)
+                            : BigDecimal.ZERO;
+
+                    BigDecimal balance = paid.subtract(costPerPerson);
+
+                    return BalanceParticipantDTO.builder()
+                            .name(participant.getName())
+                            .paid(paid)
+                            .shouldPay(costPerPerson)
+                            .balance(balance)
+                            .build();
+                })
+                .toList();
+
+        List<SettlementDTO> settlements = new ArrayList<>();
+
+        List<BalanceParticipantDTO> creditors = balances.stream()
+                .filter(balance -> balance.getBalance().compareTo(BigDecimal.ZERO) > 0)
+                .toList();
+        List<BalanceParticipantDTO> debtors = balances.stream()
+                .filter(balance -> balance.getBalance().compareTo(BigDecimal.ZERO) < 0)
+                .toList();
+
+        List<BalanceParticipantDTO> mutableCreditors = creditors.stream()
+                .map(balance -> BalanceParticipantDTO.builder()
+                        .name(balance.getName())
+                        .paid(balance.getPaid())
+                        .shouldPay(balance.getShouldPay())
+                        .balance(balance.getBalance())
+                        .build())
+                .toList();
+        List<BalanceParticipantDTO> mutableDebtors = debtors.stream()
+                .map(balance -> BalanceParticipantDTO.builder()
+                        .name(balance.getName())
+                        .paid(balance.getPaid())
+                        .shouldPay(balance.getShouldPay())
+                        .balance(balance.getBalance())
+                        .build())
+                .toList();
+
+        int creditorIndex = 0;
+        int debtorIndex = 0;
+
+        while (creditorIndex < mutableCreditors.size()
+                && debtorIndex < mutableDebtors.size()) {
+
+            BalanceParticipantDTO creditor = mutableCreditors.get(creditorIndex);
+
+            BalanceParticipantDTO debtor = mutableDebtors.get(debtorIndex);
+
+            BigDecimal creditorAmount = creditor.getBalance();
+
+            BigDecimal debtorAmount = debtor.getBalance().abs();
+
+            BigDecimal transferAmount = creditorAmount.min(debtorAmount);
+
+            settlements.add(
+                    SettlementDTO.builder()
+                            .from(debtor.getName())
+                            .to(creditor.getName())
+                            .amount(transferAmount)
+                            .build());
+
+            creditor.setBalance(
+                    creditorAmount.subtract(transferAmount));
+
+            debtor.setBalance(
+                    debtor.getBalance().add(transferAmount));
+
+            if (creditor.getBalance().compareTo(BigDecimal.ZERO) == 0) {
+                creditorIndex++;
+            }
+
+            if (debtor.getBalance().compareTo(BigDecimal.ZERO) == 0) {
+                debtorIndex++;
+            }
+        }
+
+        return new ApiResponseDTO<>(
+                true,
+                "Balance calculated successfully",
+                BalanceResponseDTO.builder()
+                        .totalCost(totalCost)
+                        .participantCount(participantCount)
+                        .costPerPerson(costPerPerson)
+                        .balances(balances)
+                        .settlements(settlements)
+                        .build());
     }
 
     private User getCurrentUser() {

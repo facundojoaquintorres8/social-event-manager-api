@@ -15,6 +15,7 @@ public class ContributionResponseDTO {
     private BigDecimal cost;
     private boolean splitCost;
     private boolean completed;
+    private UUID createdById;
     private String createdBy;
     private String createdByEmail;
     private boolean owner;

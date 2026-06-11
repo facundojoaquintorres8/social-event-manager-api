@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.socialeventmanager.event.dto.BalanceRequestDTO;
+import com.socialeventmanager.event.dto.BalanceResponseDTO;
 import com.socialeventmanager.event.dto.CalendarEventResponseDTO;
 import com.socialeventmanager.event.dto.CreateEventRequestDTO;
 import com.socialeventmanager.event.dto.DashboardResponseDTO;
@@ -114,6 +116,13 @@ public class EventController {
     @GetMapping("/dashboard")
     public ResponseEntity<ApiResponseDTO<DashboardResponseDTO>> getDashboard() {
         return ResponseEntity.ok(eventService.getDashboard());
+    }
+
+    @PostMapping("/{eventId}/balance")
+    public ResponseEntity<ApiResponseDTO<BalanceResponseDTO>> calculateBalance(
+            @PathVariable UUID eventId,
+            @Valid @RequestBody BalanceRequestDTO request) {
+        return ResponseEntity.ok(eventService.calculateBalance(eventId, request));
     }
 
 }

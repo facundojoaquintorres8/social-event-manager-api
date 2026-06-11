@@ -180,6 +180,8 @@ public class ContributionServiceImpl implements ContributionService {
     @Override
     public List<ContributionResponseDTO> findAllByEvent(Event event) {
 
+        UUID currentUserId = currentUserService.getCurrentUser().getId();
+
         return contributionRepository
                 .findAllByEventOrderByCompletedAscCreatedAtAsc(event)
                 .stream()
@@ -190,6 +192,7 @@ public class ContributionServiceImpl implements ContributionService {
                         .cost(contribution.getCost())
                         .splitCost(contribution.isSplitCost())
                         .completed(contribution.isCompleted())
+                        .createdById(contribution.getCreatedBy().getId())
                         .createdBy(
                                 contribution.getCreatedBy().getFirstName()
                                         + " "
@@ -198,7 +201,7 @@ public class ContributionServiceImpl implements ContributionService {
                                 contribution.getCreatedBy().getEmail())
                         .owner(
                                 contribution.getCreatedBy().getId()
-                                        .equals(currentUserService.getCurrentUser().getId()))
+                                        .equals(currentUserId))
                         .build())
                 .toList();
     }
