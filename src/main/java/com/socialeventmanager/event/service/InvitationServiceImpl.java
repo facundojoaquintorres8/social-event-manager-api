@@ -48,6 +48,7 @@ public class InvitationServiceImpl implements InvitationService {
                 .stream()
                 .map(invitation -> EventParticipantResponseDTO
                         .builder()
+                        .userId(invitation.getInvitedUser().getId())
                         .firstName(invitation.getInvitedUser().getFirstName())
                         .lastName(invitation.getInvitedUser().getLastName())
                         .email(invitation.getInvitedUser().getEmail())
