@@ -6,13 +6,9 @@ spring:
     name: social-event-manager
 
   datasource:
-    url: jdbc:postgresql://dpg-d8knvasvikkc73d924j0-a.oregon-postgres.render.com/social_event_manager_egeb
-    username: social_event_manager_egeb_user
-    password: mmz1F1NKYWDqOeabvZ9XFOPFSgCMynUg
-  # datasource:
-  #   url: jdbc:postgresql://localhost:5433/social_event_manager
-  #   username: postgres
-  #   password: postgres
+    url: jdbc:postgresql://localhost:5433/social_event_manager
+    username: postgres
+    password: postgres
 
   jpa:
     hibernate:
