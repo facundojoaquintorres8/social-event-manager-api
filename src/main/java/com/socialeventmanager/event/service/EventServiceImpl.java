@@ -12,7 +12,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.springframework.data.domain.Page;
@@ -25,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.socialeventmanager.auth.service.CurrentUserService;
 import com.socialeventmanager.event.dto.BalanceParticipantDTO;
+import com.socialeventmanager.event.dto.BalanceParticipantRequestDTO;
 import com.socialeventmanager.event.dto.BalanceRequestDTO;
 import com.socialeventmanager.event.dto.BalanceResponseDTO;
 import com.socialeventmanager.event.dto.CalendarEventResponseDTO;
@@ -380,6 +383,23 @@ public class EventServiceImpl implements EventService {
         Event event = getAccessibleEvent(eventId);
 
         List<ContributionResponseDTO> contributions = contributionService.findAllByEvent(event);
+
+        Set<UUID> participantIds = request.getParticipants()
+                .stream()
+                .map(BalanceParticipantRequestDTO::getUserId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+        List<String> missingParticipants = contributions.stream()
+                .filter(ContributionResponseDTO::isSplitCost)
+                .filter(contribution -> !participantIds.contains(contribution.getCreatedById()))
+                .map(ContributionResponseDTO::getCreatedBy)
+                .distinct()
+                .toList();
+        if (!missingParticipants.isEmpty()) {
+            throw new BadRequestException(
+                    "Cannot exclude participants with split contributions: "
+                            + String.join(", ", missingParticipants));
+        }
 
         BigDecimal totalCost = contributions.stream()
                 .filter(ContributionResponseDTO::isSplitCost)
