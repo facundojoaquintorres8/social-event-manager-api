@@ -400,7 +400,7 @@ public class EventServiceImpl implements EventService {
                 .toList();
         if (!missingParticipants.isEmpty()) {
             throw new BadRequestException(
-                    "Cannot exclude participants with split contributions: "
+                    "Cannot exclude participants who have shared expenses: "
                             + String.join(", ", missingParticipants));
         }
 
@@ -411,12 +411,10 @@ public class EventServiceImpl implements EventService {
 
         int participantCount = request.getParticipants().size();
 
-        BigDecimal costPerPerson = participantCount == 0
-                ? BigDecimal.ZERO
-                : totalCost.divide(
-                        BigDecimal.valueOf(participantCount),
-                        2,
-                        RoundingMode.HALF_UP);
+        BigDecimal costPerPerson = totalCost.divide(
+                BigDecimal.valueOf(participantCount),
+                2,
+                RoundingMode.HALF_UP);
 
         Map<UUID, BigDecimal> paidByUser = new HashMap<>();
         for (ContributionResponseDTO contribution : splitContributions) {
