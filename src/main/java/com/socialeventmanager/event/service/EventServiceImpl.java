@@ -382,15 +382,18 @@ public class EventServiceImpl implements EventService {
 
         Event event = getAccessibleEvent(eventId);
 
-        List<ContributionResponseDTO> contributions = contributionService.findAllByEvent(event);
+        List<ContributionResponseDTO> splitContributions = contributionService.findAllByEvent(event)
+                .stream()
+                .filter(ContributionResponseDTO::isSplitCost)
+                .filter(c -> c.getCost() != null)
+                .toList();
 
         Set<UUID> participantIds = request.getParticipants()
                 .stream()
                 .map(BalanceParticipantRequestDTO::getUserId)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
-        List<String> missingParticipants = contributions.stream()
-                .filter(ContributionResponseDTO::isSplitCost)
+        List<String> missingParticipants = splitContributions.stream()
                 .filter(contribution -> !participantIds.contains(contribution.getCreatedById()))
                 .map(ContributionResponseDTO::getCreatedBy)
                 .distinct()
@@ -401,8 +404,7 @@ public class EventServiceImpl implements EventService {
                             + String.join(", ", missingParticipants));
         }
 
-        BigDecimal totalCost = contributions.stream()
-                .filter(ContributionResponseDTO::isSplitCost)
+        BigDecimal totalCost = splitContributions.stream()
                 .map(ContributionResponseDTO::getCost)
                 .filter(Objects::nonNull)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -417,10 +419,7 @@ public class EventServiceImpl implements EventService {
                         RoundingMode.HALF_UP);
 
         Map<UUID, BigDecimal> paidByUser = new HashMap<>();
-        for (ContributionResponseDTO contribution : contributions) {
-            if (!contribution.isSplitCost() || contribution.getCost() == null) {
-                continue;
-            }
+        for (ContributionResponseDTO contribution : splitContributions) {
             paidByUser.merge(
                     contribution.getCreatedById(),
                     contribution.getCost(),
