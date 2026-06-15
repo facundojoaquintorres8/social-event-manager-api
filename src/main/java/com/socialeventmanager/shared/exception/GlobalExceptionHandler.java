@@ -2,6 +2,9 @@ package com.socialeventmanager.shared.exception;
 
 import com.socialeventmanager.shared.dto.ApiResponseDTO;
 import io.jsonwebtoken.JwtException;
+
+import java.util.UUID;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -9,6 +12,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -77,6 +81,21 @@ public class GlobalExceptionHandler {
         return new ApiResponseDTO<>(
                 false,
                 ex.getMessage(),
+                null);
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ApiResponseDTO<Void> handleTypeMismatchException(MethodArgumentTypeMismatchException ex) {
+        if (UUID.class.equals(ex.getRequiredType())) {
+            return new ApiResponseDTO<>(
+                    false,
+                    "Invalid ID format",
+                    null);
+        }
+        return new ApiResponseDTO<>(
+                false,
+                "Invalid type format",
                 null);
     }
 
