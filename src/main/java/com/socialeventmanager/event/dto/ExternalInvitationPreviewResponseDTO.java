@@ -20,7 +20,6 @@ public class ExternalInvitationPreviewResponseDTO {
     private Double longitude;
     private String createdBy;
     private ExternalInvitationStatus status;
-    private LocalDateTime expiresAt;
     private boolean alreadyClaimed;
     private String invitedEmail;
 }

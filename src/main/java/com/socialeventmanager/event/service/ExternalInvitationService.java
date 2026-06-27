@@ -20,8 +20,6 @@ public interface ExternalInvitationService {
 
     void claimExternalInvitations(User user);
 
-    void updateExternalInvitationExpiryDates(Event event);
-
     void cancelExternalInvitationsForEvent(Event event);
 
 }

@@ -273,8 +273,6 @@ public class EventServiceImpl implements EventService {
 
         eventRepository.save(event);
 
-        externalInvitationService.updateExternalInvitationExpiryDates(event);
-
         return new ApiResponseDTO<>(
                 true,
                 "Event updated successfully",

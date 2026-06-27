@@ -64,7 +64,6 @@ public class ExternalInvitationServiceImpl implements ExternalInvitationService 
                 .invitedEmail(email)
                 .token(UUID.randomUUID().toString())
                 .status(ExternalInvitationStatus.PENDING)
-                .expiresAt(event.getEventDate())
                 .build();
 
         externalInvitationRepository.save(invitation);
@@ -122,7 +121,6 @@ public class ExternalInvitationServiceImpl implements ExternalInvitationService 
                 .longitude(event.getLongitude())
                 .createdBy(event.getCreatedBy().getEmail())
                 .status(invitation.getStatus())
-                .expiresAt(invitation.getExpiresAt())
                 .alreadyClaimed(invitation.getStatus() == ExternalInvitationStatus.CLAIMED)
                 .invitedEmail(invitation.getInvitedEmail())
                 .build();
@@ -154,14 +152,6 @@ public class ExternalInvitationServiceImpl implements ExternalInvitationService 
             externalInvitation.setClaimedAt(LocalDateTime.now());
             externalInvitationRepository.save(externalInvitation);
         }
-    }
-
-    @Override
-    public void updateExternalInvitationExpiryDates(Event event) {
-        List<ExternalInvitation> invitations = externalInvitationRepository.findAllByEventAndStatus(event,
-                ExternalInvitationStatus.PENDING);
-        invitations.forEach(invitation -> invitation.setExpiresAt(event.getEventDate()));
-        externalInvitationRepository.saveAll(invitations);
     }
 
     @Override
@@ -201,7 +191,7 @@ public class ExternalInvitationServiceImpl implements ExternalInvitationService 
             throw new BadRequestException("Invitation cancelled");
         }
 
-        if (!invitation.getExpiresAt().isAfter(LocalDateTime.now())) {
+        if (!invitation.getEvent().getEventDate().isAfter(LocalDateTime.now())) {
             throw new BadRequestException("Invitation expired");
         }
 
