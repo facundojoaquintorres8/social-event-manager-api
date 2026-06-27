@@ -6,6 +6,7 @@ import com.socialeventmanager.event.enums.InvitationStatus;
 import com.socialeventmanager.user.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
@@ -52,4 +53,9 @@ public interface InvitationRepository extends JpaRepository<EventInvitation, UUI
             List<InvitationStatus> statuses,
             LocalDateTime from,
             LocalDateTime to);
+
+    @EntityGraph(attributePaths = { "event", "invitedBy" })
+    List<EventInvitation> findTop5ByInvitedUserIdAndStatusNotOrderByCreatedAtDesc(
+            UUID invitedUserId,
+            InvitationStatus status);
 }

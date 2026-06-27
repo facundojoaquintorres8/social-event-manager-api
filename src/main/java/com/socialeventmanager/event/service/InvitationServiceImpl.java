@@ -277,6 +277,31 @@ public class InvitationServiceImpl implements InvitationService {
                 InvitationStatus.CANCELLED);
     }
 
+    @Override
+    public List<InvitationResponseDTO> getRecentInvitations(User user) {
+        return invitationRepository
+                .findTop5ByInvitedUserIdAndStatusNotOrderByCreatedAtDesc(
+                        user.getId(),
+                        InvitationStatus.CANCELLED)
+                .stream()
+                .map(inv -> InvitationResponseDTO.builder()
+                        .invitationId(inv.getId())
+                        .eventId(inv.getEvent().getId())
+                        .title(inv.getEvent().getTitle())
+                        .eventDate(inv.getEvent().getEventDate())
+                        .location(inv.getEvent().getLocation())
+                        .locationAddress(inv.getEvent().getLocationAddress())
+                        .placeId(inv.getEvent().getPlaceId())
+                        .latitude(inv.getEvent().getLatitude())
+                        .longitude(inv.getEvent().getLongitude())
+                        .createdBy(inv.getInvitedBy().getFirstName() + " " +
+                                inv.getInvitedBy().getLastName())
+                        .status(inv.getStatus())
+                        .eventStatus(inv.getEvent().getStatus())
+                        .build())
+                .toList();
+    }
+
     private User getCurrentUser() {
         return currentUserService.getCurrentUser();
     }

@@ -45,4 +45,6 @@ public interface InvitationService {
 
     boolean existsByEventIdAndInvitedUserAndNotCancelled(UUID eventId, User currentUser);
 
+    List<InvitationResponseDTO> getRecentInvitations(User user);
+
 }

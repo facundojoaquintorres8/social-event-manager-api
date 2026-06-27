@@ -7,5 +7,6 @@ public record DashboardResponseDTO(
         long activeEvents,
         long cancelledEvents,
         long upcomingEvents,
-        List<EventResponseDTO> recentEvents) {
+        List<EventResponseDTO> recentEvents,
+        List<InvitationResponseDTO> recentInvitations) {
 }

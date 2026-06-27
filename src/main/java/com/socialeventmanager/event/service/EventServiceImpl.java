@@ -37,6 +37,7 @@ import com.socialeventmanager.event.dto.DashboardResponseDTO;
 import com.socialeventmanager.event.dto.EventDetailsFullResponseDTO;
 import com.socialeventmanager.event.dto.EventParticipantResponseDTO;
 import com.socialeventmanager.event.dto.EventResponseDTO;
+import com.socialeventmanager.event.dto.InvitationResponseDTO;
 import com.socialeventmanager.event.dto.InviteUserRequestDTO;
 import com.socialeventmanager.event.dto.SettlementDTO;
 import com.socialeventmanager.event.entity.Event;
@@ -356,12 +357,15 @@ public class EventServiceImpl implements EventService {
                 .map(this::mapToResponse)
                 .toList();
 
+        List<InvitationResponseDTO> recentInvitations = invitationService.getRecentInvitations(currentUser);
+
         DashboardResponseDTO dashboard = new DashboardResponseDTO(
                 totalEvents,
                 activeEvents,
                 cancelledEvents,
                 upcomingEvents,
-                recentEvents);
+                recentEvents,
+                recentInvitations);
 
         return new ApiResponseDTO<>(
                 true,
