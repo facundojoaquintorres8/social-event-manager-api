@@ -21,7 +21,7 @@ public class InvitationResponseDTO {
     private String placeId;
     private Double latitude;
     private Double longitude;
-    private String invitedBy;
+    private String createdBy;
     private InvitationStatus status;
     private EventStatus eventStatus;
 }

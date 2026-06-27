@@ -203,7 +203,8 @@ public class InvitationServiceImpl implements InvitationService {
                         .placeId(invitation.getEvent().getPlaceId())
                         .latitude(invitation.getEvent().getLatitude())
                         .longitude(invitation.getEvent().getLongitude())
-                        .invitedBy(invitation.getInvitedBy().getEmail())
+                        .createdBy(invitation.getInvitedBy().getFirstName() + " " +
+                                invitation.getInvitedBy().getLastName())
                         .status(invitation.getStatus())
                         .eventStatus(invitation.getEvent().getStatus())
                         .build());
