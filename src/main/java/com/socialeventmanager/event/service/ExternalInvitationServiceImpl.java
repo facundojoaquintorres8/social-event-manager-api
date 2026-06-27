@@ -118,6 +118,8 @@ public class ExternalInvitationServiceImpl implements ExternalInvitationService 
                 .description(event.getDescription())
                 .eventDate(event.getEventDate())
                 .location(event.getLocation())
+                .latitude(event.getLatitude())
+                .longitude(event.getLongitude())
                 .createdBy(event.getCreatedBy().getEmail())
                 .status(invitation.getStatus())
                 .expiresAt(invitation.getExpiresAt())

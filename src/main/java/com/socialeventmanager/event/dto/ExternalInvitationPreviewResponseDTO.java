@@ -16,6 +16,8 @@ public class ExternalInvitationPreviewResponseDTO {
     private String description;
     private LocalDateTime eventDate;
     private String location;
+    private Double latitude;
+    private Double longitude;
     private String createdBy;
     private ExternalInvitationStatus status;
     private LocalDateTime expiresAt;
