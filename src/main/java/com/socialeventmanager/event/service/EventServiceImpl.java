@@ -48,6 +48,7 @@ import com.socialeventmanager.event.repository.EventSpecification;
 import com.socialeventmanager.shared.dto.ApiResponseDTO;
 import com.socialeventmanager.shared.exception.BadRequestException;
 import com.socialeventmanager.shared.exception.ForbiddenException;
+import com.socialeventmanager.shared.util.Constants;
 import com.socialeventmanager.shared.util.EventValidator;
 import com.socialeventmanager.user.entity.User;
 import com.socialeventmanager.user.repository.UserRepository;
@@ -104,7 +105,7 @@ public class EventServiceImpl implements EventService {
             EventStatus status) {
         User currentUser = getCurrentUser();
 
-        size = Math.min(size, 50);
+        size = Math.min(size, Constants.DEFAULT_PAGE_SIZE);
 
         List<String> allowedSortFields = List.of(
                 "title",

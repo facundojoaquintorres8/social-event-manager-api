@@ -30,7 +30,7 @@ public class InvitationController {
     @GetMapping("/me")
     public ResponseEntity<ApiResponseDTO<Page<InvitationResponseDTO>>> getMyInvitations(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "50") int size,
             @RequestParam(defaultValue = "createdAt") String sortBy,
             @RequestParam(defaultValue = "desc") String direction,
             @RequestParam(required = false) InvitationStatus status) {

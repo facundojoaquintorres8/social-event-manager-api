@@ -25,6 +25,7 @@ import com.socialeventmanager.event.repository.InvitationRepository;
 import com.socialeventmanager.event.repository.InvitationSpecification;
 import com.socialeventmanager.shared.dto.ApiResponseDTO;
 import com.socialeventmanager.shared.exception.BadRequestException;
+import com.socialeventmanager.shared.util.Constants;
 import com.socialeventmanager.shared.util.EventValidator;
 import com.socialeventmanager.user.entity.User;
 import com.socialeventmanager.user.repository.UserRepository;
@@ -108,7 +109,7 @@ public class InvitationServiceImpl implements InvitationService {
 
         User currentUser = getCurrentUser();
 
-        size = Math.min(size, 50);
+        size = Math.min(size, Constants.DEFAULT_PAGE_SIZE);
 
         List<String> allowedSortFields = List.of(
                 "eventDate",
@@ -166,7 +167,7 @@ public class InvitationServiceImpl implements InvitationService {
             InvitationStatus status) {
         User currentUser = getCurrentUser();
 
-        size = Math.min(size, 50);
+        size = Math.min(size, Constants.DEFAULT_PAGE_SIZE);
 
         List<String> allowedSortFields = List.of(
                 "status",

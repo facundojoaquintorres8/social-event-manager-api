@@ -46,7 +46,7 @@ public class EventController {
     @GetMapping("/me")
     public ResponseEntity<ApiResponseDTO<Page<EventResponseDTO>>> getMyEvents(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "50") int size,
             @RequestParam(defaultValue = "eventDate") String sortBy,
             @RequestParam(defaultValue = "desc") String direction,
             @RequestParam(required = false) String title,
@@ -68,7 +68,7 @@ public class EventController {
     @GetMapping("/attending")
     public ResponseEntity<ApiResponseDTO<Page<EventResponseDTO>>> getAttendingEvents(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "50") int size,
             @RequestParam(defaultValue = "eventDate") String sortBy,
             @RequestParam(defaultValue = "desc") String direction) {
         return ResponseEntity.ok(eventService.getAttendingEvents(page, size, sortBy, direction));
