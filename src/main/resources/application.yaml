@@ -14,10 +14,6 @@ spring:
   jpa:
     hibernate:
       ddl-auto: validate
-    show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
 
   jackson:
     time-zone: America/Argentina/Buenos_Aires
@@ -40,6 +36,12 @@ spring:
         spring.json.trusted.packages: "com.socialeventmanager.*"
     listener:
       ack-mode: record
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    baseline-version: 0
 
 jwt:
   secret: ${JWT_SECRET}
