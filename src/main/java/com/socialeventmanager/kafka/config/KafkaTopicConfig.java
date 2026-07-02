@@ -10,22 +10,26 @@ public class KafkaTopicConfig {
 
     public static final String INVITATION_CREATED_TOPIC = "invitation-created";
     public static final String INVITATION_CREATED_DLT = "invitation-created-dlt";
+    public static final String USER_REGISTERED_TOPIC = "user-registered";
+    public static final String USER_REGISTERED_DLT = "user-registered-dlt";
 
     @Bean
     public NewTopic invitationCreatedTopic() {
-        return TopicBuilder
-                .name(INVITATION_CREATED_TOPIC)
-                .partitions(1)
-                .replicas(1)
-                .build();
+        return TopicBuilder.name(INVITATION_CREATED_TOPIC).partitions(1).replicas(1).build();
     }
 
     @Bean
     public NewTopic invitationCreatedDltTopic() {
-        return TopicBuilder
-                .name(INVITATION_CREATED_DLT)
-                .partitions(1)
-                .replicas(1)
-                .build();
+        return TopicBuilder.name(INVITATION_CREATED_DLT).partitions(1).replicas(1).build();
+    }
+
+    @Bean
+    public NewTopic userRegisteredTopic() {
+        return TopicBuilder.name(USER_REGISTERED_TOPIC).partitions(1).replicas(1).build();
+    }
+
+    @Bean
+    public NewTopic userRegisteredDltTopic() {
+        return TopicBuilder.name(USER_REGISTERED_DLT).partitions(1).replicas(1).build();
     }
 }

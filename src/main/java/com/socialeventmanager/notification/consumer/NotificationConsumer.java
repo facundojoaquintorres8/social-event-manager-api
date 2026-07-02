@@ -1,6 +1,7 @@
 package com.socialeventmanager.notification.consumer;
 
 import com.socialeventmanager.kafka.event.InvitationCreatedEvent;
+import com.socialeventmanager.kafka.event.UserRegisteredEvent;
 import com.socialeventmanager.notification.service.EmailService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -15,5 +16,10 @@ public class NotificationConsumer {
     @KafkaListener(topics = "invitation-created", groupId = "notification-group")
     public void handleInvitationCreated(InvitationCreatedEvent event) {
         emailService.sendInvitationEmail(event);
+    }
+
+    @KafkaListener(topics = "user-registered", groupId = "notification-group")
+    public void handleUserRegistered(UserRegisteredEvent event) {
+        emailService.sendWelcomeEmail(event);
     }
 }

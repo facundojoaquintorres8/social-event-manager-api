@@ -11,6 +11,7 @@ import com.resend.Resend;
 import com.resend.core.exception.ResendException;
 import com.resend.services.emails.model.CreateEmailOptions;
 import com.socialeventmanager.kafka.event.InvitationCreatedEvent;
+import com.socialeventmanager.kafka.event.UserRegisteredEvent;
 
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
@@ -35,12 +36,14 @@ public class EmailServiceImpl implements EmailService {
     private Resend resend;
     private String internalTemplate;
     private String externalTemplate;
+    private String welcomeTemplate;
 
     @PostConstruct
     public void init() throws IOException {
         this.resend = new Resend(apiKey);
         this.internalTemplate = loadTemplate("templates/email/invitation-internal.html");
         this.externalTemplate = loadTemplate("templates/email/invitation-external.html");
+        this.welcomeTemplate = loadTemplate("templates/email/welcome.html");
     }
 
     @Override
@@ -70,6 +73,28 @@ public class EmailServiceImpl implements EmailService {
         } catch (ResendException e) {
             throw new RuntimeException("Failed to send email for invitation " +
                     event.invitationId(), e);
+        }
+    }
+
+    @Override
+    public void sendWelcomeEmail(UserRegisteredEvent event) {
+        String html = welcomeTemplate
+                .replace("{{firstName}}", event.firstName())
+                .replace("{{dashboardUrl}}", frontendUrl + "/dashboard");
+
+        try {
+            CreateEmailOptions options = CreateEmailOptions.builder()
+                    .from(fromEmail)
+                    .to(event.email())
+                    .subject("Welcome to Social Event Manager!")
+                    .html(html)
+                    .build();
+
+            resend.emails().send(options);
+
+        } catch (ResendException e) {
+            throw new RuntimeException("Failed to send welcome email for user " +
+                    event.userId(), e);
         }
     }
 

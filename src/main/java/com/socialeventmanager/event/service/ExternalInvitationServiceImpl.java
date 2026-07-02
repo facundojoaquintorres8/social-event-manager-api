@@ -17,7 +17,7 @@ import com.socialeventmanager.event.enums.ExternalInvitationStatus;
 import com.socialeventmanager.event.repository.EventRepository;
 import com.socialeventmanager.event.repository.ExternalInvitationRepository;
 import com.socialeventmanager.kafka.event.InvitationCreatedEvent;
-import com.socialeventmanager.kafka.producer.InvitationEventProducer;
+import com.socialeventmanager.kafka.producer.EventProducer;
 import com.socialeventmanager.notification.service.NotificationLogService;
 import com.socialeventmanager.shared.dto.ApiResponseDTO;
 import com.socialeventmanager.shared.exception.BadRequestException;
@@ -36,7 +36,7 @@ public class ExternalInvitationServiceImpl implements ExternalInvitationService 
     private final CurrentUserService currentUserService;
     private final EventRepository eventRepository;
     private final EventValidator eventValidator;
-    private final InvitationEventProducer invitationEventProducer;
+    private final EventProducer invitationEventProducer;
     private final NotificationLogService notificationLogService;
 
     @Transactional

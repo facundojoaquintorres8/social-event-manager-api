@@ -24,7 +24,7 @@ import com.socialeventmanager.event.repository.EventRepository;
 import com.socialeventmanager.event.repository.InvitationRepository;
 import com.socialeventmanager.event.repository.InvitationSpecification;
 import com.socialeventmanager.kafka.event.InvitationCreatedEvent;
-import com.socialeventmanager.kafka.producer.InvitationEventProducer;
+import com.socialeventmanager.kafka.producer.EventProducer;
 import com.socialeventmanager.notification.service.NotificationLogService;
 import com.socialeventmanager.shared.dto.ApiResponseDTO;
 import com.socialeventmanager.shared.exception.BadRequestException;
@@ -45,7 +45,7 @@ public class InvitationServiceImpl implements InvitationService {
     private final CurrentUserService currentUserService;
     private final EventRepository eventRepository;
     private final EventValidator eventValidator;
-    private final InvitationEventProducer invitationEventProducer;
+    private final EventProducer invitationEventProducer;
     private final NotificationLogService notificationLogService;
 
     @Override

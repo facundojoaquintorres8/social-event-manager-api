@@ -18,12 +18,12 @@ public class KafkaErrorConfig {
                 (consumerRecord, ex) -> {
                     log.error("Message failed after retries, sending to DLT. Topic: {}, Key: {}, Error: {}",
                             consumerRecord.topic(), consumerRecord.key(), ex.getMessage());
-                    return new org.apache.kafka.common.TopicPartition(consumerRecord.topic() + "-dlt",
-                            consumerRecord.partition());
+                    log.error("Full exception: ", ex);
+                    return new org.apache.kafka.common.TopicPartition(
+                            consumerRecord.topic() + "-dlt", consumerRecord.partition());
                 });
 
         FixedBackOff backOff = new FixedBackOff(1000L, 3L);
-
         return new DefaultErrorHandler(recoverer, backOff);
     }
 }

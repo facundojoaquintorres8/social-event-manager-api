@@ -5,6 +5,8 @@ import com.socialeventmanager.auth.dto.LoginRequestDTO;
 import com.socialeventmanager.auth.dto.RefreshRequestDTO;
 import com.socialeventmanager.auth.dto.RegisterRequestDTO;
 import com.socialeventmanager.event.service.ExternalInvitationService;
+import com.socialeventmanager.kafka.event.UserRegisteredEvent;
+import com.socialeventmanager.kafka.producer.EventProducer;
 import com.socialeventmanager.shared.dto.ApiResponseDTO;
 import com.socialeventmanager.shared.exception.BadRequestException;
 import com.socialeventmanager.token.entity.Token;
@@ -32,6 +34,7 @@ public class AuthServiceImpl implements AuthService {
     private final AuthenticationManager authenticationManager;
     private final TokenRepository tokenRepository;
     private final ExternalInvitationService externalInvitationService;
+    private final EventProducer eventProducer;
 
     @Override
     @Transactional
@@ -52,6 +55,11 @@ public class AuthServiceImpl implements AuthService {
         userRepository.save(user);
 
         externalInvitationService.claimExternalInvitations(user);
+
+        eventProducer.sendUserRegistered(new UserRegisteredEvent(
+                user.getId(),
+                user.getFirstName(),
+                user.getEmail()));
 
         return new ApiResponseDTO<>(
                 true,
