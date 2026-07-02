@@ -18,7 +18,7 @@ public class InvitationEventProducer {
         kafkaTemplate.send(KafkaTopicConfig.INVITATION_CREATED_TOPIC, event)
                 .whenComplete((result, ex) -> {
                     if (ex != null) {
-                        log.error("Error publicando InvitationCreatedEvent para invitación {}: {}",
+                        log.error("Failed to publish InvitationCreatedEvent for invitation {}: {}",
                                 event.invitationId(), ex.getMessage());
                     }
                 });

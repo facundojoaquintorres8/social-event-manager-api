@@ -4,17 +4,25 @@ import com.resend.Resend;
 import com.resend.core.exception.ResendException;
 import com.resend.services.emails.model.CreateEmailOptions;
 import com.socialeventmanager.kafka.event.InvitationCreatedEvent;
+import com.socialeventmanager.notification.entity.NotificationLog;
+import com.socialeventmanager.notification.repository.NotificationLogRepository;
+
 import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class EmailService {
+
+    private final NotificationLogRepository notificationLogRepository;
 
     @Value("${resend.api-key}")
     private String apiKey;
@@ -37,8 +45,12 @@ public class EmailService {
     }
 
     public void sendInvitationEmail(InvitationCreatedEvent event) {
-        String mapsUrl = "https://www.google.com/maps?q=" +
-                event.latitude() + "," + event.longitude();
+        if (notificationLogRepository.existsByInvitationId(event.invitationId())) {
+            log.warn("Email already sent for invitation {}, skipping", event.invitationId());
+            return;
+        }
+
+        String mapsUrl = "https://www.google.com/maps?q=" + event.latitude() + "," + event.longitude();
 
         String html = event.external()
                 ? buildHtml(externalTemplate, event, mapsUrl)
@@ -52,10 +64,15 @@ public class EmailService {
                     .html(html)
                     .build();
 
-            resend.emails().send(options);
+            notificationLogRepository.save(
+                    NotificationLog.builder()
+                            .invitationId(event.invitationId())
+                            .sentAt(LocalDateTime.now())
+                            .build());
 
+            resend.emails().send(options);
         } catch (ResendException e) {
-            throw new RuntimeException("Error enviando email para invitación " +
+            throw new RuntimeException("Failed to send email for invitation " +
                     event.invitationId(), e);
         }
     }
