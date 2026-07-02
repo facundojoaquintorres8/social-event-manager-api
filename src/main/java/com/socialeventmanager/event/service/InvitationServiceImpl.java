@@ -25,6 +25,7 @@ import com.socialeventmanager.event.repository.InvitationRepository;
 import com.socialeventmanager.event.repository.InvitationSpecification;
 import com.socialeventmanager.kafka.event.InvitationCreatedEvent;
 import com.socialeventmanager.kafka.producer.InvitationEventProducer;
+import com.socialeventmanager.notification.service.NotificationLogService;
 import com.socialeventmanager.shared.dto.ApiResponseDTO;
 import com.socialeventmanager.shared.exception.BadRequestException;
 import com.socialeventmanager.shared.util.Constants;
@@ -32,6 +33,7 @@ import com.socialeventmanager.shared.util.EventValidator;
 import com.socialeventmanager.user.entity.User;
 import com.socialeventmanager.user.repository.UserRepository;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -44,6 +46,7 @@ public class InvitationServiceImpl implements InvitationService {
     private final EventRepository eventRepository;
     private final EventValidator eventValidator;
     private final InvitationEventProducer invitationEventProducer;
+    private final NotificationLogService notificationLogService;
 
     @Override
     public List<EventParticipantResponseDTO> findAllByEventAndNotCancelled(Event event) {
@@ -62,6 +65,7 @@ public class InvitationServiceImpl implements InvitationService {
                 .toList();
     }
 
+    @Transactional
     @Override
     public ApiResponseDTO<Void> inviteExistingUser(
             Event event,
@@ -79,7 +83,10 @@ public class InvitationServiceImpl implements InvitationService {
 
                 invitationRepository.save(existingInvitation);
 
+                notificationLogService.deleteByInvitationId(existingInvitation.getId());
+
                 publishInvitationCreatedEvent(existingInvitation);
+
                 return new ApiResponseDTO<>(
                         true,
                         "User invited successfully",

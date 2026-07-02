@@ -6,4 +6,6 @@ import java.util.UUID;
 
 public interface NotificationLogRepository extends JpaRepository<NotificationLog, UUID> {
     boolean existsByInvitationId(UUID invitationId);
+
+    void deleteByInvitationId(UUID invitationId);
 }

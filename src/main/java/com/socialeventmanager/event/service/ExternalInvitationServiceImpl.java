@@ -18,11 +18,13 @@ import com.socialeventmanager.event.repository.EventRepository;
 import com.socialeventmanager.event.repository.ExternalInvitationRepository;
 import com.socialeventmanager.kafka.event.InvitationCreatedEvent;
 import com.socialeventmanager.kafka.producer.InvitationEventProducer;
+import com.socialeventmanager.notification.service.NotificationLogService;
 import com.socialeventmanager.shared.dto.ApiResponseDTO;
 import com.socialeventmanager.shared.exception.BadRequestException;
 import com.socialeventmanager.shared.util.EventValidator;
 import com.socialeventmanager.user.entity.User;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -35,7 +37,9 @@ public class ExternalInvitationServiceImpl implements ExternalInvitationService 
     private final EventRepository eventRepository;
     private final EventValidator eventValidator;
     private final InvitationEventProducer invitationEventProducer;
+    private final NotificationLogService notificationLogService;
 
+    @Transactional
     @Override
     public ApiResponseDTO<Void> inviteExternalUser(
             Event event,
@@ -52,7 +56,10 @@ public class ExternalInvitationServiceImpl implements ExternalInvitationService 
 
                 externalInvitationRepository.save(existingInvitation);
 
+                notificationLogService.deleteByInvitationId(existingInvitation.getId());
+
                 publishExternalInvitationCreatedEvent(existingInvitation);
+
                 return new ApiResponseDTO<>(
                         true,
                         "User invited successfully",
