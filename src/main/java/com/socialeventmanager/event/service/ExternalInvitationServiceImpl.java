@@ -16,6 +16,8 @@ import com.socialeventmanager.event.enums.EventStatus;
 import com.socialeventmanager.event.enums.ExternalInvitationStatus;
 import com.socialeventmanager.event.repository.EventRepository;
 import com.socialeventmanager.event.repository.ExternalInvitationRepository;
+import com.socialeventmanager.kafka.event.InvitationCreatedEvent;
+import com.socialeventmanager.kafka.producer.InvitationEventProducer;
 import com.socialeventmanager.shared.dto.ApiResponseDTO;
 import com.socialeventmanager.shared.exception.BadRequestException;
 import com.socialeventmanager.shared.util.EventValidator;
@@ -32,6 +34,7 @@ public class ExternalInvitationServiceImpl implements ExternalInvitationService 
     private final CurrentUserService currentUserService;
     private final EventRepository eventRepository;
     private final EventValidator eventValidator;
+    private final InvitationEventProducer invitationEventProducer;
 
     @Override
     public ApiResponseDTO<Void> inviteExternalUser(
@@ -49,6 +52,7 @@ public class ExternalInvitationServiceImpl implements ExternalInvitationService 
 
                 externalInvitationRepository.save(existingInvitation);
 
+                publishExternalInvitationCreatedEvent(existingInvitation);
                 return new ApiResponseDTO<>(
                         true,
                         "User invited successfully",
@@ -68,6 +72,7 @@ public class ExternalInvitationServiceImpl implements ExternalInvitationService 
 
         externalInvitationRepository.save(invitation);
 
+        publishExternalInvitationCreatedEvent(invitation);
         return new ApiResponseDTO<>(
                 true,
                 "Invitation sent successfully",
@@ -200,6 +205,22 @@ public class ExternalInvitationServiceImpl implements ExternalInvitationService 
         }
 
         return invitation;
+    }
+
+    private void publishExternalInvitationCreatedEvent(ExternalInvitation invitation) {
+        InvitationCreatedEvent event = new InvitationCreatedEvent(
+                invitation.getId(),
+                invitation.getEvent().getTitle(),
+                invitation.getEvent().getLocation(),
+                invitation.getEvent().getLatitude(),
+                invitation.getEvent().getLongitude(),
+                invitation.getEvent().getEventDate().toString(),
+                invitation.getInvitedBy().getFirstName() + " " +
+                        invitation.getInvitedBy().getLastName(),
+                invitation.getInvitedEmail(),
+                true);
+
+        invitationEventProducer.sendInvitationCreated(event);
     }
 
 }

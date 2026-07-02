@@ -23,6 +23,8 @@ import com.socialeventmanager.event.enums.InvitationStatus;
 import com.socialeventmanager.event.repository.EventRepository;
 import com.socialeventmanager.event.repository.InvitationRepository;
 import com.socialeventmanager.event.repository.InvitationSpecification;
+import com.socialeventmanager.kafka.event.InvitationCreatedEvent;
+import com.socialeventmanager.kafka.producer.InvitationEventProducer;
 import com.socialeventmanager.shared.dto.ApiResponseDTO;
 import com.socialeventmanager.shared.exception.BadRequestException;
 import com.socialeventmanager.shared.util.Constants;
@@ -41,6 +43,7 @@ public class InvitationServiceImpl implements InvitationService {
     private final CurrentUserService currentUserService;
     private final EventRepository eventRepository;
     private final EventValidator eventValidator;
+    private final InvitationEventProducer invitationEventProducer;
 
     @Override
     public List<EventParticipantResponseDTO> findAllByEventAndNotCancelled(Event event) {
@@ -76,6 +79,7 @@ public class InvitationServiceImpl implements InvitationService {
 
                 invitationRepository.save(existingInvitation);
 
+                publishInvitationCreatedEvent(existingInvitation);
                 return new ApiResponseDTO<>(
                         true,
                         "User invited successfully",
@@ -94,6 +98,7 @@ public class InvitationServiceImpl implements InvitationService {
 
         invitationRepository.save(invitation);
 
+        publishInvitationCreatedEvent(invitation);
         return new ApiResponseDTO<>(
                 true,
                 "User invited successfully",
@@ -330,6 +335,22 @@ public class InvitationServiceImpl implements InvitationService {
                 true,
                 "Invitation cancelled successfully",
                 null);
+    }
+
+    private void publishInvitationCreatedEvent(EventInvitation invitation) {
+        InvitationCreatedEvent event = new InvitationCreatedEvent(
+                invitation.getId(),
+                invitation.getEvent().getTitle(),
+                invitation.getEvent().getLocation(),
+                invitation.getEvent().getLatitude(),
+                invitation.getEvent().getLongitude(),
+                invitation.getEvent().getEventDate().toString(),
+                invitation.getInvitedBy().getFirstName() + " " +
+                        invitation.getInvitedBy().getLastName(),
+                invitation.getInvitedUser().getEmail(),
+                false);
+
+        invitationEventProducer.sendInvitationCreated(event);
     }
 
 }

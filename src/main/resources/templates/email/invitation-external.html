@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en" xml:lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Social Event Invitation</title>
+  </head>
+  <body
+    style="
+      font-family: Inter, sans-serif;
+      background: #f9fafb;
+      margin: 0;
+      padding: 32px;
+    "
+  >
+    <div
+      style="
+        max-width: 520px;
+        margin: 0 auto;
+        background: #fff;
+        border-radius: 16px;
+        border: 1px solid #e5e7eb;
+        overflow: hidden;
+      "
+    >
+      <div
+        style="
+          background: linear-gradient(135deg, #2563eb, #4f46e5);
+          padding: 32px;
+          text-align: center;
+        "
+      >
+        <h1 style="color: #fff; margin: 0; font-size: 24px">
+          Social Event Manager
+        </h1>
+      </div>
+
+      <div style="padding: 32px">
+        <p style="color: #6b7280; font-size: 14px; margin: 0 0 8px">
+          You've been invited by <strong>{{organizerName}}</strong>
+        </p>
+
+        <h2 style="color: #111827; font-size: 22px; margin: 0 0 24px">
+          {{eventTitle}}
+        </h2>
+
+        <div
+          style="
+            background: #f9fafb;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 24px;
+          "
+        >
+          <div style="margin-bottom: 12px">
+            <p
+              style="
+                color: #6b7280;
+                font-size: 11px;
+                text-transform: uppercase;
+                margin: 0 0 4px;
+              "
+            >
+              Date
+            </p>
+            <p
+              style="
+                color: #111827;
+                font-size: 14px;
+                font-weight: 500;
+                margin: 0;
+              "
+            >
+              {{eventDate}}
+            </p>
+          </div>
+          <div>
+            <p
+              style="
+                color: #6b7280;
+                font-size: 11px;
+                text-transform: uppercase;
+                margin: 0 0 4px;
+              "
+            >
+              Location
+            </p>
+            <a
+              href="{{mapsUrl}}"
+              style="
+                color: #2563eb;
+                font-size: 14px;
+                font-weight: 500;
+                text-decoration: none;
+              "
+            >
+              {{eventLocation}}
+            </a>
+          </div>
+        </div>
+
+        <a
+          href="{{inviteUrl}}"
+          style="
+            display: inline-block;
+            background: #2563eb;
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+          "
+        >
+          Create Account to Join
+        </a>
+      </div>
+
+      <div
+        style="
+          padding: 16px 32px;
+          border-top: 1px solid #e5e7eb;
+          text-align: center;
+        "
+      >
+        <p style="color: #9ca3af; font-size: 12px; margin: 0">
+          Social Event Manager · If you didn't expect this email, ignore it.
+        </p>
+      </div>
+    </div>
+  </body>
+</html>
