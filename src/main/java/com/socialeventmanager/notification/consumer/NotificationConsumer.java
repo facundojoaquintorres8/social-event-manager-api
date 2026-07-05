@@ -1,6 +1,7 @@
 package com.socialeventmanager.notification.consumer;
 
 import com.socialeventmanager.kafka.event.EventCancelledEvent;
+import com.socialeventmanager.kafka.event.EventReminderEvent;
 import com.socialeventmanager.kafka.event.InvitationCreatedEvent;
 import com.socialeventmanager.kafka.event.InvitationRespondedEvent;
 import com.socialeventmanager.kafka.event.UserRegisteredEvent;
@@ -33,5 +34,10 @@ public class NotificationConsumer {
     @KafkaListener(topics = "invitation-responded", groupId = "notification-group")
     public void handleInvitationResponded(InvitationRespondedEvent event) {
         emailService.sendInvitationRespondedEmail(event);
+    }
+
+    @KafkaListener(topics = "event-reminder", groupId = "notification-group")
+    public void handleEventReminder(EventReminderEvent event) {
+        emailService.sendEventReminderEmail(event);
     }
 }

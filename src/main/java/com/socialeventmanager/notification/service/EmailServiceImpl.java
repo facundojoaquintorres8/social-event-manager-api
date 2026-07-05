@@ -12,6 +12,7 @@ import com.resend.core.exception.ResendException;
 import com.resend.services.emails.model.CreateEmailOptions;
 import com.socialeventmanager.event.enums.InvitationStatus;
 import com.socialeventmanager.kafka.event.EventCancelledEvent;
+import com.socialeventmanager.kafka.event.EventReminderEvent;
 import com.socialeventmanager.kafka.event.InvitationCreatedEvent;
 import com.socialeventmanager.kafka.event.InvitationRespondedEvent;
 import com.socialeventmanager.kafka.event.UserRegisteredEvent;
@@ -46,6 +47,7 @@ public class EmailServiceImpl implements EmailService {
     private String welcomeTemplate;
     private String eventCancelledTemplate;
     private String invitationRespondedTemplate;
+    private String eventReminderTemplate;
 
     @PostConstruct
     public void init() throws IOException {
@@ -55,6 +57,7 @@ public class EmailServiceImpl implements EmailService {
         this.welcomeTemplate = loadTemplate("templates/email/welcome.html");
         this.eventCancelledTemplate = loadTemplate("templates/email/event-cancelled.html");
         this.invitationRespondedTemplate = loadTemplate("templates/email/invitation-responded.html");
+        this.eventReminderTemplate = loadTemplate("templates/email/event-reminder.html");
     }
 
     @Override
@@ -168,6 +171,50 @@ public class EmailServiceImpl implements EmailService {
         } catch (ResendException e) {
             throw new RuntimeException("Failed to send invitation responded email for invitation " +
                     event.invitationId(), e);
+        }
+    }
+
+    public void sendEventReminderEmail(EventReminderEvent event) {
+        String mapsUrl = String.format(GOOGLE_MAPS_URL, event.latitude(), event.longitude());
+
+        String html = eventReminderTemplate
+                .replace("{{eventTitle}}", event.eventTitle())
+                .replace("{{eventDate}}", event.eventDate())
+                .replace("{{mapsUrl}}", mapsUrl)
+                .replace("{{eventLocation}}", event.eventLocation())
+                .replace("{{organizerName}}", event.organizerName())
+                .replace("{{eventUrl}}", frontendUrl + "/events/" + event.eventId());
+
+        for (String email : event.participantEmails()) {
+            try {
+                CreateEmailOptions options = CreateEmailOptions.builder()
+                        .from(fromEmail)
+                        .to(resolveRecipient(email))
+                        .subject("🗓 Reminder: " + event.eventTitle() + " is tomorrow")
+                        .html(html)
+                        .build();
+
+                resend.emails().send(options);
+
+            } catch (ResendException e) {
+                throw new RuntimeException("Failed to send reminder email to " +
+                        email + " for event " + event.eventId(), e);
+            }
+        }
+
+        try {
+            CreateEmailOptions options = CreateEmailOptions.builder()
+                    .from(fromEmail)
+                    .to(resolveRecipient(event.organizerEmail()))
+                    .subject("🗓 Reminder: " + event.eventTitle() + " is tomorrow")
+                    .html(html)
+                    .build();
+
+            resend.emails().send(options);
+
+        } catch (ResendException e) {
+            throw new RuntimeException("Failed to send reminder email to organizer for event " +
+                    event.eventId(), e);
         }
     }
 
