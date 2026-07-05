@@ -9,6 +9,7 @@ import com.socialeventmanager.kafka.event.UserRegisteredEvent;
 import com.socialeventmanager.kafka.producer.EventProducer;
 import com.socialeventmanager.shared.dto.ApiResponseDTO;
 import com.socialeventmanager.shared.exception.BadRequestException;
+import com.socialeventmanager.shared.util.EmailValidator;
 import com.socialeventmanager.token.entity.Token;
 import com.socialeventmanager.token.enums.TokenType;
 import com.socialeventmanager.token.repository.TokenRepository;
@@ -23,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Locale;
 
 @Service
 @RequiredArgsConstructor
@@ -39,8 +41,9 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public ApiResponseDTO<AuthResponseDTO> register(RegisterRequestDTO request) {
+        String email = request.getEmail().trim().toLowerCase(Locale.ROOT);
+        EmailValidator.validateEmail(request.getEmail());
 
-        String email = request.getEmail().trim().toLowerCase();
         if (userRepository.existsByEmail(email)) {
             throw new BadRequestException("Email already registered");
         }
@@ -69,7 +72,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public ApiResponseDTO<AuthResponseDTO> login(LoginRequestDTO request) {
-        String email = request.getEmail().trim().toLowerCase();
+        String email = request.getEmail().trim().toLowerCase(Locale.ROOT);
 
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(

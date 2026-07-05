@@ -6,6 +6,7 @@ import com.socialeventmanager.user.entity.User;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.time.LocalDateTime;
+import java.util.Locale;
 
 public class EventSpecification {
 
@@ -16,7 +17,7 @@ public class EventSpecification {
     public static Specification<Event> titleContains(String title) {
         return (root, query, cb) -> cb.like(
                 cb.lower(root.get("title")),
-                "%" + title.toLowerCase() + "%");
+                "%" + title.toLowerCase(Locale.ROOT) + "%");
     }
 
     public static Specification<Event> dateAfter(LocalDateTime fromDate) {
@@ -32,7 +33,6 @@ public class EventSpecification {
     }
 
     public static Specification<Event> hasStatus(EventStatus status) {
-        return (root, query, cb) ->
-                cb.equal(root.get("status"), status);
+        return (root, query, cb) -> cb.equal(root.get("status"), status);
     }
 }

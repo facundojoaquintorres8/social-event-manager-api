@@ -2,6 +2,7 @@ package com.socialeventmanager.event.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
@@ -21,6 +22,7 @@ import com.socialeventmanager.kafka.producer.EventProducer;
 import com.socialeventmanager.notification.service.NotificationLogService;
 import com.socialeventmanager.shared.dto.ApiResponseDTO;
 import com.socialeventmanager.shared.exception.BadRequestException;
+import com.socialeventmanager.shared.util.EmailValidator;
 import com.socialeventmanager.shared.util.EventValidator;
 import com.socialeventmanager.user.entity.User;
 
@@ -95,7 +97,8 @@ public class ExternalInvitationServiceImpl implements ExternalInvitationService 
 
         eventValidator.validateEventAllowsInteraction(event);
 
-        String email = request.getEmail().trim().toLowerCase();
+        String email = request.getEmail().trim().toLowerCase(Locale.ROOT);
+        EmailValidator.validateEmail(email);
 
         ExternalInvitation invitation = externalInvitationRepository
                 .findByEventAndInvitedEmail(event, email)

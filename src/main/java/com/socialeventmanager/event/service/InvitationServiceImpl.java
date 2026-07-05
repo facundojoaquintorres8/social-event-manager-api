@@ -2,6 +2,7 @@ package com.socialeventmanager.event.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -30,6 +31,7 @@ import com.socialeventmanager.notification.service.NotificationLogService;
 import com.socialeventmanager.shared.dto.ApiResponseDTO;
 import com.socialeventmanager.shared.exception.BadRequestException;
 import com.socialeventmanager.shared.util.Constants;
+import com.socialeventmanager.shared.util.EmailValidator;
 import com.socialeventmanager.shared.util.EventValidator;
 import com.socialeventmanager.user.entity.User;
 import com.socialeventmanager.user.repository.UserRepository;
@@ -279,7 +281,8 @@ public class InvitationServiceImpl implements InvitationService {
 
         eventValidator.validateEventAllowsInteraction(event);
 
-        String email = request.getEmail().trim().toLowerCase();
+        String email = request.getEmail().trim().toLowerCase(Locale.ROOT);
+        EmailValidator.validateEmail(email);
 
         Optional<User> invitedUserOptional = userRepository.findByEmail(email);
 
