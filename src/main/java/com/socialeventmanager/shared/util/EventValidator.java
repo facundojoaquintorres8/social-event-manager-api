@@ -23,4 +23,10 @@ public class EventValidator {
                     "Past events cannot be modified");
         }
     }
+
+    public void validateEventAllowsContributions(Event event) {
+        if (event.getStatus() == EventStatus.CANCELLED) {
+            throw new BadRequestException("Cancelled events cannot be modified");
+        }
+    }
 }

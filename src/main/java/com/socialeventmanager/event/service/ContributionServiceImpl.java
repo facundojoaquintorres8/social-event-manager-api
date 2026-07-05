@@ -44,7 +44,7 @@ public class ContributionServiceImpl implements ContributionService {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new BadRequestException("Event not found"));
 
-        eventValidator.validateEventAllowsInteraction(event);
+        eventValidator.validateEventAllowsContributions(event);
 
         validateUserCanManageContributions(event, currentUser);
 
@@ -78,7 +78,7 @@ public class ContributionServiceImpl implements ContributionService {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new BadRequestException("Event not found"));
 
-        eventValidator.validateEventAllowsInteraction(event);
+        eventValidator.validateEventAllowsContributions(event);
 
         Contribution contribution = contributionRepository.findById(contributionId)
                 .orElseThrow(() -> new BadRequestException("Contribution not found"));
@@ -121,7 +121,7 @@ public class ContributionServiceImpl implements ContributionService {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new BadRequestException("Event not found"));
 
-        eventValidator.validateEventAllowsInteraction(event);
+        eventValidator.validateEventAllowsContributions(event);
 
         Contribution contribution = contributionRepository.findById(contributionId)
                 .orElseThrow(() -> new BadRequestException("Contribution not found"));
@@ -154,7 +154,7 @@ public class ContributionServiceImpl implements ContributionService {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new BadRequestException("Event not found"));
 
-        eventValidator.validateEventAllowsInteraction(event);
+        eventValidator.validateEventAllowsContributions(event);
 
         Contribution contribution = contributionRepository.findById(contributionId)
                 .orElseThrow(() -> new BadRequestException("Contribution not found"));
