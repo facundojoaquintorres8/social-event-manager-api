@@ -2,6 +2,7 @@ package com.socialeventmanager.notification.consumer;
 
 import com.socialeventmanager.kafka.event.EventCancelledEvent;
 import com.socialeventmanager.kafka.event.InvitationCreatedEvent;
+import com.socialeventmanager.kafka.event.InvitationRespondedEvent;
 import com.socialeventmanager.kafka.event.UserRegisteredEvent;
 import com.socialeventmanager.notification.service.EmailService;
 import lombok.RequiredArgsConstructor;
@@ -27,5 +28,10 @@ public class NotificationConsumer {
     @KafkaListener(topics = "event-cancelled", groupId = "notification-group")
     public void handleEventCancelled(EventCancelledEvent event) {
         emailService.sendEventCancelledEmail(event);
+    }
+
+    @KafkaListener(topics = "invitation-responded", groupId = "notification-group")
+    public void handleInvitationResponded(InvitationRespondedEvent event) {
+        emailService.sendInvitationRespondedEmail(event);
     }
 }

@@ -14,6 +14,8 @@ public class KafkaTopicConfig {
     public static final String USER_REGISTERED_DLT = "user-registered-dlt";
     public static final String EVENT_CANCELLED_TOPIC = "event-cancelled";
     public static final String EVENT_CANCELLED_DLT = "event-cancelled-dlt";
+    public static final String INVITATION_RESPONDED_TOPIC = "invitation-responded";
+    public static final String INVITATION_RESPONDED_DLT = "invitation-responded-dlt";
 
     @Bean
     public NewTopic invitationCreatedTopic() {
@@ -44,4 +46,15 @@ public class KafkaTopicConfig {
     public NewTopic eventCancelledDltTopic() {
         return TopicBuilder.name(EVENT_CANCELLED_DLT).partitions(1).replicas(1).build();
     }
+
+    @Bean
+    public NewTopic invitationRespondedTopic() {
+        return TopicBuilder.name(INVITATION_RESPONDED_TOPIC).partitions(1).replicas(1).build();
+    }
+
+    @Bean
+    public NewTopic invitationRespondedDltTopic() {
+        return TopicBuilder.name(INVITATION_RESPONDED_DLT).partitions(1).replicas(1).build();
+    }
+
 }

@@ -10,8 +10,10 @@ import org.springframework.stereotype.Service;
 import com.resend.Resend;
 import com.resend.core.exception.ResendException;
 import com.resend.services.emails.model.CreateEmailOptions;
+import com.socialeventmanager.event.enums.InvitationStatus;
 import com.socialeventmanager.kafka.event.EventCancelledEvent;
 import com.socialeventmanager.kafka.event.InvitationCreatedEvent;
+import com.socialeventmanager.kafka.event.InvitationRespondedEvent;
 import com.socialeventmanager.kafka.event.UserRegisteredEvent;
 
 import jakarta.annotation.PostConstruct;
@@ -43,6 +45,7 @@ public class EmailServiceImpl implements EmailService {
     private String externalTemplate;
     private String welcomeTemplate;
     private String eventCancelledTemplate;
+    private String invitationRespondedTemplate;
 
     @PostConstruct
     public void init() throws IOException {
@@ -50,7 +53,8 @@ public class EmailServiceImpl implements EmailService {
         this.internalTemplate = loadTemplate("templates/email/invitation-internal.html");
         this.externalTemplate = loadTemplate("templates/email/invitation-external.html");
         this.welcomeTemplate = loadTemplate("templates/email/welcome.html");
-        this.eventCancelledTemplate = loadTemplate("templates/email/event-cancelled.html"); // 👈
+        this.eventCancelledTemplate = loadTemplate("templates/email/event-cancelled.html");
+        this.invitationRespondedTemplate = loadTemplate("templates/email/invitation-responded.html");
     }
 
     @Override
@@ -131,6 +135,39 @@ public class EmailServiceImpl implements EmailService {
                 throw new RuntimeException("Failed to send cancellation email to " +
                         email + " for event " + event.eventId(), e);
             }
+        }
+    }
+
+    @Override
+    public void sendInvitationRespondedEmail(InvitationRespondedEvent event) {
+        boolean accepted = event.status() == InvitationStatus.ACCEPTED;
+
+        String statusText = accepted
+                ? "<span style='color:#16a34a;font-weight:600;'>accepted</span>"
+                : "<span style='color:#dc2626;font-weight:600;'>declined</span>";
+
+        String html = invitationRespondedTemplate
+                .replace("{{eventTitle}}", event.eventTitle())
+                .replace("{{participantName}}", event.participantName())
+                .replace("{{statusLabel}}", accepted ? "accepted" : "declined")
+                .replace("{{statusText}}", statusText)
+                .replace("{{eventUrl}}", frontendUrl + "/events/" + event.eventId());
+
+        try {
+            CreateEmailOptions options = CreateEmailOptions.builder()
+                    .from(fromEmail)
+                    .to(resolveRecipient(event.organizerEmail()))
+                    .subject((accepted ? "✅ " : "❌ ") + event.participantName() +
+                            " " + (accepted ? "accepted" : "declined") +
+                            " your invitation to " + event.eventTitle())
+                    .html(html)
+                    .build();
+
+            resend.emails().send(options);
+
+        } catch (ResendException e) {
+            throw new RuntimeException("Failed to send invitation responded email for invitation " +
+                    event.invitationId(), e);
         }
     }
 

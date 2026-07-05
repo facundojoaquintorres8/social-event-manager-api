@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <title>Invitation Response</title>
+  </head>
+  <body
+    style="
+      font-family: Inter, sans-serif;
+      background: #f9fafb;
+      margin: 0;
+      padding: 32px;
+    "
+  >
+    <div
+      style="
+        max-width: 520px;
+        margin: 0 auto;
+        background: #fff;
+        border-radius: 16px;
+        border: 1px solid #e5e7eb;
+        overflow: hidden;
+      "
+    >
+      <div
+        style="
+          background: linear-gradient(135deg, #2563eb, #4f46e5);
+          padding: 32px;
+          text-align: center;
+        "
+      >
+        <h1 style="color: #fff; margin: 0; font-size: 24px">
+          Social Event Manager
+        </h1>
+      </div>
+
+      <div style="padding: 32px">
+        <p style="color: #6b7280; font-size: 14px; margin: 0 0 8px">
+          Update for your event
+        </p>
+
+        <h2 style="color: #111827; font-size: 22px; margin: 0 0 24px">
+          {{eventTitle}}
+        </h2>
+
+        <div
+          style="
+            background: #f9fafb;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 24px;
+          "
+        >
+          <p style="color: #111827; font-size: 14px; margin: 0">
+            <strong>{{participantName}}</strong> has {{statusText}} your
+            invitation to <strong>{{eventTitle}}</strong>.
+          </p>
+        </div>
+
+        <a
+          href="{{eventUrl}}"
+          style="
+            display: inline-block;
+            background: #2563eb;
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+          "
+        >
+          View Event
+        </a>
+      </div>
+
+      <div
+        style="
+          padding: 16px 32px;
+          border-top: 1px solid #e5e7eb;
+          text-align: center;
+        "
+      >
+        <p style="color: #9ca3af; font-size: 12px; margin: 0">
+          Social Event Manager · You received this email because you are the
+          organizer of this event.
+        </p>
+      </div>
+    </div>
+  </body>
+</html>

@@ -24,6 +24,7 @@ import com.socialeventmanager.event.repository.EventRepository;
 import com.socialeventmanager.event.repository.InvitationRepository;
 import com.socialeventmanager.event.repository.InvitationSpecification;
 import com.socialeventmanager.kafka.event.InvitationCreatedEvent;
+import com.socialeventmanager.kafka.event.InvitationRespondedEvent;
 import com.socialeventmanager.kafka.producer.EventProducer;
 import com.socialeventmanager.notification.service.NotificationLogService;
 import com.socialeventmanager.shared.dto.ApiResponseDTO;
@@ -253,6 +254,15 @@ public class InvitationServiceImpl implements InvitationService {
         invitation.setStatus(request.getStatus());
 
         invitationRepository.save(invitation);
+
+        eventProducer.sendInvitationResponded(new InvitationRespondedEvent(
+                invitation.getId(),
+                invitation.getEvent().getId(),
+                invitation.getEvent().getTitle(),
+                invitation.getInvitedUser().getFirstName() + " " +
+                        invitation.getInvitedUser().getLastName(),
+                invitation.getEvent().getCreatedBy().getEmail(),
+                request.getStatus()));
 
         return new ApiResponseDTO<>(
                 true,

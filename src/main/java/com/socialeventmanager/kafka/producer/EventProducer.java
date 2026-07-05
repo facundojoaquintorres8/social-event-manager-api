@@ -3,6 +3,7 @@ package com.socialeventmanager.kafka.producer;
 import com.socialeventmanager.kafka.config.KafkaTopicConfig;
 import com.socialeventmanager.kafka.event.EventCancelledEvent;
 import com.socialeventmanager.kafka.event.InvitationCreatedEvent;
+import com.socialeventmanager.kafka.event.InvitationRespondedEvent;
 import com.socialeventmanager.kafka.event.UserRegisteredEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -42,6 +43,16 @@ public class EventProducer {
                     if (ex != null) {
                         log.error("Failed to publish EventCancelledEvent for event {}: {}",
                                 event.eventId(), ex.getMessage());
+                    }
+                });
+    }
+
+    public void sendInvitationResponded(InvitationRespondedEvent event) {
+        kafkaTemplate.send(KafkaTopicConfig.INVITATION_RESPONDED_TOPIC, event)
+                .whenComplete((result, ex) -> {
+                    if (ex != null) {
+                        log.error("Failed to publish InvitationRespondedEvent for invitation {}: {}",
+                                event.invitationId(), ex.getMessage());
                     }
                 });
     }
