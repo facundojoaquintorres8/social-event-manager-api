@@ -60,7 +60,6 @@ CREATE TABLE IF NOT EXISTS external_invitations (
     created_at TIMESTAMP NOT NULL,
     updated_at TIMESTAMP NOT NULL,
     claimed_at TIMESTAMP,
-    expires_at TIMESTAMP NOT NULL,
     invited_email VARCHAR(255) NOT NULL,
     status VARCHAR(255) NOT NULL,
     token VARCHAR(255) NOT NULL UNIQUE,

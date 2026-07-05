@@ -47,4 +47,6 @@ public interface InvitationService {
 
     List<InvitationResponseDTO> getRecentInvitations(User user);
 
+    List<String> getAcceptedParticipantEmails(Event event);
+
 }

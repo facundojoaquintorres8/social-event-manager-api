@@ -1,19 +1,20 @@
 package com.socialeventmanager.event.repository;
 
-import com.socialeventmanager.event.entity.Event;
-import com.socialeventmanager.event.entity.EventInvitation;
-import com.socialeventmanager.event.enums.InvitationStatus;
-import com.socialeventmanager.user.entity.User;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import com.socialeventmanager.event.entity.Event;
+import com.socialeventmanager.event.entity.EventInvitation;
+import com.socialeventmanager.event.enums.InvitationStatus;
+import com.socialeventmanager.user.entity.User;
 
 public interface InvitationRepository extends JpaRepository<EventInvitation, UUID>,
         JpaSpecificationExecutor<EventInvitation> {
@@ -58,4 +59,6 @@ public interface InvitationRepository extends JpaRepository<EventInvitation, UUI
     List<EventInvitation> findTop5ByInvitedUserIdAndStatusNotOrderByCreatedAtDesc(
             UUID invitedUserId,
             InvitationStatus status);
+
+    List<EventInvitation> findAllByEventAndStatus(Event event, InvitationStatus status);
 }

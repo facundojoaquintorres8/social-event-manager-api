@@ -45,7 +45,7 @@ public class InvitationServiceImpl implements InvitationService {
     private final CurrentUserService currentUserService;
     private final EventRepository eventRepository;
     private final EventValidator eventValidator;
-    private final EventProducer invitationEventProducer;
+    private final EventProducer eventProducer;
     private final NotificationLogService notificationLogService;
 
     @Override
@@ -315,6 +315,15 @@ public class InvitationServiceImpl implements InvitationService {
                 .toList();
     }
 
+    @Override
+    public List<String> getAcceptedParticipantEmails(Event event) {
+        return invitationRepository
+                .findAllByEventAndStatus(event, InvitationStatus.ACCEPTED)
+                .stream()
+                .map(inv -> inv.getInvitedUser().getEmail())
+                .toList();
+    }
+
     private User getCurrentUser() {
         return currentUserService.getCurrentUser();
     }
@@ -357,7 +366,7 @@ public class InvitationServiceImpl implements InvitationService {
                 invitation.getInvitedUser().getEmail(),
                 false);
 
-        invitationEventProducer.sendInvitationCreated(event);
+        eventProducer.sendInvitationCreated(event);
     }
 
 }

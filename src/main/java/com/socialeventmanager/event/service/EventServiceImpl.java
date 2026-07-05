@@ -45,6 +45,8 @@ import com.socialeventmanager.event.entity.EventInvitation;
 import com.socialeventmanager.event.enums.EventStatus;
 import com.socialeventmanager.event.repository.EventRepository;
 import com.socialeventmanager.event.repository.EventSpecification;
+import com.socialeventmanager.kafka.event.EventCancelledEvent;
+import com.socialeventmanager.kafka.producer.EventProducer;
 import com.socialeventmanager.shared.dto.ApiResponseDTO;
 import com.socialeventmanager.shared.exception.BadRequestException;
 import com.socialeventmanager.shared.exception.ForbiddenException;
@@ -66,6 +68,7 @@ public class EventServiceImpl implements EventService {
     private final InvitationService invitationService;
     private final ContributionService contributionService;
     private final EventValidator eventValidator;
+    private final EventProducer eventProducer;
 
     @Override
     public ApiResponseDTO<EventResponseDTO> createEvent(
@@ -294,9 +297,23 @@ public class EventServiceImpl implements EventService {
 
         eventRepository.save(event);
 
-        invitationService.cancelInvitationsForEvent(event);
+        List<String> participantEmails = invitationService.getAcceptedParticipantEmails(event);
 
+        invitationService.cancelInvitationsForEvent(event);
         externalInvitationService.cancelExternalInvitationsForEvent(event);
+
+        if (!participantEmails.isEmpty()) {
+            eventProducer.sendEventCancelled(new EventCancelledEvent(
+                    event.getId(),
+                    event.getTitle(),
+                    event.getLocation(),
+                    event.getLatitude(),
+                    event.getLongitude(),
+                    event.getEventDate().toString(),
+                    event.getCreatedBy().getFirstName() + " " +
+                            event.getCreatedBy().getLastName(),
+                    participantEmails));
+        }
 
         return new ApiResponseDTO<>(
                 true,

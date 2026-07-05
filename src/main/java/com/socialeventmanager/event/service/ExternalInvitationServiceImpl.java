@@ -36,7 +36,7 @@ public class ExternalInvitationServiceImpl implements ExternalInvitationService 
     private final CurrentUserService currentUserService;
     private final EventRepository eventRepository;
     private final EventValidator eventValidator;
-    private final EventProducer invitationEventProducer;
+    private final EventProducer eventProducer;
     private final NotificationLogService notificationLogService;
 
     @Transactional
@@ -227,7 +227,7 @@ public class ExternalInvitationServiceImpl implements ExternalInvitationService 
                 invitation.getInvitedEmail(),
                 true);
 
-        invitationEventProducer.sendInvitationCreated(event);
+        eventProducer.sendInvitationCreated(event);
     }
 
 }

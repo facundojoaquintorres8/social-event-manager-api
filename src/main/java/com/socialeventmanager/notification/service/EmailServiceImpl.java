@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import com.resend.Resend;
 import com.resend.core.exception.ResendException;
 import com.resend.services.emails.model.CreateEmailOptions;
+import com.socialeventmanager.kafka.event.EventCancelledEvent;
 import com.socialeventmanager.kafka.event.InvitationCreatedEvent;
 import com.socialeventmanager.kafka.event.UserRegisteredEvent;
 
@@ -22,6 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class EmailServiceImpl implements EmailService {
 
+    private static final String GOOGLE_MAPS_URL = "https://www.google.com/maps?q=%s,%s";
     private final NotificationLogService notificationLogService;
 
     @Value("${resend.api-key}")
@@ -40,6 +42,7 @@ public class EmailServiceImpl implements EmailService {
     private String internalTemplate;
     private String externalTemplate;
     private String welcomeTemplate;
+    private String eventCancelledTemplate;
 
     @PostConstruct
     public void init() throws IOException {
@@ -47,6 +50,7 @@ public class EmailServiceImpl implements EmailService {
         this.internalTemplate = loadTemplate("templates/email/invitation-internal.html");
         this.externalTemplate = loadTemplate("templates/email/invitation-external.html");
         this.welcomeTemplate = loadTemplate("templates/email/welcome.html");
+        this.eventCancelledTemplate = loadTemplate("templates/email/event-cancelled.html"); // 👈
     }
 
     @Override
@@ -56,7 +60,7 @@ public class EmailServiceImpl implements EmailService {
             return;
         }
 
-        String mapsUrl = "https://www.google.com/maps?q=" + event.latitude() + "," + event.longitude();
+        String mapsUrl = String.format(GOOGLE_MAPS_URL, event.latitude(), event.longitude());
 
         String html = event.external()
                 ? buildHtml(externalTemplate, event, mapsUrl)
@@ -98,6 +102,35 @@ public class EmailServiceImpl implements EmailService {
         } catch (ResendException e) {
             throw new RuntimeException("Failed to send welcome email for user " +
                     event.userId(), e);
+        }
+    }
+
+    @Override
+    public void sendEventCancelledEmail(EventCancelledEvent event) {
+        String mapsUrl = String.format(GOOGLE_MAPS_URL, event.latitude(), event.longitude());
+
+        String html = eventCancelledTemplate
+                .replace("{{organizerName}}", event.organizerName())
+                .replace("{{eventTitle}}", event.eventTitle())
+                .replace("{{eventDate}}", event.eventDate())
+                .replace("{{mapsUrl}}", mapsUrl)
+                .replace("{{eventLocation}}", event.eventLocation());
+
+        for (String email : event.participantEmails()) {
+            try {
+                CreateEmailOptions options = CreateEmailOptions.builder()
+                        .from(fromEmail)
+                        .to(resolveRecipient(email))
+                        .subject("Event cancelled: " + event.eventTitle())
+                        .html(html)
+                        .build();
+
+                resend.emails().send(options);
+
+            } catch (ResendException e) {
+                throw new RuntimeException("Failed to send cancellation email to " +
+                        email + " for event " + event.eventId(), e);
+            }
         }
     }
 
