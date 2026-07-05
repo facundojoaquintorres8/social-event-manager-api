@@ -33,6 +33,9 @@ public class EmailServiceImpl implements EmailService {
     @Value("${app.frontend-url}")
     private String frontendUrl;
 
+    @Value("${resend.override-to:}")
+    private String overrideTo;
+
     private Resend resend;
     private String internalTemplate;
     private String externalTemplate;
@@ -62,7 +65,7 @@ public class EmailServiceImpl implements EmailService {
         try {
             CreateEmailOptions options = CreateEmailOptions.builder()
                     .from(fromEmail)
-                    .to(event.invitedEmail())
+                    .to(resolveRecipient(event.invitedEmail()))
                     .subject("You've been invited to " + event.eventTitle())
                     .html(html)
                     .build();
@@ -85,7 +88,7 @@ public class EmailServiceImpl implements EmailService {
         try {
             CreateEmailOptions options = CreateEmailOptions.builder()
                     .from(fromEmail)
-                    .to(event.email())
+                    .to(resolveRecipient(event.email()))
                     .subject("Welcome to Social Event Manager!")
                     .html(html)
                     .build();
@@ -112,5 +115,9 @@ public class EmailServiceImpl implements EmailService {
     private String loadTemplate(String path) throws IOException {
         return new ClassPathResource(path)
                 .getContentAsString(StandardCharsets.UTF_8);
+    }
+
+    private String resolveRecipient(String actualEmail) {
+        return (overrideTo != null && !overrideTo.isBlank()) ? overrideTo : actualEmail;
     }
 }

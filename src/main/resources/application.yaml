@@ -55,3 +55,4 @@ app:
 resend:
   api-key: ${RESEND_API_KEY}
   from-email: ${RESEND_FROM_EMAIL}
+  override-to: ${RESEND_OVERRIDE_TO:}
