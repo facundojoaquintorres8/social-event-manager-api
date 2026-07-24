@@ -12,13 +12,13 @@ import com.socialeventmanager.user.entity.User;
 public interface ExternalInvitationService {
     List<EventParticipantResponseDTO> findAllByEventAndPending(Event event);
 
-    ApiResponseDTO<Void> inviteExternalUser(Event event, User currentUser, String email);
+    ApiResponseDTO<Void> inviteExternalUser(Event event, User currentUser, String email, String language);
 
     ApiResponseDTO<Void> removeExternalInvitation(RemoveInvitationRequestDTO request);
 
     ApiResponseDTO<ExternalInvitationPreviewResponseDTO> getInvitationPreview(String token);
 
-    void claimExternalInvitations(User user);
+    void claimExternalInvitations(User user, String language);
 
     void cancelExternalInvitationsForEvent(Event event);
 

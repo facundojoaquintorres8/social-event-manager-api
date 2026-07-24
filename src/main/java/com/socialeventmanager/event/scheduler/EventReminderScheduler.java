@@ -55,7 +55,8 @@ public class EventReminderScheduler {
                     event.getCreatedBy().getEmail(),
                     event.getLatitude(),
                     event.getLongitude(),
-                    participantEmails));
+                    participantEmails,
+                    event.getLanguage()));
 
             event.setReminderSent(true);
             eventRepository.save(event);

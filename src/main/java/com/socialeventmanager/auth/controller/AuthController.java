@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -24,10 +25,11 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<ApiResponseDTO<AuthResponseDTO>> register(
-            @Valid @RequestBody RegisterRequestDTO request) {
+            @Valid @RequestBody RegisterRequestDTO request,
+            @RequestHeader(value = "Accept-Language", defaultValue = "en") String language) {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(authService.register(request));
+                .body(authService.register(request, language));
     }
 
     @PostMapping("/login")

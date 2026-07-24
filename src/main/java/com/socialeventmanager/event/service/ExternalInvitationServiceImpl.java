@@ -46,7 +46,8 @@ public class ExternalInvitationServiceImpl implements ExternalInvitationService 
     public ApiResponseDTO<Void> inviteExternalUser(
             Event event,
             User currentUser,
-            String email) {
+            String email,
+            String language) {
         ExternalInvitation existingInvitation = externalInvitationRepository
                 .findByEventAndInvitedEmail(event, email)
                 .orElse(null);
@@ -60,7 +61,7 @@ public class ExternalInvitationServiceImpl implements ExternalInvitationService 
 
                 notificationLogService.deleteByInvitationId(existingInvitation.getId());
 
-                publishExternalInvitationCreatedEvent(existingInvitation);
+                publishExternalInvitationCreatedEvent(existingInvitation, language);
 
                 return new ApiResponseDTO<>(
                         true,
@@ -81,7 +82,7 @@ public class ExternalInvitationServiceImpl implements ExternalInvitationService 
 
         externalInvitationRepository.save(invitation);
 
-        publishExternalInvitationCreatedEvent(invitation);
+        publishExternalInvitationCreatedEvent(invitation, language);
         return new ApiResponseDTO<>(
                 true,
                 "Invitation sent successfully",
@@ -147,7 +148,7 @@ public class ExternalInvitationServiceImpl implements ExternalInvitationService 
     }
 
     @Override
-    public void claimExternalInvitations(User user) {
+    public void claimExternalInvitations(User user, String language) {
 
         List<ExternalInvitation> invitations = externalInvitationRepository
                 .findAllByInvitedEmailAndStatus(
@@ -161,7 +162,7 @@ public class ExternalInvitationServiceImpl implements ExternalInvitationService 
             }
 
             invitationService.inviteExistingUser(externalInvitation.getEvent(), externalInvitation.getInvitedBy(),
-                    user);
+                    user, language);
 
             externalInvitation.setStatus(ExternalInvitationStatus.CLAIMED);
             externalInvitation.setClaimedAt(LocalDateTime.now());
@@ -217,7 +218,7 @@ public class ExternalInvitationServiceImpl implements ExternalInvitationService 
         return invitation;
     }
 
-    private void publishExternalInvitationCreatedEvent(ExternalInvitation invitation) {
+    private void publishExternalInvitationCreatedEvent(ExternalInvitation invitation, String language) {
         InvitationCreatedEvent event = new InvitationCreatedEvent(
                 invitation.getId(),
                 invitation.getEvent().getTitle(),
@@ -228,7 +229,8 @@ public class ExternalInvitationServiceImpl implements ExternalInvitationService 
                 invitation.getInvitedBy().getFirstName() + " " +
                         invitation.getInvitedBy().getLastName(),
                 invitation.getInvitedEmail(),
-                true);
+                true,
+                language);
 
         eventProducer.sendInvitationCreated(event);
     }

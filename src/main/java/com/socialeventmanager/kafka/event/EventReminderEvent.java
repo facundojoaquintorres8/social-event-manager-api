@@ -12,5 +12,6 @@ public record EventReminderEvent(
         String organizerEmail,
         Double latitude,
         Double longitude,
-        List<String> participantEmails) {
+        List<String> participantEmails,
+        String language) {
 }

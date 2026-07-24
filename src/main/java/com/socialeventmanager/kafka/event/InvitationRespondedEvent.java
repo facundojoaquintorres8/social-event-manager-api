@@ -9,5 +9,6 @@ public record InvitationRespondedEvent(
         String eventTitle,
         String participantName,
         String organizerEmail,
-        InvitationStatus status) {
+        InvitationStatus status,
+        String language) {
 }

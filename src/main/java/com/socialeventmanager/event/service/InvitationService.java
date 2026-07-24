@@ -20,7 +20,7 @@ public interface InvitationService {
 
     List<EventParticipantResponseDTO> findAllByEventAndNotCancelled(Event event);
 
-    ApiResponseDTO<Void> inviteExistingUser(Event event, User invitedBy, User invitedUser);
+    ApiResponseDTO<Void> inviteExistingUser(Event event, User invitedBy, User invitedUser, String language);
 
     Page<EventInvitation> findAllAccepted(
             int page,
@@ -39,7 +39,7 @@ public interface InvitationService {
             String direction,
             InvitationStatus status);
 
-    ApiResponseDTO<Void> updateInvitationStatus(UpdateInvitationStatusRequestDTO request);
+    ApiResponseDTO<Void> updateInvitationStatus(UpdateInvitationStatusRequestDTO request, String language);
 
     ApiResponseDTO<Void> removeInvitation(RemoveInvitationRequestDTO request);
 

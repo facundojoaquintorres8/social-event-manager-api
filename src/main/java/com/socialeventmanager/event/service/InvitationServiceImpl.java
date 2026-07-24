@@ -73,7 +73,8 @@ public class InvitationServiceImpl implements InvitationService {
     public ApiResponseDTO<Void> inviteExistingUser(
             Event event,
             User invitedBy,
-            User invitedUser) {
+            User invitedUser,
+            String language) {
         EventInvitation existingInvitation = invitationRepository
                 .findByEventAndInvitedUser(event, invitedUser)
                 .orElse(null);
@@ -88,7 +89,7 @@ public class InvitationServiceImpl implements InvitationService {
 
                 notificationLogService.deleteByInvitationId(existingInvitation.getId());
 
-                publishInvitationCreatedEvent(existingInvitation);
+                publishInvitationCreatedEvent(existingInvitation, language);
 
                 return new ApiResponseDTO<>(
                         true,
@@ -108,7 +109,7 @@ public class InvitationServiceImpl implements InvitationService {
 
         invitationRepository.save(invitation);
 
-        publishInvitationCreatedEvent(invitation);
+        publishInvitationCreatedEvent(invitation, language);
         return new ApiResponseDTO<>(
                 true,
                 "User invited successfully",
@@ -232,7 +233,7 @@ public class InvitationServiceImpl implements InvitationService {
     }
 
     @Override
-    public ApiResponseDTO<Void> updateInvitationStatus(UpdateInvitationStatusRequestDTO request) {
+    public ApiResponseDTO<Void> updateInvitationStatus(UpdateInvitationStatusRequestDTO request, String language) {
         User currentUser = getCurrentUser();
 
         if (request.getStatus() == InvitationStatus.PENDING) {
@@ -264,7 +265,8 @@ public class InvitationServiceImpl implements InvitationService {
                 invitation.getInvitedUser().getFirstName() + " " +
                         invitation.getInvitedUser().getLastName(),
                 invitation.getEvent().getCreatedBy().getEmail(),
-                request.getStatus()));
+                request.getStatus(),
+                language));
 
         return new ApiResponseDTO<>(
                 true,
@@ -366,7 +368,7 @@ public class InvitationServiceImpl implements InvitationService {
                 null);
     }
 
-    private void publishInvitationCreatedEvent(EventInvitation invitation) {
+    private void publishInvitationCreatedEvent(EventInvitation invitation, String language) {
         InvitationCreatedEvent event = new InvitationCreatedEvent(
                 invitation.getId(),
                 invitation.getEvent().getTitle(),
@@ -377,7 +379,8 @@ public class InvitationServiceImpl implements InvitationService {
                 invitation.getInvitedBy().getFirstName() + " " +
                         invitation.getInvitedBy().getLastName(),
                 invitation.getInvitedUser().getEmail(),
-                false);
+                false,
+                language);
 
         eventProducer.sendInvitationCreated(event);
     }

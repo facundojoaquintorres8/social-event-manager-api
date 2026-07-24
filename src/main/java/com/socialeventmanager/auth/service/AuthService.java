@@ -8,7 +8,7 @@ import com.socialeventmanager.shared.dto.ApiResponseDTO;
 
 public interface AuthService {
 
-    ApiResponseDTO<AuthResponseDTO> register(RegisterRequestDTO request);
+    ApiResponseDTO<AuthResponseDTO> register(RegisterRequestDTO request, String language);
 
     ApiResponseDTO<AuthResponseDTO> login(LoginRequestDTO request);
 

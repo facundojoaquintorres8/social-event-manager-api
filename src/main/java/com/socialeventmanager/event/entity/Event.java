@@ -64,4 +64,8 @@ public class Event extends BaseEntity {
     @Column(name = "reminder_sent", nullable = false)
     @Builder.Default
     private boolean reminderSent = false;
+
+    @Column(nullable = false, length = 2)
+    @Builder.Default
+    private String language = "en";
 }

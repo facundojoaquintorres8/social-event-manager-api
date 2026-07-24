@@ -31,4 +31,6 @@ public class CreateEventRequestDTO {
 
     @NotNull(message = "Longitude is required")
     private Double longitude;
+
+    private String language;
 }

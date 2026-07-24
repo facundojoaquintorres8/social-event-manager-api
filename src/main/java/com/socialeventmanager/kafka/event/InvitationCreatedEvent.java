@@ -11,5 +11,6 @@ public record InvitationCreatedEvent(
         String eventDate,
         String organizerName,
         String invitedEmail,
-        boolean external) {
+        boolean external,
+        String language) {
 }

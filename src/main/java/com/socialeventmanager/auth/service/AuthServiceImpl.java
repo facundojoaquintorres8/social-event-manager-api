@@ -40,7 +40,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     @Transactional
-    public ApiResponseDTO<AuthResponseDTO> register(RegisterRequestDTO request) {
+    public ApiResponseDTO<AuthResponseDTO> register(RegisterRequestDTO request, String language) {
         String email = request.getEmail().trim().toLowerCase(Locale.ROOT);
         EmailValidator.validateEmail(request.getEmail());
 
@@ -57,12 +57,13 @@ public class AuthServiceImpl implements AuthService {
 
         userRepository.save(user);
 
-        externalInvitationService.claimExternalInvitations(user);
+        externalInvitationService.claimExternalInvitations(user, language);
 
         eventProducer.sendUserRegistered(new UserRegisteredEvent(
                 user.getId(),
                 user.getFirstName(),
-                user.getEmail()));
+                user.getEmail(),
+                language));
 
         return new ApiResponseDTO<>(
                 true,

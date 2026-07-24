@@ -49,11 +49,12 @@ public interface EventService {
             UUID eventId,
             CreateEventRequestDTO request);
 
-    ApiResponseDTO<Void> deleteEvent(UUID eventId);
+    ApiResponseDTO<Void> deleteEvent(UUID eventId, String language);
 
     ApiResponseDTO<Void> inviteUser(
             UUID eventId,
-            InviteUserRequestDTO request);
+            InviteUserRequestDTO request,
+            String language);
 
     ApiResponseDTO<DashboardResponseDTO> getDashboard();
 

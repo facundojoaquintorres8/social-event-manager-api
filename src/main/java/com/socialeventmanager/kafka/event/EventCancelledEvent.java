@@ -11,5 +11,6 @@ public record EventCancelledEvent(
         Double longitude,
         String eventDate,
         String organizerName,
-        List<String> participantEmails) {
+        List<String> participantEmails,
+        String language) {
 }

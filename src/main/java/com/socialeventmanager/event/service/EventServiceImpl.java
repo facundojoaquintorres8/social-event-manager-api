@@ -88,6 +88,7 @@ public class EventServiceImpl implements EventService {
                 .longitude(request.getLongitude())
                 .createdBy(currentUser)
                 .status(EventStatus.ACTIVE)
+                .language(request.getLanguage())
                 .build();
 
         eventRepository.save(event);
@@ -288,7 +289,7 @@ public class EventServiceImpl implements EventService {
 
     @Override
     @Transactional
-    public ApiResponseDTO<Void> deleteEvent(UUID eventId) {
+    public ApiResponseDTO<Void> deleteEvent(UUID eventId, String language) {
         Event event = getOwnedEvent(eventId);
 
         if (event.getStatus() == EventStatus.CANCELLED) {
@@ -314,7 +315,8 @@ public class EventServiceImpl implements EventService {
                     event.getEventDate().toString(),
                     event.getCreatedBy().getFirstName() + " " +
                             event.getCreatedBy().getLastName(),
-                    participantEmails));
+                    participantEmails,
+                    language));
         }
 
         return new ApiResponseDTO<>(
@@ -326,7 +328,7 @@ public class EventServiceImpl implements EventService {
     @Override
     public ApiResponseDTO<Void> inviteUser(
             UUID eventId,
-            InviteUserRequestDTO request) {
+            InviteUserRequestDTO request, String language) {
         User currentUser = getCurrentUser();
 
         Event event = eventRepository
@@ -345,10 +347,10 @@ public class EventServiceImpl implements EventService {
             if (invitedUser.getId().equals(currentUser.getId())) {
                 throw new BadRequestException("You cannot invite yourself");
             }
-            return invitationService.inviteExistingUser(event, currentUser, invitedUser);
+            return invitationService.inviteExistingUser(event, currentUser, invitedUser, language);
         }
 
-        return externalInvitationService.inviteExternalUser(event, currentUser, email);
+        return externalInvitationService.inviteExternalUser(event, currentUser, email, language);
     }
 
     @Override

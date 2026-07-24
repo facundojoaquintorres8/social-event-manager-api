@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -39,7 +40,11 @@ public class EventController {
 
     @PostMapping
     public ResponseEntity<ApiResponseDTO<EventResponseDTO>> createEvent(
-            @Valid @RequestBody CreateEventRequestDTO request) {
+            @RequestBody @Valid CreateEventRequestDTO request,
+            @RequestHeader(value = "Accept-Language", defaultValue = "en") String acceptLanguage) {
+        String language = acceptLanguage.split("[,;-]")[0].trim().toLowerCase();
+        language = language.equals("es") ? "es" : "en";
+        request.setLanguage(language);
         return ResponseEntity.ok(eventService.createEvent(request));
     }
 
@@ -102,15 +107,17 @@ public class EventController {
 
     @PutMapping("/{eventId}/cancel")
     public ResponseEntity<ApiResponseDTO<Void>> deleteEvent(
-            @PathVariable UUID eventId) {
-        return ResponseEntity.ok(eventService.deleteEvent(eventId));
+            @PathVariable UUID eventId,
+            @RequestHeader(value = "Accept-Language", defaultValue = "en") String language) {
+        return ResponseEntity.ok(eventService.deleteEvent(eventId, language));
     }
 
     @PostMapping("/{eventId}/invite")
     public ResponseEntity<ApiResponseDTO<Void>> inviteUser(
             @PathVariable UUID eventId,
-            @Valid @RequestBody InviteUserRequestDTO request) {
-        return ResponseEntity.ok(eventService.inviteUser(eventId, request));
+            @Valid @RequestBody InviteUserRequestDTO request,
+            @RequestHeader(value = "Accept-Language", defaultValue = "en") String language) {
+        return ResponseEntity.ok(eventService.inviteUser(eventId, request, language));
     }
 
     @GetMapping("/dashboard")
