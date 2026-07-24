@@ -12,5 +12,6 @@ public record InvitationCreatedEvent(
         String organizerName,
         String invitedEmail,
         boolean external,
+        String externalToken,
         String language) {
 }

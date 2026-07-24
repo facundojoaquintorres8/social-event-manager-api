@@ -283,7 +283,8 @@ public class EmailServiceImpl implements EmailService {
                 .replace("{{mapsUrl}}", mapsUrl)
                 .replace("{{eventLocation}}", event.eventLocation())
                 .replace("{{workspaceUrl}}", frontendUrl + "/workspace?tab=invitations")
-                .replace("{{inviteUrl}}", frontendUrl + "/invite/" + event.invitationId());
+                .replace("{{inviteUrl}}", frontendUrl + "/invite/" +
+                        (event.external() ? event.externalToken() : event.invitationId()));
     }
 
     private String loadTemplate(String path) throws IOException {

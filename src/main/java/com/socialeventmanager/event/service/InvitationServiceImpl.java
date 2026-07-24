@@ -380,6 +380,7 @@ public class InvitationServiceImpl implements InvitationService {
                         invitation.getInvitedBy().getLastName(),
                 invitation.getInvitedUser().getEmail(),
                 false,
+                null,
                 language);
 
         eventProducer.sendInvitationCreated(event);

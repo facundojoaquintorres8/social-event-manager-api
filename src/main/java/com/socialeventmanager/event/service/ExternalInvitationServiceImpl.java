@@ -230,6 +230,7 @@ public class ExternalInvitationServiceImpl implements ExternalInvitationService 
                         invitation.getInvitedBy().getLastName(),
                 invitation.getInvitedEmail(),
                 true,
+                invitation.getToken(),
                 language);
 
         eventProducer.sendInvitationCreated(event);
