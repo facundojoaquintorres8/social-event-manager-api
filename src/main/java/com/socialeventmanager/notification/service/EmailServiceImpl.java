@@ -43,21 +43,38 @@ public class EmailServiceImpl implements EmailService {
 
     private Resend resend;
     private String internalTemplate;
+    private String internalTemplateEs;
+
     private String externalTemplate;
+    private String externalTemplateEs;
+
     private String welcomeTemplate;
+    private String welcomeTemplateEs;
+
     private String eventCancelledTemplate;
+    private String eventCancelledTemplateEs;
+
     private String invitationRespondedTemplate;
+    private String invitationRespondedTemplateEs;
+
     private String eventReminderTemplate;
+    private String eventReminderTemplateEs;
 
     @PostConstruct
     public void init() throws IOException {
         this.resend = new Resend(apiKey);
         this.internalTemplate = loadTemplate("templates/email/invitation-internal.html");
+        this.internalTemplateEs = loadTemplate("templates/email/invitation-internal-es.html");
         this.externalTemplate = loadTemplate("templates/email/invitation-external.html");
+        this.externalTemplateEs = loadTemplate("templates/email/invitation-external-es.html");
         this.welcomeTemplate = loadTemplate("templates/email/welcome.html");
+        this.welcomeTemplateEs = loadTemplate("templates/email/welcome-es.html");
         this.eventCancelledTemplate = loadTemplate("templates/email/event-cancelled.html");
+        this.eventCancelledTemplateEs = loadTemplate("templates/email/event-cancelled-es.html");
         this.invitationRespondedTemplate = loadTemplate("templates/email/invitation-responded.html");
+        this.invitationRespondedTemplateEs = loadTemplate("templates/email/invitation-responded-es.html");
         this.eventReminderTemplate = loadTemplate("templates/email/event-reminder.html");
+        this.eventReminderTemplateEs = loadTemplate("templates/email/event-reminder-es.html");
     }
 
     @Override
@@ -69,15 +86,23 @@ public class EmailServiceImpl implements EmailService {
 
         String mapsUrl = String.format(GOOGLE_MAPS_URL, event.latitude(), event.longitude());
 
-        String html = event.external()
-                ? buildHtml(externalTemplate, event, mapsUrl)
-                : buildHtml(internalTemplate, event, mapsUrl);
+        boolean isEs = "es".equals(event.language());
+        String template;
+        if (event.external()) {
+            template = isEs ? externalTemplateEs : externalTemplate;
+        } else {
+            template = isEs ? internalTemplateEs : internalTemplate;
+        }
+        String html = buildHtml(template, event, mapsUrl);
+        String subject = isEs
+                ? "Fuiste invitado a " + event.eventTitle()
+                : "You've been invited to " + event.eventTitle();
 
         try {
             CreateEmailOptions options = CreateEmailOptions.builder()
                     .from(fromEmail)
                     .to(resolveRecipient(event.invitedEmail()))
-                    .subject("You've been invited to " + event.eventTitle())
+                    .subject(subject)
                     .html(html)
                     .build();
 
@@ -92,20 +117,25 @@ public class EmailServiceImpl implements EmailService {
 
     @Override
     public void sendWelcomeEmail(UserRegisteredEvent event) {
-        String html = welcomeTemplate
+        boolean isEs = "es".equals(event.language());
+        String template = isEs ? welcomeTemplateEs : welcomeTemplate;
+
+        String html = template
                 .replace("{{firstName}}", event.firstName())
                 .replace("{{dashboardUrl}}", frontendUrl + "/dashboard");
+
+        String subject = isEs
+                ? "¡Bienvenido a Social Event Manager!"
+                : "Welcome to Social Event Manager!";
 
         try {
             CreateEmailOptions options = CreateEmailOptions.builder()
                     .from(fromEmail)
                     .to(resolveRecipient(event.email()))
-                    .subject("Welcome to Social Event Manager!")
+                    .subject(subject)
                     .html(html)
                     .build();
-
             resend.emails().send(options);
-
         } catch (ResendException e) {
             throw new RuntimeException("Failed to send welcome email for user " +
                     event.userId(), e);
@@ -116,19 +146,25 @@ public class EmailServiceImpl implements EmailService {
     public void sendEventCancelledEmail(EventCancelledEvent event) {
         String mapsUrl = String.format(GOOGLE_MAPS_URL, event.latitude(), event.longitude());
 
-        String html = eventCancelledTemplate
+        boolean isEs = "es".equals(event.language());
+        String template = isEs ? eventCancelledTemplateEs : eventCancelledTemplate;
+        String html = template
                 .replace("{{organizerName}}", event.organizerName())
                 .replace("{{eventTitle}}", event.eventTitle())
                 .replace("{{eventDate}}", event.eventDate())
                 .replace("{{mapsUrl}}", mapsUrl)
                 .replace("{{eventLocation}}", event.eventLocation());
 
+        String subject = isEs
+                ? "Evento cancelado: " + event.eventTitle()
+                : "Event cancelled: " + event.eventTitle();
+
         for (String email : event.participantEmails()) {
             try {
                 CreateEmailOptions options = CreateEmailOptions.builder()
                         .from(fromEmail)
                         .to(resolveRecipient(email))
-                        .subject("Event cancelled: " + event.eventTitle())
+                        .subject(subject)
                         .html(html)
                         .build();
 
@@ -143,31 +179,46 @@ public class EmailServiceImpl implements EmailService {
 
     @Override
     public void sendInvitationRespondedEmail(InvitationRespondedEvent event) {
+        boolean isEs = "es".equals(event.language());
         boolean accepted = event.status() == InvitationStatus.ACCEPTED;
 
-        String statusText = accepted
+        String template = isEs ? invitationRespondedTemplateEs : invitationRespondedTemplate;
+
+        String spanishStatus = accepted
+                ? "<span style='color:#16a34a;font-weight:600;'>aceptó</span>"
+                : "<span style='color:#dc2626;font-weight:600;'>rechazó</span>";
+
+        String englishStatus = accepted
                 ? "<span style='color:#16a34a;font-weight:600;'>accepted</span>"
                 : "<span style='color:#dc2626;font-weight:600;'>declined</span>";
 
-        String html = invitationRespondedTemplate
+        String statusText = isEs ? spanishStatus : englishStatus;
+
+        String html = template
                 .replace("{{eventTitle}}", event.eventTitle())
                 .replace("{{participantName}}", event.participantName())
-                .replace("{{statusLabel}}", accepted ? "accepted" : "declined")
                 .replace("{{statusText}}", statusText)
                 .replace("{{eventUrl}}", frontendUrl + "/events/" + event.eventId());
+
+        String subjectPrefix = accepted ? "✅ " : "❌ ";
+        String esResponse = accepted ? " aceptó" : " rechazó";
+        String enResponse = accepted ? "accepted" : "declined";
+
+        String subject = isEs
+                ? subjectPrefix + event.participantName() + esResponse +
+                        " tu invitación a " + event.eventTitle()
+                : subjectPrefix + event.participantName() +
+                        " " + enResponse +
+                        " your invitation to " + event.eventTitle();
 
         try {
             CreateEmailOptions options = CreateEmailOptions.builder()
                     .from(fromEmail)
                     .to(resolveRecipient(event.organizerEmail()))
-                    .subject((accepted ? "✅ " : "❌ ") + event.participantName() +
-                            " " + (accepted ? "accepted" : "declined") +
-                            " your invitation to " + event.eventTitle())
+                    .subject(subject)
                     .html(html)
                     .build();
-
             resend.emails().send(options);
-
         } catch (ResendException e) {
             throw new RuntimeException("Failed to send invitation responded email for invitation " +
                     event.invitationId(), e);
@@ -177,7 +228,9 @@ public class EmailServiceImpl implements EmailService {
     public void sendEventReminderEmail(EventReminderEvent event) {
         String mapsUrl = String.format(GOOGLE_MAPS_URL, event.latitude(), event.longitude());
 
-        String html = eventReminderTemplate
+        boolean isEs = "es".equals(event.language());
+        String template = isEs ? eventReminderTemplateEs : eventReminderTemplate;
+        String html = template
                 .replace("{{eventTitle}}", event.eventTitle())
                 .replace("{{eventDate}}", event.eventDate())
                 .replace("{{mapsUrl}}", mapsUrl)
@@ -185,12 +238,16 @@ public class EmailServiceImpl implements EmailService {
                 .replace("{{organizerName}}", event.organizerName())
                 .replace("{{eventUrl}}", frontendUrl + "/events/" + event.eventId());
 
+        String subject = isEs
+                ? "🗓 Recordatorio: " + event.eventTitle() + " es mañana"
+                : "🗓 Reminder: " + event.eventTitle() + " is tomorrow";
+
         for (String email : event.participantEmails()) {
             try {
                 CreateEmailOptions options = CreateEmailOptions.builder()
                         .from(fromEmail)
                         .to(resolveRecipient(email))
-                        .subject("🗓 Reminder: " + event.eventTitle() + " is tomorrow")
+                        .subject(subject)
                         .html(html)
                         .build();
 

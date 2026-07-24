@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>Social Event Invitation</title>
+  </head>
+  <body
+    style="
+      font-family: Inter, sans-serif;
+      background: #f9fafb;
+      margin: 0;
+      padding: 32px;
+    "
+  >
+    <div
+      style="
+        max-width: 520px;
+        margin: 0 auto;
+        background: #fff;
+        border-radius: 16px;
+        border: 1px solid #e5e7eb;
+        overflow: hidden;
+      "
+    >
+      <div
+        style="
+          background: linear-gradient(135deg, #dc2626, #b91c1c);
+          padding: 32px;
+          text-align: center;
+        "
+      >
+        <h1 style="color: #fff; margin: 0; font-size: 24px">
+          Social Event Manager
+        </h1>
+      </div>
+      <div style="padding: 32px">
+        <p style="color: #6b7280; font-size: 14px; margin: 0 0 8px">
+          Evento cancelado por <strong>{{organizerName}}</strong>
+        </p>
+        <h2 style="color: #111827; font-size: 22px; margin: 0 0 24px">
+          {{eventTitle}}
+        </h2>
+        <div
+          style="
+            background: #fef2f2;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 24px;
+            border: 1px solid #fecaca;
+          "
+        >
+          <div style="margin-bottom: 12px">
+            <p
+              style="
+                color: #6b7280;
+                font-size: 11px;
+                text-transform: uppercase;
+                margin: 0 0 4px;
+              "
+            >
+              Fecha
+            </p>
+            <p
+              style="
+                color: #111827;
+                font-size: 14px;
+                font-weight: 500;
+                margin: 0;
+              "
+            >
+              {{eventDate}}
+            </p>
+          </div>
+          <div>
+            <p
+              style="
+                color: #6b7280;
+                font-size: 11px;
+                text-transform: uppercase;
+                margin: 0 0 4px;
+              "
+            >
+              Ubicación
+            </p>
+            <a
+              href="{{mapsUrl}}"
+              style="
+                color: #2563eb;
+                font-size: 14px;
+                font-weight: 500;
+                text-decoration: none;
+              "
+            >
+              {{eventLocation}}
+            </a>
+          </div>
+        </div>
+        <p style="color: #6b7280; font-size: 14px">
+          Este evento fue cancelado. Disculpá las molestias.
+        </p>
+      </div>
+      <div
+        style="
+          padding: 16px 32px;
+          border-top: 1px solid #e5e7eb;
+          text-align: center;
+        "
+      >
+        <p style="color: #9ca3af; font-size: 12px; margin: 0">
+          Social Event Manager · Recibiste este email porque aceptaste una
+          invitación a este evento.
+        </p>
+      </div>
+    </div>
+  </body>
+</html>
