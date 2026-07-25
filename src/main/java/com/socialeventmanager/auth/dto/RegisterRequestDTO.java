@@ -1,6 +1,7 @@
 package com.socialeventmanager.auth.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 
 @Data
@@ -16,5 +17,6 @@ public class RegisterRequestDTO {
     private String email;
 
     @NotBlank(message = "Password is required")
+    @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{8,}$", message = "passwordInvalid")
     private String password;
 }
