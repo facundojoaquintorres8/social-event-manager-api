@@ -45,7 +45,7 @@ public class AuthServiceImpl implements AuthService {
         EmailValidator.validateEmail(request.getEmail());
 
         if (userRepository.existsByEmail(email)) {
-            throw new BadRequestException("Email already registered");
+            throw new BadRequestException("emailAlreadyRegistered");
         }
 
         User user = User.builder()
@@ -81,7 +81,7 @@ public class AuthServiceImpl implements AuthService {
                         request.getPassword()));
 
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new BadRequestException("User not found"));
+                .orElseThrow(() -> new BadRequestException("userNotFound"));
 
         return new ApiResponseDTO<>(
                 true,
@@ -96,18 +96,18 @@ public class AuthServiceImpl implements AuthService {
         String userEmail = jwtService.extractUsername(refreshToken);
 
         if (userEmail == null) {
-            throw new BadRequestException("Invalid refresh token");
+            throw new BadRequestException("invalidRefreshToken");
         }
 
         if (!"REFRESH".equals(jwtService.extractTokenType(refreshToken))) {
-            throw new BadRequestException("Invalid refresh token");
+            throw new BadRequestException("invalidRefreshToken");
         }
 
         User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new BadRequestException("User not found"));
+                .orElseThrow(() -> new BadRequestException("userNotFound"));
 
         if (!jwtService.isTokenValid(refreshToken, user)) {
-            throw new BadRequestException("Invalid refresh token");
+            throw new BadRequestException("invalidRefreshToken");
         }
 
         String newAccessToken = jwtService.generateToken(user.getEmail());

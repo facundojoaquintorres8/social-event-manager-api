@@ -27,7 +27,7 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
         ApiResponseDTO<Object> apiResponse = new ApiResponseDTO<>(
                 false,
-                "Invalid or expired token",
+                "invalidOrExpiredToken",
                 null);
 
         ObjectMapper mapper = new ObjectMapper();

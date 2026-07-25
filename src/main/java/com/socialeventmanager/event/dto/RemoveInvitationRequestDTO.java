@@ -9,7 +9,7 @@ import lombok.Data;
 @Data
 public class RemoveInvitationRequestDTO {
 
-    @NotNull(message = "Event ID is required")
+    @NotNull(message = "Event id is required")
     private UUID eventId;
 
     @NotBlank(message = "Email is required")

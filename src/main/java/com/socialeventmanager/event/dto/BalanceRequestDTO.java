@@ -8,6 +8,6 @@ import lombok.Data;
 @Data
 public class BalanceRequestDTO {
 
-    @NotEmpty(message = "At least one participant is required")
+    @NotEmpty(message = "atLeastOneParticipant")
     private List<BalanceParticipantRequestDTO> participants;
 }

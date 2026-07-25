@@ -42,7 +42,7 @@ public class ContributionServiceImpl implements ContributionService {
         User currentUser = currentUserService.getCurrentUser();
 
         Event event = eventRepository.findById(eventId)
-                .orElseThrow(() -> new BadRequestException("Event not found"));
+                .orElseThrow(() -> new BadRequestException("eventNotFound"));
 
         eventValidator.validateEventAllowsContributions(event);
 
@@ -76,15 +76,15 @@ public class ContributionServiceImpl implements ContributionService {
         User currentUser = currentUserService.getCurrentUser();
 
         Event event = eventRepository.findById(eventId)
-                .orElseThrow(() -> new BadRequestException("Event not found"));
+                .orElseThrow(() -> new BadRequestException("eventNotFound"));
 
         eventValidator.validateEventAllowsContributions(event);
 
         Contribution contribution = contributionRepository.findById(contributionId)
-                .orElseThrow(() -> new BadRequestException("Contribution not found"));
+                .orElseThrow(() -> new BadRequestException("contributionNotFound"));
 
         if (!contribution.getEvent().getId().equals(event.getId())) {
-            throw new BadRequestException("Contribution does not belong to this event");
+            throw new BadRequestException("contributionNotInEvent");
         }
 
         validateUserCanEditContribution(
@@ -119,15 +119,15 @@ public class ContributionServiceImpl implements ContributionService {
         User currentUser = currentUserService.getCurrentUser();
 
         Event event = eventRepository.findById(eventId)
-                .orElseThrow(() -> new BadRequestException("Event not found"));
+                .orElseThrow(() -> new BadRequestException("eventNotFound"));
 
         eventValidator.validateEventAllowsContributions(event);
 
         Contribution contribution = contributionRepository.findById(contributionId)
-                .orElseThrow(() -> new BadRequestException("Contribution not found"));
+                .orElseThrow(() -> new BadRequestException("contributionNotFound"));
 
         if (!contribution.getEvent().getId().equals(event.getId())) {
-            throw new BadRequestException("Contribution does not belong to this event");
+            throw new BadRequestException("contributionNotInEvent");
         }
 
         validateUserCanEditContribution(
@@ -152,16 +152,15 @@ public class ContributionServiceImpl implements ContributionService {
         User currentUser = currentUserService.getCurrentUser();
 
         Event event = eventRepository.findById(eventId)
-                .orElseThrow(() -> new BadRequestException("Event not found"));
+                .orElseThrow(() -> new BadRequestException("eventNotFound"));
 
         eventValidator.validateEventAllowsContributions(event);
 
         Contribution contribution = contributionRepository.findById(contributionId)
-                .orElseThrow(() -> new BadRequestException("Contribution not found"));
+                .orElseThrow(() -> new BadRequestException("contributionNotFound"));
 
         if (!contribution.getEvent().getId().equals(event.getId())) {
-            throw new BadRequestException(
-                    "Contribution does not belong to this event");
+            throw new BadRequestException("contributionNotInEvent");
         }
 
         validateUserCanEditContribution(
@@ -216,11 +215,10 @@ public class ContributionServiceImpl implements ContributionService {
 
         EventInvitation invitation = invitationRepository
                 .findByEventAndInvitedUser(event, user)
-                .orElseThrow(() -> new BadRequestException("You are not part of this event"));
+                .orElseThrow(() -> new BadRequestException("notPartOfEvent"));
 
         if (invitation.getStatus() != InvitationStatus.ACCEPTED) {
-            throw new BadRequestException(
-                    "Only accepted participants can manage contributions");
+            throw new BadRequestException("onlyAcceptedCanManage");
         }
     }
 
@@ -234,17 +232,15 @@ public class ContributionServiceImpl implements ContributionService {
         }
 
         if (!contribution.getCreatedBy().getId().equals(user.getId())) {
-            throw new BadRequestException(
-                    "You cannot edit this contribution");
+            throw new BadRequestException("cannotEditContribution");
         }
 
         EventInvitation invitation = invitationRepository
                 .findByEventAndInvitedUser(event, user)
-                .orElseThrow(() -> new BadRequestException("You are not part of this event"));
+                .orElseThrow(() -> new BadRequestException("notPartOfEvent"));
 
         if (invitation.getStatus() != InvitationStatus.ACCEPTED) {
-            throw new BadRequestException(
-                    "Only accepted participants can edit contributions");
+            throw new BadRequestException("onlyAcceptedCanEdit");
         }
     }
 }

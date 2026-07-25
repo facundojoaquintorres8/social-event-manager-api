@@ -14,19 +14,17 @@ public class EventValidator {
     public void validateEventAllowsInteraction(Event event) {
 
         if (event.getStatus() == EventStatus.CANCELLED) {
-            throw new BadRequestException(
-                    "Cancelled events cannot be modified");
+            throw new BadRequestException("eventCancelledCannotModify");
         }
 
         if (event.getEventDate().isBefore(LocalDateTime.now())) {
-            throw new BadRequestException(
-                    "Past events cannot be modified");
+            throw new BadRequestException("eventPastCannotModify");
         }
     }
 
     public void validateEventAllowsContributions(Event event) {
         if (event.getStatus() == EventStatus.CANCELLED) {
-            throw new BadRequestException("Cancelled events cannot be modified");
+            throw new BadRequestException("eventCancelledCannotModify");
         }
     }
 }

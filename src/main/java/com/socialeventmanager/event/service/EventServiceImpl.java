@@ -120,7 +120,7 @@ public class EventServiceImpl implements EventService {
                 "location");
 
         if (!allowedSortFields.contains(sortBy)) {
-            throw new BadRequestException("Invalid sort field");
+            throw new BadRequestException("invalidSortField");
         }
 
         Sort sort = direction.equalsIgnoreCase("asc")
@@ -293,7 +293,7 @@ public class EventServiceImpl implements EventService {
         Event event = getOwnedEvent(eventId);
 
         if (event.getStatus() == EventStatus.CANCELLED) {
-            throw new BadRequestException("Event already cancelled");
+            throw new BadRequestException("eventAlreadyCancelled");
         }
 
         event.setStatus(EventStatus.CANCELLED);
@@ -333,7 +333,7 @@ public class EventServiceImpl implements EventService {
 
         Event event = eventRepository
                 .findByIdAndCreatedBy(eventId, currentUser)
-                .orElseThrow(() -> new BadRequestException("Event not found"));
+                .orElseThrow(() -> new BadRequestException("eventNotFound"));
 
         eventValidator.validateEventAllowsInteraction(event);
 
@@ -345,7 +345,7 @@ public class EventServiceImpl implements EventService {
         if (invitedUserOptional.isPresent()) {
             User invitedUser = invitedUserOptional.get();
             if (invitedUser.getId().equals(currentUser.getId())) {
-                throw new BadRequestException("You cannot invite yourself");
+                throw new BadRequestException("cannotInviteYourself");
             }
             return invitationService.inviteExistingUser(event, currentUser, invitedUser, language);
         }
@@ -400,7 +400,7 @@ public class EventServiceImpl implements EventService {
             UUID eventId,
             BalanceRequestDTO request) {
         if (request.getParticipants().isEmpty()) {
-            throw new BadRequestException("At least one participant is required");
+            throw new BadRequestException("atLeastOneParticipant");
         }
 
         Event event = getAccessibleEvent(eventId);
@@ -422,9 +422,7 @@ public class EventServiceImpl implements EventService {
                 .distinct()
                 .toList();
         if (!missingParticipants.isEmpty()) {
-            throw new BadRequestException(
-                    "Cannot exclude participants who have shared expenses: "
-                            + String.join(", ", missingParticipants));
+            throw new BadRequestException("cannotExcludeParticipant");
         }
 
         BigDecimal totalCost = splitContributions.stream()
@@ -592,7 +590,7 @@ public class EventServiceImpl implements EventService {
 
         return eventRepository
                 .findByIdAndCreatedBy(eventId, currentUser)
-                .orElseThrow(() -> new BadRequestException("Event not found"));
+                .orElseThrow(() -> new BadRequestException("eventNotFound"));
     }
 
     private Event getAccessibleEvent(UUID eventId) {
@@ -612,10 +610,10 @@ public class EventServiceImpl implements EventService {
 
         if (invited) {
             return eventRepository.findById(eventId)
-                    .orElseThrow(() -> new BadRequestException("Event not found"));
+                    .orElseThrow(() -> new BadRequestException("eventNotFound"));
         }
 
-        throw new ForbiddenException("You do not have access to this event");
+        throw new ForbiddenException("eventNoAccess");
     }
 
 }

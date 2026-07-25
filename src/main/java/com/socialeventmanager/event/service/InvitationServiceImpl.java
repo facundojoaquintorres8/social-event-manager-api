@@ -97,7 +97,7 @@ public class InvitationServiceImpl implements InvitationService {
                         null);
             }
 
-            throw new BadRequestException("User already invited");
+            throw new BadRequestException("userAlreadyInvited");
         }
 
         EventInvitation invitation = EventInvitation.builder()
@@ -133,7 +133,7 @@ public class InvitationServiceImpl implements InvitationService {
                 "location");
 
         if (!allowedSortFields.contains(sortBy)) {
-            throw new BadRequestException("Invalid sort field");
+            throw new BadRequestException("invalidSortField");
         }
 
         Sort sort = direction.equalsIgnoreCase("asc")
@@ -190,7 +190,7 @@ public class InvitationServiceImpl implements InvitationService {
                 "createdAt");
 
         if (!allowedSortFields.contains(sortBy)) {
-            throw new BadRequestException("Invalid sort field");
+            throw new BadRequestException("invalidSortField");
         }
 
         Sort sort = direction.equalsIgnoreCase("asc")
@@ -237,12 +237,12 @@ public class InvitationServiceImpl implements InvitationService {
         User currentUser = getCurrentUser();
 
         if (request.getStatus() == InvitationStatus.PENDING) {
-            throw new BadRequestException("Invalid invitation status");
+            throw new BadRequestException("invalidInvitationStatus");
         }
 
         EventInvitation invitation = invitationRepository
                 .findByEventIdAndInvitedUser(request.getEventId(), currentUser)
-                .orElseThrow(() -> new BadRequestException("Invitation not found"));
+                .orElseThrow(() -> new BadRequestException("invitationNotFound"));
 
         eventValidator.validateEventAllowsInteraction(invitation.getEvent());
 
@@ -251,7 +251,7 @@ public class InvitationServiceImpl implements InvitationService {
         }
 
         if (invitation.getStatus() == request.getStatus()) {
-            throw new BadRequestException("Invitation already has this status");
+            throw new BadRequestException("invitationAlreadyHasStatus");
         }
 
         invitation.setStatus(request.getStatus());
@@ -279,7 +279,7 @@ public class InvitationServiceImpl implements InvitationService {
         User currentUser = getCurrentUser();
 
         Event event = eventRepository.findByIdAndCreatedBy(request.getEventId(), currentUser)
-                .orElseThrow(() -> new BadRequestException("Event not found"));
+                .orElseThrow(() -> new BadRequestException("eventNotFound"));
 
         eventValidator.validateEventAllowsInteraction(event);
 
@@ -292,7 +292,7 @@ public class InvitationServiceImpl implements InvitationService {
             return removeExistingInvitation(event, invitedUserOptional.get());
         }
 
-        throw new BadRequestException("Invited user not found");
+        throw new BadRequestException("invitedUserNotFound");
     }
 
     @Override
@@ -350,12 +350,10 @@ public class InvitationServiceImpl implements InvitationService {
                 .findByEventAndInvitedUser(
                         event,
                         invitedUser)
-                .orElseThrow(() -> new BadRequestException(
-                        "Invitation not found"));
+                .orElseThrow(() -> new BadRequestException("invitationNotFound"));
 
         if (invitation.getStatus() == InvitationStatus.CANCELLED) {
-            throw new BadRequestException(
-                    "Invitation already cancelled");
+            throw new BadRequestException("invitationAlreadyCancelled");
         }
 
         invitation.setStatus(InvitationStatus.CANCELLED);

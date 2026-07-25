@@ -75,6 +75,6 @@ public class EmailValidator {
     }
 
     private static void throwInvalidEmail() {
-        throw new BadRequestException("Invalid email");
+        throw new BadRequestException("invalidEmail");
     }
 }

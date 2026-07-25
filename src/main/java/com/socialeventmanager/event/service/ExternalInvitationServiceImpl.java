@@ -69,7 +69,7 @@ public class ExternalInvitationServiceImpl implements ExternalInvitationService 
                         null);
             }
 
-            throw new BadRequestException("User already invited");
+            throw new BadRequestException("userAlreadyInvited");
         }
 
         ExternalInvitation invitation = ExternalInvitation.builder()
@@ -94,7 +94,7 @@ public class ExternalInvitationServiceImpl implements ExternalInvitationService 
         User currentUser = getCurrentUser();
 
         Event event = eventRepository.findByIdAndCreatedBy(request.getEventId(), currentUser)
-                .orElseThrow(() -> new BadRequestException("Event not found"));
+                .orElseThrow(() -> new BadRequestException("eventNotFound"));
 
         eventValidator.validateEventAllowsInteraction(event);
 
@@ -103,11 +103,10 @@ public class ExternalInvitationServiceImpl implements ExternalInvitationService 
 
         ExternalInvitation invitation = externalInvitationRepository
                 .findByEventAndInvitedEmail(event, email)
-                .orElseThrow(() -> new BadRequestException("Invitation not found"));
+                .orElseThrow(() -> new BadRequestException("invitationNotFound"));
 
         if (invitation.getStatus() == ExternalInvitationStatus.CANCELLED) {
-            throw new BadRequestException(
-                    "Invitation already cancelled");
+            throw new BadRequestException("invitationAlreadyCancelled");
         }
 
         invitation.setStatus(ExternalInvitationStatus.CANCELLED);
@@ -201,18 +200,18 @@ public class ExternalInvitationServiceImpl implements ExternalInvitationService 
 
         ExternalInvitation invitation = externalInvitationRepository
                 .findByToken(token)
-                .orElseThrow(() -> new BadRequestException("Invitation not found"));
+                .orElseThrow(() -> new BadRequestException("invitationNotFound"));
 
         if (invitation.getStatus() == ExternalInvitationStatus.CANCELLED) {
-            throw new BadRequestException("Invitation cancelled");
+            throw new BadRequestException("invitationCancelled");
         }
 
         if (!invitation.getEvent().getEventDate().isAfter(LocalDateTime.now())) {
-            throw new BadRequestException("Invitation expired");
+            throw new BadRequestException("invitationExpired");
         }
 
         if (invitation.getEvent().getStatus() == EventStatus.CANCELLED) {
-            throw new BadRequestException("Event cancelled");
+            throw new BadRequestException("eventCancelled");
         }
 
         return invitation;

@@ -53,7 +53,7 @@ public class GlobalExceptionHandler {
     public ApiResponseDTO<Void> handleBadCredentials(BadCredentialsException ex) {
         return new ApiResponseDTO<>(
                 false,
-                "Invalid email or password",
+                "invalidCredentials",
                 null);
     }
 
@@ -62,7 +62,7 @@ public class GlobalExceptionHandler {
     public ApiResponseDTO<Void> handleUsernameNotFound(UsernameNotFoundException ex) {
         return new ApiResponseDTO<>(
                 false,
-                "Invalid email or password",
+                "invalidCredentials",
                 null);
     }
 
@@ -71,7 +71,7 @@ public class GlobalExceptionHandler {
     public ApiResponseDTO<Void> handleJwtException(JwtException ex) {
         return new ApiResponseDTO<>(
                 false,
-                "Invalid or expired token",
+                "invalidOrExpiredToken",
                 null);
     }
 
@@ -90,12 +90,12 @@ public class GlobalExceptionHandler {
         if (UUID.class.equals(ex.getRequiredType())) {
             return new ApiResponseDTO<>(
                     false,
-                    "Invalid ID format",
+                    "invalidIdFormat",
                     null);
         }
         return new ApiResponseDTO<>(
                 false,
-                "Invalid type format",
+                "invalidTypeFormat",
                 null);
     }
 
