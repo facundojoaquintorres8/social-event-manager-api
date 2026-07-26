@@ -5,6 +5,7 @@ import com.socialeventmanager.kafka.event.EventCancelledEvent;
 import com.socialeventmanager.kafka.event.EventReminderEvent;
 import com.socialeventmanager.kafka.event.InvitationCreatedEvent;
 import com.socialeventmanager.kafka.event.InvitationRespondedEvent;
+import com.socialeventmanager.kafka.event.PasswordResetRequestedEvent;
 import com.socialeventmanager.kafka.event.UserRegisteredEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -64,6 +65,16 @@ public class EventProducer {
                     if (ex != null) {
                         log.error("Failed to publish EventReminderEvent for event {}: {}",
                                 event.eventId(), ex.getMessage());
+                    }
+                });
+    }
+
+    public void sendPasswordResetRequested(PasswordResetRequestedEvent event) {
+        kafkaTemplate.send(KafkaTopicConfig.PASSWORD_RESET_TOPIC, event)
+                .whenComplete((result, ex) -> {
+                    if (ex != null) {
+                        log.error("Failed to publish PasswordResetRequestedEvent for {}: {}",
+                                event.email(), ex.getMessage());
                     }
                 });
     }

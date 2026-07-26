@@ -15,6 +15,7 @@ import com.socialeventmanager.kafka.event.EventCancelledEvent;
 import com.socialeventmanager.kafka.event.EventReminderEvent;
 import com.socialeventmanager.kafka.event.InvitationCreatedEvent;
 import com.socialeventmanager.kafka.event.InvitationRespondedEvent;
+import com.socialeventmanager.kafka.event.PasswordResetRequestedEvent;
 import com.socialeventmanager.kafka.event.UserRegisteredEvent;
 
 import jakarta.annotation.PostConstruct;
@@ -60,6 +61,9 @@ public class EmailServiceImpl implements EmailService {
     private String eventReminderTemplate;
     private String eventReminderTemplateEs;
 
+    private String passwordResetTemplate;
+    private String passwordResetTemplateEs;
+
     @PostConstruct
     public void init() throws IOException {
         this.resend = new Resend(apiKey);
@@ -75,6 +79,8 @@ public class EmailServiceImpl implements EmailService {
         this.invitationRespondedTemplateEs = loadTemplate("templates/email/invitation-responded-es.html");
         this.eventReminderTemplate = loadTemplate("templates/email/event-reminder.html");
         this.eventReminderTemplateEs = loadTemplate("templates/email/event-reminder-es.html");
+        this.passwordResetTemplate = loadTemplate("templates/email/password-reset.html");
+        this.passwordResetTemplateEs = loadTemplate("templates/email/password-reset-es.html");
     }
 
     @Override
@@ -225,6 +231,7 @@ public class EmailServiceImpl implements EmailService {
         }
     }
 
+    @Override
     public void sendEventReminderEmail(EventReminderEvent event) {
         String mapsUrl = String.format(GOOGLE_MAPS_URL, event.latitude(), event.longitude());
 
@@ -272,6 +279,35 @@ public class EmailServiceImpl implements EmailService {
         } catch (ResendException e) {
             throw new RuntimeException("Failed to send reminder email to organizer for event " +
                     event.eventId(), e);
+        }
+    }
+
+    @Override
+    public void sendPasswordResetEmail(PasswordResetRequestedEvent event) {
+        boolean isEs = "es".equals(event.language());
+        String template = isEs ? passwordResetTemplateEs : passwordResetTemplate;
+
+        String resetUrl = frontendUrl + "/reset-password?token=" + event.resetToken();
+
+        String html = template
+                .replace("{{firstName}}", event.firstName())
+                .replace("{{resetUrl}}", resetUrl);
+
+        String subject = isEs
+                ? "Restablecé tu contraseña"
+                : "Reset your password";
+
+        try {
+            CreateEmailOptions options = CreateEmailOptions.builder()
+                    .from(fromEmail)
+                    .to(resolveRecipient(event.email()))
+                    .subject(subject)
+                    .html(html)
+                    .build();
+            resend.emails().send(options);
+        } catch (ResendException e) {
+            throw new RuntimeException("Failed to send password reset email to " +
+                    event.email(), e);
         }
     }
 

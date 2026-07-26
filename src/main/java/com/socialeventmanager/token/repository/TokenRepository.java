@@ -9,4 +9,6 @@ import java.util.UUID;
 public interface TokenRepository extends JpaRepository<Token, UUID> {
 
     List<Token> findAllByUserIdAndExpiredFalseAndRevokedFalse(UUID userId);
+
+    List<Token> findAllByUserId(UUID id);
 }

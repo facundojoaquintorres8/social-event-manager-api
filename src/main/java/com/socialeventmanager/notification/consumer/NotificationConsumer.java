@@ -4,6 +4,7 @@ import com.socialeventmanager.kafka.event.EventCancelledEvent;
 import com.socialeventmanager.kafka.event.EventReminderEvent;
 import com.socialeventmanager.kafka.event.InvitationCreatedEvent;
 import com.socialeventmanager.kafka.event.InvitationRespondedEvent;
+import com.socialeventmanager.kafka.event.PasswordResetRequestedEvent;
 import com.socialeventmanager.kafka.event.UserRegisteredEvent;
 import com.socialeventmanager.notification.service.EmailService;
 import lombok.RequiredArgsConstructor;
@@ -39,5 +40,10 @@ public class NotificationConsumer {
     @KafkaListener(topics = "event-reminder", groupId = "notification-group")
     public void handleEventReminder(EventReminderEvent event) {
         emailService.sendEventReminderEmail(event);
+    }
+
+    @KafkaListener(topics = "password-reset-requested", groupId = "notification-group")
+    public void handlePasswordResetRequested(PasswordResetRequestedEvent event) {
+        emailService.sendPasswordResetEmail(event);
     }
 }

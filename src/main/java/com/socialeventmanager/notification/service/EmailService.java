@@ -4,6 +4,7 @@ import com.socialeventmanager.kafka.event.EventCancelledEvent;
 import com.socialeventmanager.kafka.event.EventReminderEvent;
 import com.socialeventmanager.kafka.event.InvitationCreatedEvent;
 import com.socialeventmanager.kafka.event.InvitationRespondedEvent;
+import com.socialeventmanager.kafka.event.PasswordResetRequestedEvent;
 import com.socialeventmanager.kafka.event.UserRegisteredEvent;
 
 public interface EmailService {
@@ -16,4 +17,6 @@ public interface EmailService {
     void sendInvitationRespondedEmail(InvitationRespondedEvent event);
 
     void sendEventReminderEmail(EventReminderEvent event);
+
+    void sendPasswordResetEmail(PasswordResetRequestedEvent event);
 }

@@ -1,10 +1,15 @@
 package com.socialeventmanager.auth.service;
 
 import com.socialeventmanager.auth.dto.AuthResponseDTO;
+import com.socialeventmanager.auth.dto.ForgotPasswordRequestDTO;
 import com.socialeventmanager.auth.dto.LoginRequestDTO;
 import com.socialeventmanager.auth.dto.RefreshRequestDTO;
 import com.socialeventmanager.auth.dto.RegisterRequestDTO;
+import com.socialeventmanager.auth.dto.ResetPasswordRequestDTO;
+import com.socialeventmanager.auth.entity.PasswordResetToken;
+import com.socialeventmanager.auth.repository.PasswordResetTokenRepository;
 import com.socialeventmanager.event.service.ExternalInvitationService;
+import com.socialeventmanager.kafka.event.PasswordResetRequestedEvent;
 import com.socialeventmanager.kafka.event.UserRegisteredEvent;
 import com.socialeventmanager.kafka.producer.EventProducer;
 import com.socialeventmanager.shared.dto.ApiResponseDTO;
@@ -23,8 +28,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -37,6 +45,7 @@ public class AuthServiceImpl implements AuthService {
     private final TokenRepository tokenRepository;
     private final ExternalInvitationService externalInvitationService;
     private final EventProducer eventProducer;
+    private final PasswordResetTokenRepository passwordResetTokenRepository;
 
     @Override
     @Transactional
@@ -127,6 +136,69 @@ public class AuthServiceImpl implements AuthService {
                 true,
                 "Token refreshed successfully",
                 response);
+    }
+
+    @Override
+    public ApiResponseDTO<Void> forgotPassword(ForgotPasswordRequestDTO request, String language) {
+        String email = request.getEmail().trim().toLowerCase();
+
+        Optional<User> userOpt = userRepository.findByEmail(email);
+        if (userOpt.isEmpty()) {
+            return new ApiResponseDTO<>(true, "Password reset email sent if account exists", null);
+        }
+
+        User user = userOpt.get();
+
+        passwordResetTokenRepository.deleteByUserId(user.getId());
+
+        String token = UUID.randomUUID().toString();
+
+        PasswordResetToken resetToken = PasswordResetToken.builder()
+                .token(token)
+                .user(user)
+                .expiresAt(LocalDateTime.now().plusHours(1))
+                .build();
+
+        passwordResetTokenRepository.save(resetToken);
+
+        eventProducer.sendPasswordResetRequested(new PasswordResetRequestedEvent(
+                user.getEmail(),
+                user.getFirstName(),
+                token,
+                language));
+
+        return new ApiResponseDTO<>(true, "Password reset email sent if account exists", null);
+    }
+
+    @Override
+    @Transactional
+    public ApiResponseDTO<Void> resetPassword(ResetPasswordRequestDTO request) {
+        PasswordResetToken resetToken = passwordResetTokenRepository
+                .findByToken(request.getToken())
+                .orElseThrow(() -> new BadRequestException("invalidOrExpiredToken"));
+
+        if (resetToken.isUsed()) {
+            throw new BadRequestException("invalidOrExpiredToken");
+        }
+
+        if (resetToken.getExpiresAt().isBefore(LocalDateTime.now())) {
+            throw new BadRequestException("invalidOrExpiredToken");
+        }
+
+        User user = resetToken.getUser();
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+
+        resetToken.setUsed(true);
+        passwordResetTokenRepository.save(resetToken);
+
+        tokenRepository.findAllByUserId(user.getId())
+                .forEach(token -> {
+                    token.setRevoked(true);
+                    token.setExpired(true);
+                });
+
+        return new ApiResponseDTO<>(true, "Password reset successfully", null);
     }
 
     private AuthResponseDTO buildAuthResponse(User user) {
