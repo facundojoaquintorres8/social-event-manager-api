@@ -28,7 +28,6 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(
             HttpSecurity http,
             AuthenticationProvider authenticationProvider) throws Exception {
-
         http
                 .cors(cors -> {
                 })
@@ -42,6 +41,8 @@ public class SecurityConfig {
                                 "/swagger-ui.html",
                                 "/api/v1/auth/register",
                                 "/api/v1/auth/login",
+                                "/api/v1/auth/reset-password",
+                                "/api/v1/auth/forgot-password",
                                 "/api/v1/auth/refresh")
                         .permitAll()
                         .requestMatchers(
