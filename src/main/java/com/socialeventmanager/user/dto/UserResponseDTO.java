@@ -12,4 +12,5 @@ public class UserResponseDTO {
     private String firstName;
     private String lastName;
     private String email;
+    private boolean hasPassword;
 }

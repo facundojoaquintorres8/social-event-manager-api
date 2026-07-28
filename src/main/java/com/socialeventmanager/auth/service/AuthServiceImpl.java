@@ -7,7 +7,10 @@ import com.socialeventmanager.auth.dto.RefreshRequestDTO;
 import com.socialeventmanager.auth.dto.RegisterRequestDTO;
 import com.socialeventmanager.auth.dto.ResetPasswordRequestDTO;
 import com.socialeventmanager.auth.entity.PasswordResetToken;
+import com.socialeventmanager.auth.entity.UserProvider;
+import com.socialeventmanager.auth.enums.Provider;
 import com.socialeventmanager.auth.repository.PasswordResetTokenRepository;
+import com.socialeventmanager.auth.repository.UserProviderRepository;
 import com.socialeventmanager.event.service.ExternalInvitationService;
 import com.socialeventmanager.kafka.event.PasswordResetRequestedEvent;
 import com.socialeventmanager.kafka.event.UserRegisteredEvent;
@@ -46,6 +49,7 @@ public class AuthServiceImpl implements AuthService {
     private final ExternalInvitationService externalInvitationService;
     private final EventProducer eventProducer;
     private final PasswordResetTokenRepository passwordResetTokenRepository;
+    private final UserProviderRepository userProviderRepository;
 
     @Override
     @Transactional
@@ -201,6 +205,51 @@ public class AuthServiceImpl implements AuthService {
         return new ApiResponseDTO<>(true, "Password reset successfully", null);
     }
 
+    @Override
+    @Transactional
+    public ApiResponseDTO<AuthResponseDTO> processOAuth2Login(
+            Provider provider,
+            String providerId,
+            String email,
+            String firstName,
+            String lastName) {
+
+        Optional<UserProvider> existingProvider = userProviderRepository
+                .findByProviderAndProviderId(provider, providerId);
+
+        User user;
+
+        if (existingProvider.isPresent()) {
+            user = existingProvider.get().getUser();
+        } else {
+            Optional<User> existingUser = userRepository.findByEmail(email);
+
+            if (existingUser.isPresent()) {
+                user = existingUser.get();
+            } else {
+                user = User.builder()
+                        .firstName(firstName != null ? firstName : "User")
+                        .lastName(lastName != null ? lastName : "")
+                        .email(email)
+                        .password(null)
+                        .hasPassword(false)
+                        .build();
+                userRepository.save(user);
+            }
+
+            UserProvider userProvider = UserProvider.builder()
+                    .user(user)
+                    .provider(provider)
+                    .providerId(providerId)
+                    .build();
+            userProviderRepository.save(userProvider);
+
+            externalInvitationService.claimExternalInvitations(user, "es"); // TODO: ajustar
+        }
+
+        return new ApiResponseDTO<>(true, "Login successful", buildAuthResponse(user));
+    }
+
     private AuthResponseDTO buildAuthResponse(User user) {
         String accessToken = jwtService.generateToken(user.getEmail());
         String refreshToken = jwtService.generateRefreshToken(user.getEmail());
@@ -214,6 +263,7 @@ public class AuthServiceImpl implements AuthService {
                 .email(user.getEmail())
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
+                .hasPassword(user.isHasPassword())
                 .build();
     }
 

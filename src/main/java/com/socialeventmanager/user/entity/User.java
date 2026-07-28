@@ -1,15 +1,20 @@
 package com.socialeventmanager.user.entity;
 
+import com.socialeventmanager.auth.entity.UserProvider;
 import com.socialeventmanager.shared.entity.BaseEntity;
 import com.socialeventmanager.token.entity.Token;
+
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -31,11 +36,18 @@ public class User extends BaseEntity implements UserDetails {
     @Column(nullable = false, unique = true)
     private String email;
 
-    @Column(nullable = false)
     private String password;
 
     @OneToMany(mappedBy = "user")
     private List<Token> tokens;
+
+    @Column(name = "has_password", nullable = false)
+    @Builder.Default
+    private boolean hasPassword = true;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @Builder.Default
+    private List<UserProvider> providers = new ArrayList<>();
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -45,6 +57,11 @@ public class User extends BaseEntity implements UserDetails {
     @Override
     public String getUsername() {
         return this.email;
+    }
+
+    @Override
+    public String getPassword() {
+        return this.password != null ? this.password : "";
     }
 
     @Override
