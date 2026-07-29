@@ -54,7 +54,8 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
         String lastName;
 
         if (provider == Provider.GITHUB) {
-            providerId = String.valueOf(oAuth2User.getAttribute("id"));
+            Object idAttr = oAuth2User.getAttribute("id");
+            providerId = idAttr != null ? idAttr.toString() : null;
             email = oAuth2User.getAttribute("email");
             String name = oAuth2User.getAttribute("name");
             if (name != null && name.contains(" ")) {
@@ -64,6 +65,12 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
                 firstName = name != null ? name : oAuth2User.getAttribute("login");
                 lastName = "";
             }
+
+            log.info("Provider: {}", provider);
+            log.info("ProviderId: {}", providerId);
+            log.info("Email: {}", email);
+            log.info("FirstName: {}", firstName);
+            log.info("LastName: {}", lastName);
         } else {
             providerId = oAuth2User.getAttribute("sub");
             email = oAuth2User.getAttribute("email");
@@ -79,8 +86,10 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
         String acceptLanguage = request.getHeader("Accept-Language");
         String language = (acceptLanguage != null && acceptLanguage.startsWith("es")) ? "es" : "en";
 
+        log.info("authResponse NO ENTRO AUN");
         ApiResponseDTO<AuthResponseDTO> authResponse = authService.processOAuth2Login(
                 provider, providerId, email, firstName, lastName, language);
+        log.info("authResponse ya paso> ", authResponse);
 
         AuthResponseDTO data = authResponse.getData();
 
