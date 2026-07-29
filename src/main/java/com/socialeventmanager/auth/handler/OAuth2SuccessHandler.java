@@ -18,7 +18,9 @@ import com.socialeventmanager.shared.dto.ApiResponseDTO;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Component
 public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
@@ -39,6 +41,9 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
         OAuth2AuthenticationToken token = (OAuth2AuthenticationToken) authentication;
         OAuth2User oAuth2User = token.getPrincipal();
+
+        log.info("OAuth2 provider: {}", token.getAuthorizedClientRegistrationId());
+        log.info("OAuth2 attributes: {}", oAuth2User.getAttributes()); // 👈
 
         String registrationId = token.getAuthorizedClientRegistrationId();
         Provider provider = Provider.valueOf(registrationId.toUpperCase());
