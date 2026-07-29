@@ -212,7 +212,8 @@ public class AuthServiceImpl implements AuthService {
             String providerId,
             String email,
             String firstName,
-            String lastName) {
+            String lastName,
+            String language) {
 
         Optional<UserProvider> existingProvider = userProviderRepository
                 .findByProviderAndProviderId(provider, providerId);
@@ -244,7 +245,7 @@ public class AuthServiceImpl implements AuthService {
                     .build();
             userProviderRepository.save(userProvider);
 
-            externalInvitationService.claimExternalInvitations(user, "es"); // TODO: ajustar
+            externalInvitationService.claimExternalInvitations(user, language);
         }
 
         return new ApiResponseDTO<>(true, "Login successful", buildAuthResponse(user));

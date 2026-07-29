@@ -26,5 +26,6 @@ public interface AuthService {
             String providerId,
             String email,
             String firstName,
-            String lastName);
+            String lastName,
+            String language);
 }

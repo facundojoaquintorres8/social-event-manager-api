@@ -3,6 +3,7 @@ package com.socialeventmanager.auth.handler;
 import java.io.IOException;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -17,16 +18,18 @@ import com.socialeventmanager.shared.dto.ApiResponseDTO;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
 
 @Component
-@RequiredArgsConstructor
 public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
-
-    private final AuthService authService;
 
     @Value("${app.frontend-url}")
     private String frontendUrl;
+
+    private final AuthService authService;
+
+    public OAuth2SuccessHandler(@Lazy AuthService authService) {
+        this.authService = authService;
+    }
 
     @Override
     public void onAuthenticationSuccess(
@@ -68,8 +71,11 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
             return;
         }
 
+        String acceptLanguage = request.getHeader("Accept-Language");
+        String language = (acceptLanguage != null && acceptLanguage.startsWith("es")) ? "es" : "en";
+
         ApiResponseDTO<AuthResponseDTO> authResponse = authService.processOAuth2Login(
-                provider, providerId, email, firstName, lastName);
+                provider, providerId, email, firstName, lastName, language);
 
         AuthResponseDTO data = authResponse.getData();
 
