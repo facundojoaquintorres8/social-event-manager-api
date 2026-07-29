@@ -18,9 +18,7 @@ import com.socialeventmanager.shared.dto.ApiResponseDTO;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 @Component
 public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
@@ -42,9 +40,6 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
         OAuth2AuthenticationToken token = (OAuth2AuthenticationToken) authentication;
         OAuth2User oAuth2User = token.getPrincipal();
 
-        log.info("OAuth2 provider: {}", token.getAuthorizedClientRegistrationId());
-        log.info("OAuth2 attributes: {}", oAuth2User.getAttributes()); // 👈
-
         String registrationId = token.getAuthorizedClientRegistrationId();
         Provider provider = Provider.valueOf(registrationId.toUpperCase());
 
@@ -65,12 +60,6 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
                 firstName = name != null ? name : oAuth2User.getAttribute("login");
                 lastName = "";
             }
-
-            log.info("Provider: {}", provider);
-            log.info("ProviderId: {}", providerId);
-            log.info("Email: {}", email);
-            log.info("FirstName: {}", firstName);
-            log.info("LastName: {}", lastName);
         } else {
             providerId = oAuth2User.getAttribute("sub");
             email = oAuth2User.getAttribute("email");
@@ -86,10 +75,8 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
         String acceptLanguage = request.getHeader("Accept-Language");
         String language = (acceptLanguage != null && acceptLanguage.startsWith("es")) ? "es" : "en";
 
-        log.info("authResponse NO ENTRO AUN");
         ApiResponseDTO<AuthResponseDTO> authResponse = authService.processOAuth2Login(
                 provider, providerId, email, firstName, lastName, language);
-        log.info("authResponse ya paso> ", authResponse);
 
         AuthResponseDTO data = authResponse.getData();
 
