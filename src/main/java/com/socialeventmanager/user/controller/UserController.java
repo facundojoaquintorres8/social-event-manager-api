@@ -2,6 +2,7 @@ package com.socialeventmanager.user.controller;
 
 import com.socialeventmanager.shared.dto.ApiResponseDTO;
 import com.socialeventmanager.user.dto.ChangePasswordRequestDTO;
+import com.socialeventmanager.user.dto.SetPasswordRequestDTO;
 import com.socialeventmanager.user.dto.UserResponseDTO;
 import com.socialeventmanager.user.entity.User;
 import com.socialeventmanager.user.service.UserService;
@@ -34,5 +35,12 @@ public class UserController {
             @AuthenticationPrincipal User user,
             @RequestBody @Valid ChangePasswordRequestDTO request) {
         return ResponseEntity.ok(userService.changePassword(user, request));
+    }
+
+    @PutMapping("/set-password")
+    public ResponseEntity<ApiResponseDTO<Void>> setPassword(
+            @AuthenticationPrincipal User user,
+            @RequestBody @Valid SetPasswordRequestDTO request) {
+        return ResponseEntity.ok(userService.setPassword(user, request));
     }
 }

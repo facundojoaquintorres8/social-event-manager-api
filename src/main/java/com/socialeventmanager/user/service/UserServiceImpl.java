@@ -3,6 +3,7 @@ package com.socialeventmanager.user.service;
 import com.socialeventmanager.shared.dto.ApiResponseDTO;
 import com.socialeventmanager.shared.exception.BadRequestException;
 import com.socialeventmanager.user.dto.ChangePasswordRequestDTO;
+import com.socialeventmanager.user.dto.SetPasswordRequestDTO;
 import com.socialeventmanager.user.dto.UserResponseDTO;
 import com.socialeventmanager.user.entity.User;
 import com.socialeventmanager.user.repository.UserRepository;
@@ -47,5 +48,16 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
 
         return new ApiResponseDTO<>(true, "Password changed successfully", null);
+    }
+
+    @Override
+    public ApiResponseDTO<Void> setPassword(User user, SetPasswordRequestDTO request) {
+        if (user.isHasPassword()) {
+            throw new BadRequestException("passwordAlreadySet");
+        }
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        user.setHasPassword(true);
+        userRepository.save(user);
+        return new ApiResponseDTO<>(true, "Password set successfully", null);
     }
 }
