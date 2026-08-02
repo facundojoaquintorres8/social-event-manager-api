@@ -20,6 +20,8 @@ public class KafkaTopicConfig {
     public static final String EVENT_REMINDER_DLT = "event-reminder-dlt";
     public static final String PASSWORD_RESET_TOPIC = "password-reset-requested";
     public static final String PASSWORD_RESET_DLT = "password-reset-requested-dlt";
+    public static final String NOTIFICATION_TOPIC = "notification";
+    public static final String NOTIFICATION_DLT = "notification-dlt";
 
     @Bean
     public NewTopic invitationCreatedTopic() {
@@ -79,5 +81,15 @@ public class KafkaTopicConfig {
     @Bean
     public NewTopic passwordResetDltTopic() {
         return TopicBuilder.name(PASSWORD_RESET_DLT).partitions(1).replicas(1).build();
+    }
+
+    @Bean
+    public NewTopic notificationTopic() {
+        return TopicBuilder.name(NOTIFICATION_TOPIC).partitions(1).replicas(1).build();
+    }
+
+    @Bean
+    public NewTopic notificationDltTopic() {
+        return TopicBuilder.name(NOTIFICATION_DLT).partitions(1).replicas(1).build();
     }
 }

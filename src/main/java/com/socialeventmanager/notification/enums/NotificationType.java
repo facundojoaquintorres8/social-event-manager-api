@@ -1,0 +1,13 @@
+package com.socialeventmanager.notification.enums;
+
+public enum NotificationType {
+    INVITATION_RECEIVED,
+    INVITATION_ACCEPTED,
+    INVITATION_REJECTED,
+    EVENT_EDITED,
+    EVENT_CANCELLED,
+    CONTRIBUTION_ADDED,
+    CONTRIBUTION_EDITED,
+    CONTRIBUTION_DELETED,
+    CONTRIBUTION_COMPLETED
+}
