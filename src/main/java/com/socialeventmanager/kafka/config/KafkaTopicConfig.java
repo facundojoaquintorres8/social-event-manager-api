@@ -8,88 +8,28 @@ import org.springframework.kafka.config.TopicBuilder;
 @Configuration
 public class KafkaTopicConfig {
 
-    public static final String INVITATION_CREATED_TOPIC = "invitation-created";
-    public static final String INVITATION_CREATED_DLT = "invitation-created-dlt";
-    public static final String USER_REGISTERED_TOPIC = "user-registered";
-    public static final String USER_REGISTERED_DLT = "user-registered-dlt";
-    public static final String EVENT_CANCELLED_TOPIC = "event-cancelled";
-    public static final String EVENT_CANCELLED_DLT = "event-cancelled-dlt";
-    public static final String INVITATION_RESPONDED_TOPIC = "invitation-responded";
-    public static final String INVITATION_RESPONDED_DLT = "invitation-responded-dlt";
-    public static final String EVENT_REMINDER_TOPIC = "event-reminder";
-    public static final String EVENT_REMINDER_DLT = "event-reminder-dlt";
-    public static final String PASSWORD_RESET_TOPIC = "password-reset-requested";
-    public static final String PASSWORD_RESET_DLT = "password-reset-requested-dlt";
-    public static final String NOTIFICATION_TOPIC = "notification";
-    public static final String NOTIFICATION_DLT = "notification-dlt";
+    public static final String INVITATIONS_TOPIC = "invitations";
+    public static final String EVENTS_TOPIC = "events";
+    public static final String USERS_TOPIC = "users";
+    public static final String NOTIFICATIONS_TOPIC = "notifications";
 
     @Bean
-    public NewTopic invitationCreatedTopic() {
-        return TopicBuilder.name(INVITATION_CREATED_TOPIC).partitions(1).replicas(1).build();
+    public NewTopic invitationsTopic() {
+        return TopicBuilder.name(INVITATIONS_TOPIC).partitions(1).replicas(1).build();
     }
 
     @Bean
-    public NewTopic invitationCreatedDltTopic() {
-        return TopicBuilder.name(INVITATION_CREATED_DLT).partitions(1).replicas(1).build();
+    public NewTopic eventsTopic() {
+        return TopicBuilder.name(EVENTS_TOPIC).partitions(1).replicas(1).build();
     }
 
     @Bean
-    public NewTopic userRegisteredTopic() {
-        return TopicBuilder.name(USER_REGISTERED_TOPIC).partitions(1).replicas(1).build();
+    public NewTopic usersTopic() {
+        return TopicBuilder.name(USERS_TOPIC).partitions(1).replicas(1).build();
     }
 
     @Bean
-    public NewTopic userRegisteredDltTopic() {
-        return TopicBuilder.name(USER_REGISTERED_DLT).partitions(1).replicas(1).build();
-    }
-
-    @Bean
-    public NewTopic eventCancelledTopic() {
-        return TopicBuilder.name(EVENT_CANCELLED_TOPIC).partitions(1).replicas(1).build();
-    }
-
-    @Bean
-    public NewTopic eventCancelledDltTopic() {
-        return TopicBuilder.name(EVENT_CANCELLED_DLT).partitions(1).replicas(1).build();
-    }
-
-    @Bean
-    public NewTopic invitationRespondedTopic() {
-        return TopicBuilder.name(INVITATION_RESPONDED_TOPIC).partitions(1).replicas(1).build();
-    }
-
-    @Bean
-    public NewTopic invitationRespondedDltTopic() {
-        return TopicBuilder.name(INVITATION_RESPONDED_DLT).partitions(1).replicas(1).build();
-    }
-
-    @Bean
-    public NewTopic eventReminderTopic() {
-        return TopicBuilder.name(EVENT_REMINDER_TOPIC).partitions(1).replicas(1).build();
-    }
-
-    @Bean
-    public NewTopic eventReminderDltTopic() {
-        return TopicBuilder.name(EVENT_REMINDER_DLT).partitions(1).replicas(1).build();
-    }
-
-    @Bean
-    public NewTopic passwordResetTopic() {
-        return TopicBuilder.name(PASSWORD_RESET_TOPIC).partitions(1).replicas(1).build();
-    }
-
-    @Bean
-    public NewTopic passwordResetDltTopic() {
-        return TopicBuilder.name(PASSWORD_RESET_DLT).partitions(1).replicas(1).build();
-    }
-
-    @Bean
-    public NewTopic notificationTopic() {
-        return TopicBuilder.name(NOTIFICATION_TOPIC).partitions(1).replicas(1).build();
-    }
-
-    @Bean
-    public NewTopic notificationDltTopic() {
-        return TopicBuilder.name(NOTIFICATION_DLT).partitions(1).replicas(1).build();
+    public NewTopic notificationsTopic() {
+        return TopicBuilder.name(NOTIFICATIONS_TOPIC).partitions(1).replicas(1).build();
     }
 }

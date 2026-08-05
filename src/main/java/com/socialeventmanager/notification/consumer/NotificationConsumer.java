@@ -1,5 +1,8 @@
 package com.socialeventmanager.notification.consumer;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.socialeventmanager.kafka.event.EventCancelledEvent;
 import com.socialeventmanager.kafka.event.EventReminderEvent;
 import com.socialeventmanager.kafka.event.InvitationCreatedEvent;
@@ -12,56 +15,103 @@ import com.socialeventmanager.notification.service.NotificationService;
 import com.socialeventmanager.notification.service.SseService;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.common.header.Header;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class NotificationConsumer {
 
     private final EmailService emailService;
-
     private final NotificationService notificationService;
-
     private final SseService sseService;
 
-    @KafkaListener(topics = "invitation-created", groupId = "notification-group")
-    public void handleInvitationCreated(InvitationCreatedEvent event) {
-        emailService.sendInvitationEmail(event);
+    private final ObjectMapper objectMapper = new ObjectMapper()
+            .registerModule(new JavaTimeModule())
+            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+
+    @KafkaListener(topics = "invitations", groupId = "notification-group")
+    public void handleInvitations(ConsumerRecord<String, String> consumerRecord) {
+        try {
+            String typeHeader = getSimpleTypeName(consumerRecord);
+            if ("InvitationCreatedEvent".equals(typeHeader)) {
+                InvitationCreatedEvent event = objectMapper.readValue(consumerRecord.value(),
+                        InvitationCreatedEvent.class);
+                emailService.sendInvitationEmail(event);
+            } else if ("InvitationRespondedEvent".equals(typeHeader)) {
+                InvitationRespondedEvent event = objectMapper.readValue(consumerRecord.value(),
+                        InvitationRespondedEvent.class);
+                emailService.sendInvitationRespondedEmail(event);
+            }
+        } catch (Exception e) {
+            log.error("Failed to process invitation event: {}", e.getMessage());
+        }
     }
 
-    @KafkaListener(topics = "user-registered", groupId = "notification-group")
-    public void handleUserRegistered(UserRegisteredEvent event) {
-        emailService.sendWelcomeEmail(event);
+    @KafkaListener(topics = "events", groupId = "notification-group")
+    public void handleEvents(ConsumerRecord<String, String> consumerRecord) {
+        try {
+            String typeHeader = getSimpleTypeName(consumerRecord);
+            if ("EventCancelledEvent".equals(typeHeader)) {
+                EventCancelledEvent event = objectMapper.readValue(consumerRecord.value(), EventCancelledEvent.class);
+                emailService.sendEventCancelledEmail(event);
+            } else if ("EventReminderEvent".equals(typeHeader)) {
+                EventReminderEvent event = objectMapper.readValue(consumerRecord.value(), EventReminderEvent.class);
+                emailService.sendEventReminderEmail(event);
+            }
+        } catch (Exception e) {
+            log.error("Failed to process event: {}", e.getMessage());
+        }
     }
 
-    @KafkaListener(topics = "event-cancelled", groupId = "notification-group")
-    public void handleEventCancelled(EventCancelledEvent event) {
-        emailService.sendEventCancelledEmail(event);
+    @KafkaListener(topics = "users", groupId = "notification-group")
+    public void handleUsers(ConsumerRecord<String, String> consumerRecord) {
+        try {
+            String typeHeader = getSimpleTypeName(consumerRecord);
+            if ("UserRegisteredEvent".equals(typeHeader)) {
+                UserRegisteredEvent event = objectMapper.readValue(consumerRecord.value(), UserRegisteredEvent.class);
+                emailService.sendWelcomeEmail(event);
+            } else if ("PasswordResetRequestedEvent".equals(typeHeader)) {
+                PasswordResetRequestedEvent event = objectMapper.readValue(consumerRecord.value(),
+                        PasswordResetRequestedEvent.class);
+                emailService.sendPasswordResetEmail(event);
+            }
+        } catch (Exception e) {
+            log.error("Failed to process user event: {}", e.getMessage());
+        }
     }
 
-    @KafkaListener(topics = "invitation-responded", groupId = "notification-group")
-    public void handleInvitationResponded(InvitationRespondedEvent event) {
-        emailService.sendInvitationRespondedEmail(event);
+    @KafkaListener(topics = "notifications", groupId = "notification-group")
+    public void handleNotification(ConsumerRecord<String, String> consumerRecord) {
+        try {
+            NotificationEvent event = objectMapper.readValue(consumerRecord.value(), NotificationEvent.class);
+            notificationService.createNotifications(
+                    event.eventId(),
+                    event.type(),
+                    event.params(),
+                    event.recipientIds());
+            sseService.sendToUsers(event.recipientIds(), event.eventId(), event.type(), event.params());
+        } catch (Exception e) {
+            log.error("Failed to process notification event: {}", e.getMessage());
+        }
     }
 
-    @KafkaListener(topics = "event-reminder", groupId = "notification-group")
-    public void handleEventReminder(EventReminderEvent event) {
-        emailService.sendEventReminderEmail(event);
-    }
+    private String getSimpleTypeName(ConsumerRecord<String, String> consumerRecord) {
+        Header typeHeader = consumerRecord.headers().lastHeader("spring_json_header_types");
+        if (typeHeader == null) {
+            typeHeader = consumerRecord.headers().lastHeader("__TypeId__");
+        }
 
-    @KafkaListener(topics = "password-reset-requested", groupId = "notification-group")
-    public void handlePasswordResetRequested(PasswordResetRequestedEvent event) {
-        emailService.sendPasswordResetEmail(event);
-    }
+        if (typeHeader == null) {
+            return null;
+        }
 
-    @KafkaListener(topics = "notification", groupId = "notification-group")
-    public void handleNotification(NotificationEvent event) {
-        notificationService.createNotifications(
-                event.eventId(),
-                event.type(),
-                event.params(),
-                event.recipientIds());
-        sseService.sendToUsers(event.recipientIds(), event.eventId(), event.type(), event.params());
+        String fullType = new String(typeHeader.value());
+        return fullType.substring(fullType.lastIndexOf('.') + 1);
     }
 }

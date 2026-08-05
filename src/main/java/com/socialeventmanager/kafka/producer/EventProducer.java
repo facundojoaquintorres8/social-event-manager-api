@@ -21,72 +21,65 @@ public class EventProducer {
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
     public void sendInvitationCreated(InvitationCreatedEvent event) {
-        kafkaTemplate.send("invitation-created", event)
+        kafkaTemplate.send(KafkaTopicConfig.INVITATIONS_TOPIC, event)
                 .whenComplete((result, ex) -> {
-                    if (ex != null) {
+                    if (ex != null)
                         log.error("Failed to publish InvitationCreatedEvent for invitation {}: {}",
                                 event.invitationId(), ex.getMessage());
-                    }
-                });
-    }
-
-    public void sendUserRegistered(UserRegisteredEvent event) {
-        kafkaTemplate.send("user-registered", event)
-                .whenComplete((result, ex) -> {
-                    if (ex != null) {
-                        log.error("Failed to publish UserRegisteredEvent for user {}: {}",
-                                event.userId(), ex.getMessage());
-                    }
-                });
-    }
-
-    public void sendEventCancelled(EventCancelledEvent event) {
-        kafkaTemplate.send(KafkaTopicConfig.EVENT_CANCELLED_TOPIC, event)
-                .whenComplete((result, ex) -> {
-                    if (ex != null) {
-                        log.error("Failed to publish EventCancelledEvent for event {}: {}",
-                                event.eventId(), ex.getMessage());
-                    }
                 });
     }
 
     public void sendInvitationResponded(InvitationRespondedEvent event) {
-        kafkaTemplate.send(KafkaTopicConfig.INVITATION_RESPONDED_TOPIC, event)
+        kafkaTemplate.send(KafkaTopicConfig.INVITATIONS_TOPIC, event)
                 .whenComplete((result, ex) -> {
-                    if (ex != null) {
+                    if (ex != null)
                         log.error("Failed to publish InvitationRespondedEvent for invitation {}: {}",
                                 event.invitationId(), ex.getMessage());
-                    }
+                });
+    }
+
+    public void sendEventCancelled(EventCancelledEvent event) {
+        kafkaTemplate.send(KafkaTopicConfig.EVENTS_TOPIC, event)
+                .whenComplete((result, ex) -> {
+                    if (ex != null)
+                        log.error("Failed to publish EventCancelledEvent for event {}: {}",
+                                event.eventId(), ex.getMessage());
                 });
     }
 
     public void sendEventReminder(EventReminderEvent event) {
-        kafkaTemplate.send(KafkaTopicConfig.EVENT_REMINDER_TOPIC, event)
+        kafkaTemplate.send(KafkaTopicConfig.EVENTS_TOPIC, event)
                 .whenComplete((result, ex) -> {
-                    if (ex != null) {
+                    if (ex != null)
                         log.error("Failed to publish EventReminderEvent for event {}: {}",
                                 event.eventId(), ex.getMessage());
-                    }
+                });
+    }
+
+    public void sendUserRegistered(UserRegisteredEvent event) {
+        kafkaTemplate.send(KafkaTopicConfig.USERS_TOPIC, event)
+                .whenComplete((result, ex) -> {
+                    if (ex != null)
+                        log.error("Failed to publish UserRegisteredEvent for user {}: {}",
+                                event.userId(), ex.getMessage());
                 });
     }
 
     public void sendPasswordResetRequested(PasswordResetRequestedEvent event) {
-        kafkaTemplate.send(KafkaTopicConfig.PASSWORD_RESET_TOPIC, event)
+        kafkaTemplate.send(KafkaTopicConfig.USERS_TOPIC, event)
                 .whenComplete((result, ex) -> {
-                    if (ex != null) {
+                    if (ex != null)
                         log.error("Failed to publish PasswordResetRequestedEvent for {}: {}",
                                 event.email(), ex.getMessage());
-                    }
                 });
     }
 
     public void sendNotification(NotificationEvent event) {
-        kafkaTemplate.send(KafkaTopicConfig.NOTIFICATION_TOPIC, event)
+        kafkaTemplate.send(KafkaTopicConfig.NOTIFICATIONS_TOPIC, event)
                 .whenComplete((result, ex) -> {
-                    if (ex != null) {
+                    if (ex != null)
                         log.error("Failed to publish NotificationEvent for event {}: {}",
                                 event.eventId(), ex.getMessage());
-                    }
                 });
     }
 }
