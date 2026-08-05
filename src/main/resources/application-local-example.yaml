@@ -1,0 +1,22 @@
+PORT: 8080
+DB_URL: jdbc:postgresql://example-database-url:5432/social_event_manager?sslmode=require&channel_binding=require
+DB_USER: example_db_user
+DB_PASSWORD: example_db_password
+KAFKA_BOOTSTRAP_SERVER: example-kafka-bootstrap-server:9092
+KAFKA_USERNAME: example-kafka-username
+KAFKA_PASSWORD: example-kafka-password
+KAFKA_TRUSTSTORE_PASSWORD: example-truststore-password
+JWT_SECRET: example-secret
+FRONTEND_URL: http://localhost:4200
+CORS_ALLOWED_ORIGINS: http://localhost:4200
+RESEND_API_KEY: example_api_key
+RESEND_FROM_EMAIL: example@resend.dev
+RESEND_OVERRIDE_TO: example@gmail.com
+GOOGLE_CLIENT_ID: example-google-client-id
+GOOGLE_CLIENT_SECRET: example-google-client-secret
+GITHUB_CLIENT_ID: example-github-client-id
+GITHUB_CLIENT_SECRET: example-github-client-secret
+spring:
+  kafka:
+    properties:
+      ssl.truststore.location: C:/certs/kafka.truststore.jks
