@@ -47,7 +47,9 @@ import com.socialeventmanager.event.enums.EventStatus;
 import com.socialeventmanager.event.repository.EventRepository;
 import com.socialeventmanager.event.repository.EventSpecification;
 import com.socialeventmanager.kafka.event.EventCancelledEvent;
+import com.socialeventmanager.kafka.event.NotificationEvent;
 import com.socialeventmanager.kafka.producer.EventProducer;
+import com.socialeventmanager.notification.enums.NotificationType;
 import com.socialeventmanager.shared.dto.ApiResponseDTO;
 import com.socialeventmanager.shared.exception.BadRequestException;
 import com.socialeventmanager.shared.exception.ForbiddenException;
@@ -281,6 +283,15 @@ public class EventServiceImpl implements EventService {
 
         eventRepository.save(event);
 
+        List<UUID> participantIds = invitationService.getAcceptedParticipantIds(event);
+        if (!participantIds.isEmpty()) {
+            eventProducer.sendNotification(new NotificationEvent(
+                    event.getId(),
+                    NotificationType.EVENT_EDITED,
+                    Map.of("eventTitle", event.getTitle()),
+                    participantIds));
+        }
+
         return new ApiResponseDTO<>(
                 true,
                 "Event updated successfully",
@@ -301,6 +312,15 @@ public class EventServiceImpl implements EventService {
         eventRepository.save(event);
 
         List<String> participantEmails = invitationService.getAcceptedParticipantEmails(event);
+
+        List<UUID> participantIds = invitationService.getAcceptedParticipantIds(event);
+        if (!participantIds.isEmpty()) {
+            eventProducer.sendNotification(new NotificationEvent(
+                    event.getId(),
+                    NotificationType.EVENT_CANCELLED,
+                    Map.of("eventTitle", event.getTitle()),
+                    participantIds));
+        }
 
         invitationService.cancelInvitationsForEvent(event);
         externalInvitationService.cancelExternalInvitationsForEvent(event);

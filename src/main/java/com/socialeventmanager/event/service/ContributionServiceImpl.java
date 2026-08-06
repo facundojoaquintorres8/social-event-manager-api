@@ -1,6 +1,8 @@
 package com.socialeventmanager.event.service;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
@@ -16,6 +18,9 @@ import com.socialeventmanager.event.enums.InvitationStatus;
 import com.socialeventmanager.event.repository.ContributionRepository;
 import com.socialeventmanager.event.repository.EventRepository;
 import com.socialeventmanager.event.repository.InvitationRepository;
+import com.socialeventmanager.kafka.event.NotificationEvent;
+import com.socialeventmanager.kafka.producer.EventProducer;
+import com.socialeventmanager.notification.enums.NotificationType;
 import com.socialeventmanager.shared.dto.ApiResponseDTO;
 import com.socialeventmanager.shared.exception.BadRequestException;
 import com.socialeventmanager.shared.util.EventValidator;
@@ -30,9 +35,10 @@ public class ContributionServiceImpl implements ContributionService {
     private final ContributionRepository contributionRepository;
     private final EventRepository eventRepository;
     private final InvitationRepository invitationRepository;
-
     private final CurrentUserService currentUserService;
     private final EventValidator eventValidator;
+    private final EventProducer eventProducer;
+    private final InvitationService invitationService;
 
     @Override
     public ApiResponseDTO<Void> createContribution(
@@ -60,6 +66,16 @@ public class ContributionServiceImpl implements ContributionService {
                 .build();
 
         contributionRepository.save(contribution);
+
+        List<UUID> recipientIds = getEventParticipantIds(event);
+        eventProducer.sendNotification(new NotificationEvent(
+                event.getId(),
+                NotificationType.CONTRIBUTION_ADDED,
+                Map.of(
+                        "eventTitle", event.getTitle(),
+                        "contributionName", contribution.getName(),
+                        "participantName", currentUser.getFirstName() + " " + currentUser.getLastName()),
+                recipientIds));
 
         return new ApiResponseDTO<>(
                 true,
@@ -104,6 +120,16 @@ public class ContributionServiceImpl implements ContributionService {
 
         contributionRepository.save(contribution);
 
+        List<UUID> recipientIds = getEventParticipantIds(contribution.getEvent());
+        eventProducer.sendNotification(new NotificationEvent(
+                contribution.getEvent().getId(),
+                NotificationType.CONTRIBUTION_EDITED,
+                Map.of(
+                        "eventTitle", contribution.getEvent().getTitle(),
+                        "contributionName", contribution.getName(),
+                        "participantName", currentUser.getFirstName() + " " + currentUser.getLastName()),
+                recipientIds));
+
         return new ApiResponseDTO<>(
                 true,
                 "Contribution updated successfully",
@@ -138,6 +164,17 @@ public class ContributionServiceImpl implements ContributionService {
         contribution.setCompleted(request.getCompleted());
         contributionRepository.save(contribution);
 
+        if (Boolean.TRUE.equals(request.getCompleted())) {
+            List<UUID> recipientIds = getEventParticipantIds(contribution.getEvent());
+            eventProducer.sendNotification(new NotificationEvent(
+                    contribution.getEvent().getId(),
+                    NotificationType.CONTRIBUTION_COMPLETED,
+                    Map.of(
+                            "eventTitle", contribution.getEvent().getTitle(),
+                            "contributionName", contribution.getName()),
+                    recipientIds));
+        }
+
         return new ApiResponseDTO<>(
                 true,
                 "Contribution status updated",
@@ -167,6 +204,16 @@ public class ContributionServiceImpl implements ContributionService {
                 event,
                 contribution,
                 currentUser);
+
+        List<UUID> recipientIds = getEventParticipantIds(contribution.getEvent());
+        eventProducer.sendNotification(new NotificationEvent(
+                contribution.getEvent().getId(),
+                NotificationType.CONTRIBUTION_DELETED,
+                Map.of(
+                        "eventTitle", contribution.getEvent().getTitle(),
+                        "contributionName", contribution.getName(),
+                        "participantName", currentUser.getFirstName() + " " + currentUser.getLastName()),
+                recipientIds));
 
         contributionRepository.delete(contribution);
 
@@ -242,5 +289,14 @@ public class ContributionServiceImpl implements ContributionService {
         if (invitation.getStatus() != InvitationStatus.ACCEPTED) {
             throw new BadRequestException("onlyAcceptedCanEdit");
         }
+    }
+
+    private List<UUID> getEventParticipantIds(Event event) {
+        List<UUID> ids = new ArrayList<>(invitationService.getAcceptedParticipantIds(event));
+        UUID organizerId = event.getCreatedBy().getId();
+        if (!ids.contains(organizerId)) {
+            ids.add(organizerId);
+        }
+        return ids;
     }
 }

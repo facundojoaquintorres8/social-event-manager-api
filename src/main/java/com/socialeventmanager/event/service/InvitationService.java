@@ -49,4 +49,6 @@ public interface InvitationService {
 
     List<String> getAcceptedParticipantEmails(Event event);
 
+    List<UUID> getAcceptedParticipantIds(Event event);
+
 }

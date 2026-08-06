@@ -3,6 +3,7 @@ package com.socialeventmanager.event.service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -26,7 +27,9 @@ import com.socialeventmanager.event.repository.InvitationRepository;
 import com.socialeventmanager.event.repository.InvitationSpecification;
 import com.socialeventmanager.kafka.event.InvitationCreatedEvent;
 import com.socialeventmanager.kafka.event.InvitationRespondedEvent;
+import com.socialeventmanager.kafka.event.NotificationEvent;
 import com.socialeventmanager.kafka.producer.EventProducer;
+import com.socialeventmanager.notification.enums.NotificationType;
 import com.socialeventmanager.notification.service.NotificationLogService;
 import com.socialeventmanager.shared.dto.ApiResponseDTO;
 import com.socialeventmanager.shared.exception.BadRequestException;
@@ -91,6 +94,12 @@ public class InvitationServiceImpl implements InvitationService {
 
                 publishInvitationCreatedEvent(existingInvitation, language);
 
+                eventProducer.sendNotification(new NotificationEvent(
+                        event.getId(),
+                        NotificationType.INVITATION_RECEIVED,
+                        Map.of("eventTitle", event.getTitle()),
+                        List.of(invitedUser.getId())));
+
                 return new ApiResponseDTO<>(
                         true,
                         "User invited successfully",
@@ -110,6 +119,13 @@ public class InvitationServiceImpl implements InvitationService {
         invitationRepository.save(invitation);
 
         publishInvitationCreatedEvent(invitation, language);
+
+        eventProducer.sendNotification(new NotificationEvent(
+                event.getId(),
+                NotificationType.INVITATION_RECEIVED,
+                Map.of("eventTitle", event.getTitle()),
+                List.of(invitedUser.getId())));
+
         return new ApiResponseDTO<>(
                 true,
                 "User invited successfully",
@@ -247,7 +263,7 @@ public class InvitationServiceImpl implements InvitationService {
         eventValidator.validateEventAllowsInteraction(invitation.getEvent());
 
         if (invitation.getStatus() == InvitationStatus.CANCELLED) {
-            throw new BadRequestException("Invitation is cancelled");
+            throw new BadRequestException("invitationAlreadyCancelled");
         }
 
         if (invitation.getStatus() == request.getStatus()) {
@@ -267,6 +283,19 @@ public class InvitationServiceImpl implements InvitationService {
                 invitation.getEvent().getCreatedBy().getEmail(),
                 request.getStatus(),
                 language));
+
+        NotificationType type = request.getStatus() == InvitationStatus.ACCEPTED
+                ? NotificationType.INVITATION_ACCEPTED
+                : NotificationType.INVITATION_REJECTED;
+
+        eventProducer.sendNotification(new NotificationEvent(
+                invitation.getEvent().getId(),
+                type,
+                Map.of(
+                        "eventTitle", invitation.getEvent().getTitle(),
+                        "participantName", invitation.getInvitedUser().getFirstName() + " " +
+                                invitation.getInvitedUser().getLastName()),
+                List.of(invitation.getEvent().getCreatedBy().getId())));
 
         return new ApiResponseDTO<>(
                 true,
@@ -336,6 +365,15 @@ public class InvitationServiceImpl implements InvitationService {
                 .findAllByEventAndStatus(event, InvitationStatus.ACCEPTED)
                 .stream()
                 .map(inv -> inv.getInvitedUser().getEmail())
+                .toList();
+    }
+
+    @Override
+    public List<UUID> getAcceptedParticipantIds(Event event) {
+        return invitationRepository
+                .findAllByEventAndStatus(event, InvitationStatus.ACCEPTED)
+                .stream()
+                .map(inv -> inv.getInvitedUser().getId())
                 .toList();
     }
 
