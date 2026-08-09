@@ -1,7 +1,9 @@
 package com.socialeventmanager.kafka.config;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.Map;
@@ -47,7 +49,7 @@ public class KafkaConfig {
     private String truststoreLocationOverride;
 
     @Bean
-    public Map<String, Object> kafkaProperties() throws Exception {
+    public Map<String, Object> kafkaProperties() throws IOException {
         Map<String, Object> props = new HashMap<>();
         props.put(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         props.put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, "SASL_SSL");
@@ -67,7 +69,7 @@ public class KafkaConfig {
     }
 
     @Bean
-    public ProducerFactory<String, Object> producerFactory() throws Exception {
+    public ProducerFactory<String, Object> producerFactory() throws IOException {
         Map<String, Object> props = new HashMap<>(kafkaProperties());
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
@@ -76,12 +78,12 @@ public class KafkaConfig {
     }
 
     @Bean
-    public KafkaTemplate<String, Object> kafkaTemplate() throws Exception {
+    public KafkaTemplate<String, Object> kafkaTemplate() throws IOException {
         return new KafkaTemplate<>(producerFactory());
     }
 
     @Bean
-    public ConsumerFactory<String, String> consumerFactory() throws Exception {
+    public ConsumerFactory<String, String> consumerFactory() throws IOException {
         Map<String, Object> props = new HashMap<>(kafkaProperties());
         props.put(ConsumerConfig.GROUP_ID_CONFIG, "notification-group");
         props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
@@ -91,7 +93,7 @@ public class KafkaConfig {
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, String> kafkaListenerContainerFactory() throws Exception {
+    public ConcurrentKafkaListenerContainerFactory<String, String> kafkaListenerContainerFactory() throws IOException {
         ConcurrentKafkaListenerContainerFactory<String, String> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory());
         factory.setCommonErrorHandler(errorHandler());
@@ -99,7 +101,7 @@ public class KafkaConfig {
     }
 
     @Bean
-    public KafkaAdmin kafkaAdmin() throws Exception {
+    public KafkaAdmin kafkaAdmin() throws IOException {
         return new KafkaAdmin(kafkaProperties());
     }
 
@@ -112,10 +114,22 @@ public class KafkaConfig {
                 backOff);
     }
 
-    private File extractTruststore() throws Exception {
+    private File extractTruststore() throws IOException {
         ClassPathResource resource = new ClassPathResource("certs/kafka.truststore.jks");
-        File tempFile = File.createTempFile("kafka-truststore", ".jks");
+
+        Path appDir = Path.of(System.getProperty("user.home"), ".kafka-ssl");
+        Files.createDirectories(appDir);
+
+        File tempFile = appDir.resolve("kafka.truststore.jks").toFile();
         tempFile.deleteOnExit();
+
+        if (!tempFile.setReadable(false, false) ||
+                !tempFile.setReadable(true, true) ||
+                !tempFile.setWritable(false, false) ||
+                !tempFile.setWritable(true, true)) {
+            log.warn("Could not set restrictive permissions on truststore file");
+        }
+
         Files.copy(resource.getInputStream(), tempFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
         return tempFile;
     }
