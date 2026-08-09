@@ -1,15 +1,19 @@
 package com.socialeventmanager.notification.controller;
 
+import com.socialeventmanager.auth.service.JwtService;
+import com.socialeventmanager.config.CustomUserDetailsService;
 import com.socialeventmanager.notification.dto.NotificationResponseDTO;
 import com.socialeventmanager.notification.service.NotificationService;
 import com.socialeventmanager.notification.service.SseService;
 import com.socialeventmanager.shared.dto.ApiResponseDTO;
+import com.socialeventmanager.shared.exception.BadRequestException;
 import com.socialeventmanager.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -22,10 +26,24 @@ public class NotificationController {
 
     private final NotificationService notificationService;
     private final SseService sseService;
+    private final JwtService jwtService;
+    private final CustomUserDetailsService userDetailsService;
 
     @GetMapping(value = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public SseEmitter stream(@AuthenticationPrincipal User user) {
-        return sseService.subscribe(user.getId());
+    public SseEmitter stream(@RequestParam String token) {
+        try {
+            String email = jwtService.extractUsername(token);
+            UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+
+            if (!jwtService.isTokenValid(token, userDetails)) {
+                throw new BadRequestException("invalidOrExpiredToken");
+            }
+
+            User user = (User) userDetails;
+            return sseService.subscribe(user.getId());
+        } catch (Exception e) {
+            throw new BadRequestException("invalidOrExpiredToken");
+        }
     }
 
     @GetMapping("/unread")

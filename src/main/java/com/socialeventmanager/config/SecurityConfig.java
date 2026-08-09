@@ -51,7 +51,8 @@ public class SecurityConfig {
                                 "/api/v1/auth/forgot-password",
                                 "/api/v1/auth/refresh",
                                 "/login/oauth2/code/**",
-                                "/oauth2/**")
+                                "/oauth2/**",
+                                "/api/v1/notifications/stream")
                         .permitAll()
                         .requestMatchers(
                                 HttpMethod.GET,
