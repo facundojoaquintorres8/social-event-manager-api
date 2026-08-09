@@ -55,7 +55,7 @@ public class AuthServiceImpl implements AuthService {
     @Transactional
     public ApiResponseDTO<AuthResponseDTO> register(RegisterRequestDTO request, String language) {
         String email = request.getEmail().trim().toLowerCase(Locale.ROOT);
-        EmailValidator.validateEmail(request.getEmail());
+        EmailValidator.validateEmail(email);
 
         if (userRepository.existsByEmail(email)) {
             throw new BadRequestException("emailAlreadyRegistered");
