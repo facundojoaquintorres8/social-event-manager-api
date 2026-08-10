@@ -17,6 +17,7 @@ import com.socialeventmanager.kafka.event.InvitationCreatedEvent;
 import com.socialeventmanager.kafka.event.InvitationRespondedEvent;
 import com.socialeventmanager.kafka.event.PasswordResetRequestedEvent;
 import com.socialeventmanager.kafka.event.UserRegisteredEvent;
+import com.socialeventmanager.shared.exception.EmailDeliveryException;
 
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
@@ -122,7 +123,7 @@ public class EmailServiceImpl implements EmailService {
 
             resend.emails().send(options);
         } catch (ResendException e) {
-            throw new RuntimeException("Failed to send email for invitation " +
+            throw new EmailDeliveryException("Failed to send email for invitation " +
                     event.invitationId(), e);
         }
     }
@@ -149,7 +150,7 @@ public class EmailServiceImpl implements EmailService {
                     .build();
             resend.emails().send(options);
         } catch (ResendException e) {
-            throw new RuntimeException("Failed to send welcome email for user " +
+            throw new EmailDeliveryException("Failed to send welcome email for user " +
                     event.userId(), e);
         }
     }
@@ -183,7 +184,7 @@ public class EmailServiceImpl implements EmailService {
                 resend.emails().send(options);
 
             } catch (ResendException e) {
-                throw new RuntimeException("Failed to send cancellation email to " +
+                throw new EmailDeliveryException("Failed to send cancellation email to " +
                         email + " for event " + event.eventId(), e);
             }
         }
@@ -232,7 +233,7 @@ public class EmailServiceImpl implements EmailService {
                     .build();
             resend.emails().send(options);
         } catch (ResendException e) {
-            throw new RuntimeException("Failed to send invitation responded email for invitation " +
+            throw new EmailDeliveryException("Failed to send invitation responded email for invitation " +
                     event.invitationId(), e);
         }
     }
@@ -267,7 +268,7 @@ public class EmailServiceImpl implements EmailService {
                 resend.emails().send(options);
 
             } catch (ResendException e) {
-                throw new RuntimeException("Failed to send reminder email to " +
+                throw new EmailDeliveryException("Failed to send reminder email to " +
                         email + " for event " + event.eventId(), e);
             }
         }
@@ -283,7 +284,7 @@ public class EmailServiceImpl implements EmailService {
             resend.emails().send(options);
 
         } catch (ResendException e) {
-            throw new RuntimeException("Failed to send reminder email to organizer for event " +
+            throw new EmailDeliveryException("Failed to send reminder email to organizer for event " +
                     event.eventId(), e);
         }
     }
@@ -312,7 +313,7 @@ public class EmailServiceImpl implements EmailService {
                     .build();
             resend.emails().send(options);
         } catch (ResendException e) {
-            throw new RuntimeException("Failed to send password reset email to " +
+            throw new EmailDeliveryException("Failed to send password reset email to " +
                     event.email(), e);
         }
     }
