@@ -117,11 +117,13 @@ public class KafkaConfig {
     private File extractTruststore() throws IOException {
         ClassPathResource resource = new ClassPathResource("certs/kafka.truststore.jks");
 
-        Path appDir = Path.of(System.getProperty("user.home"), ".kafka-ssl");
+        Path appDir = Path.of(System.getProperty("java.io.tmpdir"), "kafka-ssl-" +
+                ProcessHandle.current().pid());
         Files.createDirectories(appDir);
 
         File tempFile = appDir.resolve("kafka.truststore.jks").toFile();
         tempFile.deleteOnExit();
+        appDir.toFile().deleteOnExit();
 
         if (!tempFile.setReadable(false, false) ||
                 !tempFile.setReadable(true, true) ||
