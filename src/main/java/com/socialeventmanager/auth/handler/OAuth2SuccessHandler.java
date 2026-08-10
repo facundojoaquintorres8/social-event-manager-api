@@ -22,6 +22,8 @@ import jakarta.servlet.http.HttpServletResponse;
 @Component
 public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
+    private static final String EMAIL_ATTRIBUTE = "email";
+
     @Value("${app.frontend-url}")
     private String frontendUrl;
 
@@ -51,7 +53,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
         if (provider == Provider.GITHUB) {
             Object idAttr = oAuth2User.getAttribute("id");
             providerId = idAttr != null ? idAttr.toString() : null;
-            email = oAuth2User.getAttribute("email");
+            email = oAuth2User.getAttribute(EMAIL_ATTRIBUTE);
             String name = oAuth2User.getAttribute("name");
             if (name != null && name.contains(" ")) {
                 firstName = name.substring(0, name.indexOf(" "));
@@ -62,7 +64,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
             }
         } else {
             providerId = oAuth2User.getAttribute("sub");
-            email = oAuth2User.getAttribute("email");
+            email = oAuth2User.getAttribute(EMAIL_ATTRIBUTE);
             firstName = oAuth2User.getAttribute("given_name");
             lastName = oAuth2User.getAttribute("family_name");
         }
@@ -86,7 +88,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
                 .queryParam("refreshToken", data.getRefreshToken())
                 .queryParam("firstName", data.getFirstName())
                 .queryParam("lastName", data.getLastName())
-                .queryParam("email", data.getEmail())
+                .queryParam(EMAIL_ATTRIBUTE, data.getEmail())
                 .queryParam("hasPassword", data.isHasPassword())
                 .build().toUriString();
 

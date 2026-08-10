@@ -36,6 +36,7 @@ import com.socialeventmanager.event.service.InvitationService;
 import com.socialeventmanager.kafka.producer.EventProducer;
 import com.socialeventmanager.shared.dto.ApiResponseDTO;
 import com.socialeventmanager.shared.exception.BadRequestException;
+import com.socialeventmanager.shared.util.Constants;
 import com.socialeventmanager.shared.util.EventValidator;
 import com.socialeventmanager.user.entity.User;
 import com.socialeventmanager.user.repository.UserRepository;
@@ -84,7 +85,7 @@ class EventServiceImplTest {
         event = Event.builder()
                 .title("Test Event")
                 .description("Test Description")
-                .eventDate(LocalDateTime.now().plusDays(1))
+                .eventDate(LocalDateTime.now(Constants.TIMEZONE_ARGENTINA).plusDays(1))
                 .location("Test Location")
                 .locationAddress("Test Address")
                 .placeId("test-place-id")
@@ -107,7 +108,7 @@ class EventServiceImplTest {
             CreateEventRequestDTO request = new CreateEventRequestDTO();
             request.setTitle("Test Event");
             request.setDescription("Test Description");
-            request.setEventDate(LocalDateTime.now().plusDays(1));
+            request.setEventDate(LocalDateTime.now(Constants.TIMEZONE_ARGENTINA).plusDays(1));
             request.setLocation("Test Location");
             request.setLocationAddress("Test Address");
             request.setPlaceId("test-place-id");
@@ -136,7 +137,7 @@ class EventServiceImplTest {
             CreateEventRequestDTO request = new CreateEventRequestDTO();
             request.setTitle("Updated Title");
             request.setDescription("Updated Description");
-            request.setEventDate(LocalDateTime.now().plusDays(2));
+            request.setEventDate(LocalDateTime.now(Constants.TIMEZONE_ARGENTINA).plusDays(2));
             request.setLocation("Updated Location");
             request.setLocationAddress("Updated Address");
             request.setPlaceId("updated-place-id");
@@ -162,7 +163,7 @@ class EventServiceImplTest {
             CreateEventRequestDTO request = new CreateEventRequestDTO();
             request.setTitle("Updated Title");
             request.setDescription("Updated Description");
-            request.setEventDate(LocalDateTime.now().plusDays(2));
+            request.setEventDate(LocalDateTime.now(Constants.TIMEZONE_ARGENTINA).plusDays(2));
             request.setLocation("Updated Location");
             request.setLocationAddress("Updated Address");
             request.setPlaceId("updated-place-id");

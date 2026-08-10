@@ -27,7 +27,13 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class EmailServiceImpl implements EmailService {
 
+    private static final String EVENT_DATE = "{{eventDate}}";
+    private static final String EVENT_LOCATION = "{{eventLocation}}";
+    private static final String ORGANIZER_NAME = "{{organizerName}}";
+    private static final String MAPS_URL = "{{mapsUrl}}";
+    private static final String EVENT_TITLE = "{{eventTitle}}";
     private static final String GOOGLE_MAPS_URL = "https://www.google.com/maps?q=%s,%s";
+
     private final NotificationLogService notificationLogService;
 
     @Value("${resend.api-key}")
@@ -155,11 +161,11 @@ public class EmailServiceImpl implements EmailService {
         boolean isEs = "es".equals(event.language());
         String template = isEs ? eventCancelledTemplateEs : eventCancelledTemplate;
         String html = template
-                .replace("{{organizerName}}", event.organizerName())
-                .replace("{{eventTitle}}", event.eventTitle())
-                .replace("{{eventDate}}", event.eventDate())
-                .replace("{{mapsUrl}}", mapsUrl)
-                .replace("{{eventLocation}}", event.eventLocation());
+                .replace(ORGANIZER_NAME, event.organizerName())
+                .replace(EVENT_TITLE, event.eventTitle())
+                .replace(EVENT_DATE, event.eventDate())
+                .replace(MAPS_URL, mapsUrl)
+                .replace(EVENT_LOCATION, event.eventLocation());
 
         String subject = isEs
                 ? "Evento cancelado: " + event.eventTitle()
@@ -201,7 +207,7 @@ public class EmailServiceImpl implements EmailService {
         String statusText = isEs ? spanishStatus : englishStatus;
 
         String html = template
-                .replace("{{eventTitle}}", event.eventTitle())
+                .replace(EVENT_TITLE, event.eventTitle())
                 .replace("{{participantName}}", event.participantName())
                 .replace("{{statusText}}", statusText)
                 .replace("{{eventUrl}}", frontendUrl + "/events/" + event.eventId());
@@ -238,11 +244,11 @@ public class EmailServiceImpl implements EmailService {
         boolean isEs = "es".equals(event.language());
         String template = isEs ? eventReminderTemplateEs : eventReminderTemplate;
         String html = template
-                .replace("{{eventTitle}}", event.eventTitle())
-                .replace("{{eventDate}}", event.eventDate())
-                .replace("{{mapsUrl}}", mapsUrl)
-                .replace("{{eventLocation}}", event.eventLocation())
-                .replace("{{organizerName}}", event.organizerName())
+                .replace(EVENT_TITLE, event.eventTitle())
+                .replace(EVENT_DATE, event.eventDate())
+                .replace(MAPS_URL, mapsUrl)
+                .replace(EVENT_LOCATION, event.eventLocation())
+                .replace(ORGANIZER_NAME, event.organizerName())
                 .replace("{{eventUrl}}", frontendUrl + "/events/" + event.eventId());
 
         String subject = isEs
@@ -313,11 +319,11 @@ public class EmailServiceImpl implements EmailService {
 
     private String buildHtml(String template, InvitationCreatedEvent event, String mapsUrl) {
         return template
-                .replace("{{organizerName}}", event.organizerName())
-                .replace("{{eventTitle}}", event.eventTitle())
-                .replace("{{eventDate}}", event.eventDate())
-                .replace("{{mapsUrl}}", mapsUrl)
-                .replace("{{eventLocation}}", event.eventLocation())
+                .replace(ORGANIZER_NAME, event.organizerName())
+                .replace(EVENT_TITLE, event.eventTitle())
+                .replace(EVENT_DATE, event.eventDate())
+                .replace(MAPS_URL, mapsUrl)
+                .replace(EVENT_LOCATION, event.eventLocation())
                 .replace("{{workspaceUrl}}", frontendUrl + "/workspace?tab=invitations")
                 .replace("{{inviteUrl}}", frontendUrl + "/invite/" +
                         (event.external() ? event.externalToken() : event.invitationId()));

@@ -7,6 +7,7 @@ import com.socialeventmanager.notification.enums.NotificationType;
 import com.socialeventmanager.notification.repository.NotificationRepository;
 import com.socialeventmanager.shared.dto.ApiResponseDTO;
 import com.socialeventmanager.shared.exception.BadRequestException;
+import com.socialeventmanager.shared.util.Constants;
 import com.socialeventmanager.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -77,7 +78,7 @@ public class NotificationServiceImpl implements NotificationService {
 
         if (!notification.isRead()) {
             notification.setRead(true);
-            notification.setReadAt(LocalDateTime.now());
+            notification.setReadAt(LocalDateTime.now(Constants.TIMEZONE_ARGENTINA));
             notificationRepository.save(notification);
         }
 

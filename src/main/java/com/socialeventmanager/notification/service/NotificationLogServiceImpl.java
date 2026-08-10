@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import com.socialeventmanager.notification.entity.NotificationLog;
 import com.socialeventmanager.notification.repository.NotificationLogRepository;
+import com.socialeventmanager.shared.util.Constants;
 
 import lombok.RequiredArgsConstructor;
 
@@ -26,7 +27,7 @@ public class NotificationLogServiceImpl implements NotificationLogService {
         notificationLogRepository.save(
                 NotificationLog.builder()
                         .invitationId(invitationId)
-                        .sentAt(LocalDateTime.now())
+                        .sentAt(LocalDateTime.now(Constants.TIMEZONE_ARGENTINA))
                         .build());
     }
 

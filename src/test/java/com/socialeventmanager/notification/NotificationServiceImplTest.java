@@ -37,6 +37,7 @@ import com.socialeventmanager.notification.repository.NotificationRepository;
 import com.socialeventmanager.notification.service.NotificationServiceImpl;
 import com.socialeventmanager.shared.dto.ApiResponseDTO;
 import com.socialeventmanager.shared.exception.BadRequestException;
+import com.socialeventmanager.shared.util.Constants;
 import com.socialeventmanager.user.entity.User;
 import com.socialeventmanager.user.repository.UserRepository;
 
@@ -76,7 +77,7 @@ class NotificationServiceImplTest {
 
         event = Event.builder()
                 .title("Test Event")
-                .eventDate(LocalDateTime.now().plusDays(1))
+                .eventDate(LocalDateTime.now(Constants.TIMEZONE_ARGENTINA).plusDays(1))
                 .location("Test Location")
                 .locationAddress("Test Address")
                 .placeId("test-place-id")
@@ -191,7 +192,7 @@ class NotificationServiceImplTest {
                     .type(NotificationType.INVITATION_RECEIVED)
                     .params(Map.of("eventTitle", "Test Event"))
                     .read(true)
-                    .readAt(LocalDateTime.now())
+                    .readAt(LocalDateTime.now(Constants.TIMEZONE_ARGENTINA))
                     .build();
             notification.setId(notificationId);
 

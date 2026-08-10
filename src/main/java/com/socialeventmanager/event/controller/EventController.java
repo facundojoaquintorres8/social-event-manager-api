@@ -22,6 +22,7 @@ import com.socialeventmanager.event.dto.CalendarEventResponseDTO;
 import com.socialeventmanager.event.dto.CreateEventRequestDTO;
 import com.socialeventmanager.event.dto.DashboardResponseDTO;
 import com.socialeventmanager.event.dto.EventDetailsFullResponseDTO;
+import com.socialeventmanager.event.dto.EventFilterRequestDTO;
 import com.socialeventmanager.event.dto.EventResponseDTO;
 import com.socialeventmanager.event.dto.InviteUserRequestDTO;
 import com.socialeventmanager.event.enums.EventStatus;
@@ -58,16 +59,16 @@ public class EventController {
             @RequestParam(required = false) LocalDateTime fromDate,
             @RequestParam(required = false) LocalDateTime toDate,
             @RequestParam(required = false) EventStatus status) {
-        return ResponseEntity.ok(
-                eventService.getMyEvents(
-                        page,
-                        size,
-                        sortBy,
-                        direction,
-                        title,
-                        fromDate,
-                        toDate,
-                        status));
+        EventFilterRequestDTO filterRequest = new EventFilterRequestDTO();
+        filterRequest.setPage(page);
+        filterRequest.setSize(size);
+        filterRequest.setSortBy(sortBy);
+        filterRequest.setDirection(direction);
+        filterRequest.setTitle(title);
+        filterRequest.setFromDate(fromDate);
+        filterRequest.setToDate(toDate);
+        filterRequest.setStatus(status);
+        return ResponseEntity.ok(eventService.getMyEvents(filterRequest));
     }
 
     @GetMapping("/attending")

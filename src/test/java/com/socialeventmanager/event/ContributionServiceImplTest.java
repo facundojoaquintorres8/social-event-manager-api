@@ -38,6 +38,7 @@ import com.socialeventmanager.event.service.InvitationService;
 import com.socialeventmanager.kafka.producer.EventProducer;
 import com.socialeventmanager.shared.dto.ApiResponseDTO;
 import com.socialeventmanager.shared.exception.BadRequestException;
+import com.socialeventmanager.shared.util.Constants;
 import com.socialeventmanager.shared.util.EventValidator;
 import com.socialeventmanager.user.entity.User;
 
@@ -96,7 +97,7 @@ class ContributionServiceImplTest {
         event = Event.builder()
                 .title("Test Event")
                 .description("Test Description")
-                .eventDate(LocalDateTime.now().plusDays(1))
+                .eventDate(LocalDateTime.now(Constants.TIMEZONE_ARGENTINA).plusDays(1))
                 .location("Test Location")
                 .locationAddress("Test Address")
                 .placeId("test-place-id")

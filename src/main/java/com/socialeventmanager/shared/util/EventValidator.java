@@ -17,7 +17,7 @@ public class EventValidator {
             throw new BadRequestException("eventCancelledCannotModify");
         }
 
-        if (event.getEventDate().isBefore(LocalDateTime.now())) {
+        if (event.getEventDate().isBefore(LocalDateTime.now(Constants.TIMEZONE_ARGENTINA))) {
             throw new BadRequestException("eventPastCannotModify");
         }
     }

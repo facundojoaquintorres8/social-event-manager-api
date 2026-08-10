@@ -43,6 +43,7 @@ import com.socialeventmanager.event.service.ExternalInvitationService;
 import com.socialeventmanager.kafka.producer.EventProducer;
 import com.socialeventmanager.shared.dto.ApiResponseDTO;
 import com.socialeventmanager.shared.exception.BadRequestException;
+import com.socialeventmanager.shared.util.Constants;
 import com.socialeventmanager.token.repository.TokenRepository;
 import com.socialeventmanager.user.entity.User;
 import com.socialeventmanager.user.repository.UserRepository;
@@ -237,7 +238,7 @@ class AuthServiceImplTest {
             PasswordResetToken resetToken = PasswordResetToken.builder()
                     .token("valid-token")
                     .user(user)
-                    .expiresAt(LocalDateTime.now().plusHours(1))
+                    .expiresAt(LocalDateTime.now(Constants.TIMEZONE_ARGENTINA).plusHours(1))
                     .used(false)
                     .build();
 
@@ -279,7 +280,7 @@ class AuthServiceImplTest {
             PasswordResetToken resetToken = PasswordResetToken.builder()
                     .token("used-token")
                     .user(user)
-                    .expiresAt(LocalDateTime.now().plusHours(1))
+                    .expiresAt(LocalDateTime.now(Constants.TIMEZONE_ARGENTINA).plusHours(1))
                     .used(true)
                     .build();
 
@@ -301,7 +302,7 @@ class AuthServiceImplTest {
             PasswordResetToken resetToken = PasswordResetToken.builder()
                     .token("expired-token")
                     .user(user)
-                    .expiresAt(LocalDateTime.now().minusHours(1))
+                    .expiresAt(LocalDateTime.now(Constants.TIMEZONE_ARGENTINA).minusHours(1))
                     .used(false)
                     .build();
 

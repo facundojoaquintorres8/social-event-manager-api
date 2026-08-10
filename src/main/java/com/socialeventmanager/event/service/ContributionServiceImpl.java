@@ -32,6 +32,12 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class ContributionServiceImpl implements ContributionService {
 
+    private static final String CONTRIBUTION_NAME = "contributionName";
+    private static final String CONTRIBUTION_NOT_FOUND = "contributionNotFound";
+    private static final String EVENT_TITLE = "eventTitle";
+    private static final String PARTICIPANT_NAME = "participantName";
+    private static final String EVENT_NOT_FOUND = "eventNotFound";
+
     private final ContributionRepository contributionRepository;
     private final EventRepository eventRepository;
     private final InvitationRepository invitationRepository;
@@ -48,7 +54,7 @@ public class ContributionServiceImpl implements ContributionService {
         User currentUser = currentUserService.getCurrentUser();
 
         Event event = eventRepository.findById(eventId)
-                .orElseThrow(() -> new BadRequestException("eventNotFound"));
+                .orElseThrow(() -> new BadRequestException(EVENT_NOT_FOUND));
 
         eventValidator.validateEventAllowsContributions(event);
 
@@ -72,9 +78,9 @@ public class ContributionServiceImpl implements ContributionService {
                 event.getId(),
                 NotificationType.CONTRIBUTION_ADDED,
                 Map.of(
-                        "eventTitle", event.getTitle(),
-                        "contributionName", contribution.getName(),
-                        "participantName", currentUser.getFirstName() + " " + currentUser.getLastName()),
+                        EVENT_TITLE, event.getTitle(),
+                        CONTRIBUTION_NAME, contribution.getName(),
+                        PARTICIPANT_NAME, currentUser.getFirstName() + " " + currentUser.getLastName()),
                 recipientIds));
 
         return new ApiResponseDTO<>(
@@ -92,12 +98,12 @@ public class ContributionServiceImpl implements ContributionService {
         User currentUser = currentUserService.getCurrentUser();
 
         Event event = eventRepository.findById(eventId)
-                .orElseThrow(() -> new BadRequestException("eventNotFound"));
+                .orElseThrow(() -> new BadRequestException(EVENT_NOT_FOUND));
 
         eventValidator.validateEventAllowsContributions(event);
 
         Contribution contribution = contributionRepository.findById(contributionId)
-                .orElseThrow(() -> new BadRequestException("contributionNotFound"));
+                .orElseThrow(() -> new BadRequestException(CONTRIBUTION_NOT_FOUND));
 
         if (!contribution.getEvent().getId().equals(event.getId())) {
             throw new BadRequestException("contributionNotInEvent");
@@ -125,9 +131,9 @@ public class ContributionServiceImpl implements ContributionService {
                 contribution.getEvent().getId(),
                 NotificationType.CONTRIBUTION_EDITED,
                 Map.of(
-                        "eventTitle", contribution.getEvent().getTitle(),
-                        "contributionName", contribution.getName(),
-                        "participantName", currentUser.getFirstName() + " " + currentUser.getLastName()),
+                        EVENT_TITLE, contribution.getEvent().getTitle(),
+                        CONTRIBUTION_NAME, contribution.getName(),
+                        PARTICIPANT_NAME, currentUser.getFirstName() + " " + currentUser.getLastName()),
                 recipientIds));
 
         return new ApiResponseDTO<>(
@@ -145,12 +151,12 @@ public class ContributionServiceImpl implements ContributionService {
         User currentUser = currentUserService.getCurrentUser();
 
         Event event = eventRepository.findById(eventId)
-                .orElseThrow(() -> new BadRequestException("eventNotFound"));
+                .orElseThrow(() -> new BadRequestException(EVENT_NOT_FOUND));
 
         eventValidator.validateEventAllowsContributions(event);
 
         Contribution contribution = contributionRepository.findById(contributionId)
-                .orElseThrow(() -> new BadRequestException("contributionNotFound"));
+                .orElseThrow(() -> new BadRequestException(CONTRIBUTION_NOT_FOUND));
 
         if (!contribution.getEvent().getId().equals(event.getId())) {
             throw new BadRequestException("contributionNotInEvent");
@@ -170,8 +176,8 @@ public class ContributionServiceImpl implements ContributionService {
                     contribution.getEvent().getId(),
                     NotificationType.CONTRIBUTION_COMPLETED,
                     Map.of(
-                            "eventTitle", contribution.getEvent().getTitle(),
-                            "contributionName", contribution.getName()),
+                            EVENT_TITLE, contribution.getEvent().getTitle(),
+                            CONTRIBUTION_NAME, contribution.getName()),
                     recipientIds));
         }
 
@@ -189,12 +195,12 @@ public class ContributionServiceImpl implements ContributionService {
         User currentUser = currentUserService.getCurrentUser();
 
         Event event = eventRepository.findById(eventId)
-                .orElseThrow(() -> new BadRequestException("eventNotFound"));
+                .orElseThrow(() -> new BadRequestException(EVENT_NOT_FOUND));
 
         eventValidator.validateEventAllowsContributions(event);
 
         Contribution contribution = contributionRepository.findById(contributionId)
-                .orElseThrow(() -> new BadRequestException("contributionNotFound"));
+                .orElseThrow(() -> new BadRequestException(CONTRIBUTION_NOT_FOUND));
 
         if (!contribution.getEvent().getId().equals(event.getId())) {
             throw new BadRequestException("contributionNotInEvent");
@@ -210,9 +216,9 @@ public class ContributionServiceImpl implements ContributionService {
                 contribution.getEvent().getId(),
                 NotificationType.CONTRIBUTION_DELETED,
                 Map.of(
-                        "eventTitle", contribution.getEvent().getTitle(),
-                        "contributionName", contribution.getName(),
-                        "participantName", currentUser.getFirstName() + " " + currentUser.getLastName()),
+                        EVENT_TITLE, contribution.getEvent().getTitle(),
+                        CONTRIBUTION_NAME, contribution.getName(),
+                        PARTICIPANT_NAME, currentUser.getFirstName() + " " + currentUser.getLastName()),
                 recipientIds));
 
         contributionRepository.delete(contribution);

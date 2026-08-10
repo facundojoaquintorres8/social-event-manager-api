@@ -6,6 +6,8 @@ import com.socialeventmanager.event.repository.EventRepository;
 import com.socialeventmanager.event.repository.InvitationRepository;
 import com.socialeventmanager.kafka.event.EventReminderEvent;
 import com.socialeventmanager.kafka.producer.EventProducer;
+import com.socialeventmanager.shared.util.Constants;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -27,7 +29,7 @@ public class EventReminderScheduler {
     @Scheduled(cron = "0 0 10 * * *") // every day at 10:00 AM
     @Transactional
     public void sendReminders() {
-        LocalDateTime from = LocalDateTime.now()
+        LocalDateTime from = LocalDateTime.now(Constants.TIMEZONE_ARGENTINA)
                 .plusDays(1)
                 .toLocalDate()
                 .atStartOfDay();

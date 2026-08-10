@@ -37,6 +37,9 @@ public class SecurityConfig {
         http
                 .cors(cors -> {
                 })
+                // "REST API using stateless JWT authentication. CSRF protection is not required
+                // as there are no session cookies. All requests are authenticated via Bearer
+                // tokens in the Authorization header."
                 .csrf(csrf -> csrf.disable())
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint(jwtAuthenticationEntryPoint))

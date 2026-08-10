@@ -36,6 +36,7 @@ import com.socialeventmanager.event.dto.ContributionResponseDTO;
 import com.socialeventmanager.event.dto.CreateEventRequestDTO;
 import com.socialeventmanager.event.dto.DashboardResponseDTO;
 import com.socialeventmanager.event.dto.EventDetailsFullResponseDTO;
+import com.socialeventmanager.event.dto.EventFilterRequestDTO;
 import com.socialeventmanager.event.dto.EventParticipantResponseDTO;
 import com.socialeventmanager.event.dto.EventResponseDTO;
 import com.socialeventmanager.event.dto.InvitationResponseDTO;
@@ -64,6 +65,8 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class EventServiceImpl implements EventService {
+
+    private static final String EVENT_NOT_FOUND = "eventNotFound";
 
     private final EventRepository eventRepository;
     private final UserRepository userRepository;
@@ -102,16 +105,17 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public ApiResponseDTO<Page<EventResponseDTO>> getMyEvents(
-            int page,
-            int size,
-            String sortBy,
-            String direction,
-            String title,
-            LocalDateTime fromDate,
-            LocalDateTime toDate,
-            EventStatus status) {
+    public ApiResponseDTO<Page<EventResponseDTO>> getMyEvents(EventFilterRequestDTO filterRequest) {
         User currentUser = getCurrentUser();
+
+        int page = filterRequest.getPage();
+        int size = filterRequest.getSize();
+        String sortBy = filterRequest.getSortBy();
+        String direction = filterRequest.getDirection();
+        String title = filterRequest.getTitle();
+        LocalDateTime fromDate = filterRequest.getFromDate();
+        LocalDateTime toDate = filterRequest.getToDate();
+        EventStatus status = filterRequest.getStatus();
 
         size = Math.min(size, Constants.DEFAULT_PAGE_SIZE);
 
@@ -188,7 +192,7 @@ public class EventServiceImpl implements EventService {
         User currentUser = getCurrentUser();
 
         if (from == null || to == null) {
-            LocalDate now = LocalDate.now();
+            LocalDate now = LocalDate.now(Constants.TIMEZONE_ARGENTINA);
 
             from = now.withDayOfMonth(1).atStartOfDay();
 
@@ -353,7 +357,7 @@ public class EventServiceImpl implements EventService {
 
         Event event = eventRepository
                 .findByIdAndCreatedBy(eventId, currentUser)
-                .orElseThrow(() -> new BadRequestException("eventNotFound"));
+                .orElseThrow(() -> new BadRequestException(EVENT_NOT_FOUND));
 
         eventValidator.validateEventAllowsInteraction(event);
 
@@ -390,7 +394,7 @@ public class EventServiceImpl implements EventService {
 
         long upcomingEvents = eventRepository.countByCreatedByIdAndEventDateAfter(
                 currentUser.getId(),
-                LocalDateTime.now());
+                LocalDateTime.now(Constants.TIMEZONE_ARGENTINA));
 
         List<EventResponseDTO> recentEvents = eventRepository
                 .findTop5ByCreatedByIdOrderByCreatedAtDesc(currentUser.getId())
@@ -610,7 +614,7 @@ public class EventServiceImpl implements EventService {
 
         return eventRepository
                 .findByIdAndCreatedBy(eventId, currentUser)
-                .orElseThrow(() -> new BadRequestException("eventNotFound"));
+                .orElseThrow(() -> new BadRequestException(EVENT_NOT_FOUND));
     }
 
     private Event getAccessibleEvent(UUID eventId) {
@@ -630,7 +634,7 @@ public class EventServiceImpl implements EventService {
 
         if (invited) {
             return eventRepository.findById(eventId)
-                    .orElseThrow(() -> new BadRequestException("eventNotFound"));
+                    .orElseThrow(() -> new BadRequestException(EVENT_NOT_FOUND));
         }
 
         throw new ForbiddenException("eventNoAccess");

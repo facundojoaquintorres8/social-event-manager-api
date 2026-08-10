@@ -10,6 +10,9 @@ import java.util.Locale;
 
 public class EventSpecification {
 
+    private EventSpecification() {
+    }
+
     public static Specification<Event> hasUser(User user) {
         return (root, query, cb) -> cb.equal(root.get("createdBy"), user);
     }

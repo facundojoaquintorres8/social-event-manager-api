@@ -1,5 +1,12 @@
 package com.socialeventmanager.user.entity;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
 import com.socialeventmanager.auth.entity.UserProvider;
 import com.socialeventmanager.shared.entity.BaseEntity;
 import com.socialeventmanager.token.entity.Token;
@@ -10,13 +17,11 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import lombok.*;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "users")
@@ -39,7 +44,7 @@ public class User extends BaseEntity implements UserDetails {
     private String password;
 
     @OneToMany(mappedBy = "user")
-    private List<Token> tokens;
+    private transient List<Token> tokens;
 
     @Column(name = "has_password", nullable = false)
     @Builder.Default
@@ -47,7 +52,7 @@ public class User extends BaseEntity implements UserDetails {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @Builder.Default
-    private List<UserProvider> providers = new ArrayList<>();
+    private transient List<UserProvider> providers = new ArrayList<>();
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

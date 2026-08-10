@@ -10,6 +10,9 @@ import org.springframework.data.jpa.domain.Specification;
 
 public class InvitationSpecification {
 
+    private InvitationSpecification() {
+    }
+
     public static Specification<EventInvitation> hasUser(User user) {
         return (root, query, cb) -> {
             if (query.getResultType() != Long.class && query.getResultType() != long.class) {

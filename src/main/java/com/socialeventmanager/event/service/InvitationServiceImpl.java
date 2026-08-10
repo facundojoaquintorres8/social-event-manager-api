@@ -46,6 +46,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class InvitationServiceImpl implements InvitationService {
 
+    private static final String EVENT_TITLE = "eventTitle";
+
     private final InvitationRepository invitationRepository;
     private final UserRepository userRepository;
     private final CurrentUserService currentUserService;
@@ -97,7 +99,7 @@ public class InvitationServiceImpl implements InvitationService {
                 eventProducer.sendNotification(new NotificationEvent(
                         event.getId(),
                         NotificationType.INVITATION_RECEIVED,
-                        Map.of("eventTitle", event.getTitle()),
+                        Map.of(EVENT_TITLE, event.getTitle()),
                         List.of(invitedUser.getId())));
 
                 return new ApiResponseDTO<>(
@@ -123,7 +125,7 @@ public class InvitationServiceImpl implements InvitationService {
         eventProducer.sendNotification(new NotificationEvent(
                 event.getId(),
                 NotificationType.INVITATION_RECEIVED,
-                Map.of("eventTitle", event.getTitle()),
+                Map.of(EVENT_TITLE, event.getTitle()),
                 List.of(invitedUser.getId())));
 
         return new ApiResponseDTO<>(
@@ -292,7 +294,7 @@ public class InvitationServiceImpl implements InvitationService {
                 invitation.getEvent().getId(),
                 type,
                 Map.of(
-                        "eventTitle", invitation.getEvent().getTitle(),
+                        EVENT_TITLE, invitation.getEvent().getTitle(),
                         "participantName", invitation.getInvitedUser().getFirstName() + " " +
                                 invitation.getInvitedUser().getLastName()),
                 List.of(invitation.getEvent().getCreatedBy().getId())));

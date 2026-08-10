@@ -22,6 +22,7 @@ import com.socialeventmanager.kafka.producer.EventProducer;
 import com.socialeventmanager.notification.service.NotificationLogService;
 import com.socialeventmanager.shared.dto.ApiResponseDTO;
 import com.socialeventmanager.shared.exception.BadRequestException;
+import com.socialeventmanager.shared.util.Constants;
 import com.socialeventmanager.shared.util.EmailValidator;
 import com.socialeventmanager.shared.util.EventValidator;
 import com.socialeventmanager.user.entity.User;
@@ -156,7 +157,8 @@ public class ExternalInvitationServiceImpl implements ExternalInvitationService 
 
         for (ExternalInvitation externalInvitation : invitations) {
             if (externalInvitation.getEvent().getStatus() == EventStatus.CANCELLED
-                    || externalInvitation.getEvent().getEventDate().isBefore(LocalDateTime.now())) {
+                    || externalInvitation.getEvent().getEventDate()
+                            .isBefore(LocalDateTime.now(Constants.TIMEZONE_ARGENTINA))) {
                 continue;
             }
 
@@ -164,7 +166,7 @@ public class ExternalInvitationServiceImpl implements ExternalInvitationService 
                     user, language);
 
             externalInvitation.setStatus(ExternalInvitationStatus.CLAIMED);
-            externalInvitation.setClaimedAt(LocalDateTime.now());
+            externalInvitation.setClaimedAt(LocalDateTime.now(Constants.TIMEZONE_ARGENTINA));
             externalInvitationRepository.save(externalInvitation);
         }
     }
@@ -206,7 +208,7 @@ public class ExternalInvitationServiceImpl implements ExternalInvitationService 
             throw new BadRequestException("invitationCancelled");
         }
 
-        if (!invitation.getEvent().getEventDate().isAfter(LocalDateTime.now())) {
+        if (!invitation.getEvent().getEventDate().isAfter(LocalDateTime.now(Constants.TIMEZONE_ARGENTINA))) {
             throw new BadRequestException("invitationExpired");
         }
 

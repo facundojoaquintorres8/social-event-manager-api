@@ -17,6 +17,7 @@ import com.socialeventmanager.kafka.event.UserRegisteredEvent;
 import com.socialeventmanager.kafka.producer.EventProducer;
 import com.socialeventmanager.shared.dto.ApiResponseDTO;
 import com.socialeventmanager.shared.exception.BadRequestException;
+import com.socialeventmanager.shared.util.Constants;
 import com.socialeventmanager.shared.util.EmailValidator;
 import com.socialeventmanager.token.entity.Token;
 import com.socialeventmanager.token.enums.TokenType;
@@ -160,7 +161,7 @@ public class AuthServiceImpl implements AuthService {
         PasswordResetToken resetToken = PasswordResetToken.builder()
                 .token(token)
                 .user(user)
-                .expiresAt(LocalDateTime.now().plusHours(1))
+                .expiresAt(LocalDateTime.now(Constants.TIMEZONE_ARGENTINA).plusHours(1))
                 .build();
 
         passwordResetTokenRepository.save(resetToken);
@@ -185,7 +186,7 @@ public class AuthServiceImpl implements AuthService {
             throw new BadRequestException("invalidOrExpiredToken");
         }
 
-        if (resetToken.getExpiresAt().isBefore(LocalDateTime.now())) {
+        if (resetToken.getExpiresAt().isBefore(LocalDateTime.now(Constants.TIMEZONE_ARGENTINA))) {
             throw new BadRequestException("invalidOrExpiredToken");
         }
 

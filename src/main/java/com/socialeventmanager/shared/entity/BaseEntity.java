@@ -7,6 +7,8 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import com.socialeventmanager.shared.util.Constants;
+
 @MappedSuperclass
 @Getter
 @Setter
@@ -24,13 +26,13 @@ public abstract class BaseEntity {
 
     @PrePersist
     protected void onCreate() {
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now(Constants.TIMEZONE_ARGENTINA);
         this.createdAt = now;
         this.updatedAt = now;
     }
 
     @PreUpdate
     protected void onUpdate() {
-        this.updatedAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now(Constants.TIMEZONE_ARGENTINA);
     }
 }

@@ -35,6 +35,7 @@ import com.socialeventmanager.kafka.producer.EventProducer;
 import com.socialeventmanager.notification.service.NotificationLogService;
 import com.socialeventmanager.shared.dto.ApiResponseDTO;
 import com.socialeventmanager.shared.exception.BadRequestException;
+import com.socialeventmanager.shared.util.Constants;
 import com.socialeventmanager.shared.util.EventValidator;
 import com.socialeventmanager.user.entity.User;
 
@@ -78,7 +79,7 @@ class ExternalInvitationServiceImplTest {
 
         event = Event.builder()
                 .title("Test Event")
-                .eventDate(LocalDateTime.now().plusDays(1))
+                .eventDate(LocalDateTime.now(Constants.TIMEZONE_ARGENTINA).plusDays(1))
                 .location("Test Location")
                 .locationAddress("Test Address")
                 .placeId("test-place-id")
@@ -216,7 +217,7 @@ class ExternalInvitationServiceImplTest {
         @Test
         @DisplayName("should throw when event date is in the past")
         void shouldThrowWhenEventDateIsInThePast() {
-            event.setEventDate(LocalDateTime.now().minusDays(1));
+            event.setEventDate(LocalDateTime.now(Constants.TIMEZONE_ARGENTINA).minusDays(1));
 
             ExternalInvitation invitation = ExternalInvitation.builder()
                     .event(event)
@@ -332,7 +333,7 @@ class ExternalInvitationServiceImplTest {
                     .build();
             newUser.setId(UUID.randomUUID());
 
-            event.setEventDate(LocalDateTime.now().minusDays(1));
+            event.setEventDate(LocalDateTime.now(Constants.TIMEZONE_ARGENTINA).minusDays(1));
 
             ExternalInvitation invitation = ExternalInvitation.builder()
                     .event(event)
