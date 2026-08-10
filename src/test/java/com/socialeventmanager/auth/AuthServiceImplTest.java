@@ -233,7 +233,7 @@ class AuthServiceImplTest {
         void shouldResetPasswordSuccessfully() {
             ResetPasswordRequestDTO request = new ResetPasswordRequestDTO();
             request.setToken("valid-token");
-            request.setNewPassword("NewPassword1");
+            request.setNewPassword("NewPassword123");
 
             PasswordResetToken resetToken = PasswordResetToken.builder()
                     .token("valid-token")
@@ -244,7 +244,7 @@ class AuthServiceImplTest {
 
             when(passwordResetTokenRepository.findByToken("valid-token"))
                     .thenReturn(Optional.of(resetToken));
-            when(passwordEncoder.encode("NewPassword1")).thenReturn("newEncodedPassword");
+            when(passwordEncoder.encode("NewPassword123")).thenReturn("newEncodedPassword");
             when(userRepository.save(any())).thenReturn(user);
             when(tokenRepository.findAllByUserId(any())).thenReturn(List.of());
 
@@ -260,7 +260,7 @@ class AuthServiceImplTest {
         void shouldThrowWhenTokenNotFound() {
             ResetPasswordRequestDTO request = new ResetPasswordRequestDTO();
             request.setToken("invalid-token");
-            request.setNewPassword("NewPassword1");
+            request.setNewPassword("NewPassword123");
 
             when(passwordResetTokenRepository.findByToken("invalid-token"))
                     .thenReturn(Optional.empty());
@@ -275,7 +275,7 @@ class AuthServiceImplTest {
         void shouldThrowWhenTokenAlreadyUsed() {
             ResetPasswordRequestDTO request = new ResetPasswordRequestDTO();
             request.setToken("used-token");
-            request.setNewPassword("NewPassword1");
+            request.setNewPassword("NewPassword123");
 
             PasswordResetToken resetToken = PasswordResetToken.builder()
                     .token("used-token")
@@ -297,7 +297,7 @@ class AuthServiceImplTest {
         void shouldThrowWhenTokenExpired() {
             ResetPasswordRequestDTO request = new ResetPasswordRequestDTO();
             request.setToken("expired-token");
-            request.setNewPassword("NewPassword1");
+            request.setNewPassword("NewPassword123");
 
             PasswordResetToken resetToken = PasswordResetToken.builder()
                     .token("expired-token")
