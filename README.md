@@ -23,7 +23,7 @@ Full-stack web application for creating and managing social events, inviting par
 
 **Backend**
 
-- Java 17 + Spring Boot 3.5
+- Java 21 + Spring Boot 3.5
 - Spring Security with JWT + OAuth2 (Google, GitHub)
 - Apache Kafka (event-driven architecture)
 - PostgreSQL 16 with Flyway migrations
@@ -132,7 +132,7 @@ Frontend (Angular) ──► REST API (Spring Boot)
 
 ### Prerequisites
 
-- Java 17+
+- Java 21+
 - Node.js 22+
 - Maven 3.9+
 - PostgreSQL (or use Neon free tier)
