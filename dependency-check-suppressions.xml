@@ -1,3 +1,48 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
+
+    <suppress>
+        <notes>CVE-2026-66299 - Tomcat 11.0.24 is the latest available version.
+        No patch available at this time. Will update when Spring Boot ships a newer Tomcat version.
+        Applies to all tomcat-embed artifacts.
+        </notes>
+        <packageUrl regex="true">^pkg:maven/org\.apache\.tomcat\.embed/.*@.*$</packageUrl>
+        <cve>CVE-2026-66299</cve>
+    </suppress>
+
+    <suppress>
+        <notes>CVE-2026-34479, CVE-2026-34477, CVE-2026-49844 - log4j artifacts are transitive dependencies
+        of Spring Boot. No patch available in current Spring Boot 3.5.x.
+        Applies to all log4j artifacts.
+        </notes>
+        <packageUrl regex="true">^pkg:maven/org\.apache\.logging\.log4j/.*@.*$</packageUrl>
+        <cve>CVE-2026-34479</cve>
+        <cve>CVE-2026-34477</cve>
+        <cve>CVE-2026-49844</cve>
+    </suppress>
+
+    <suppress>
+        <notes>CVE-2025-48924 - commons-lang3 3.17.0 is the latest version shipped by Spring Boot 3.5.x.
+        No patch available at this time.
+        </notes>
+        <packageUrl regex="true">^pkg:maven/org\.apache\.commons/commons-lang3@.*$</packageUrl>
+        <cve>CVE-2025-48924</cve>
+    </suppress>
+
+    <suppress>
+        <notes>CVE-2026-54515 - jackson-databind 2.21.4 is the latest version shipped by Spring Boot 3.5.x.
+        No patch available at this time.
+        </notes>
+        <packageUrl regex="true">^pkg:maven/com\.fasterxml\.jackson\.core/jackson-databind@.*$</packageUrl>
+        <cve>CVE-2026-54515</cve>
+    </suppress>
+
+    <suppress>
+        <notes>GHSA-55q2-fjhq-7xh7 - DOMPurify vulnerability in swagger-ui.
+        Swagger UI is only used in development/documentation endpoints, not exposed in production.
+        </notes>
+        <packageUrl regex="true">^pkg:javascript/DOMPurify@.*$</packageUrl>
+        <vulnerabilityName>GHSA-55q2-fjhq-7xh7</vulnerabilityName>
+    </suppress>
+
 </suppressions>

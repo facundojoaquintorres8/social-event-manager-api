@@ -182,6 +182,7 @@
 					<nvdApiKey>${env.NVD_API_KEY}</nvdApiKey>
 					<failBuildOnCVSS>7</failBuildOnCVSS>
 					<suppressionFile>${project.basedir}/dependency-check-suppressions.xml</suppressionFile>
+					<assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
 				</configuration>
 			</plugin>
 		</plugins>
