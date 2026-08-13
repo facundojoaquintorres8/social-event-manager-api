@@ -60,3 +60,22 @@ resend:
   api-key: ${RESEND_API_KEY}
   from-email: ${RESEND_FROM_EMAIL}
   override-to: ${RESEND_OVERRIDE_TO:}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
+  info:
+    env:
+      enabled: true
+
+info:
+  app:
+    name: Social Event Manager
+    version: 1.0.0
+    java-version: 21
+    description: Full-stack social event management application

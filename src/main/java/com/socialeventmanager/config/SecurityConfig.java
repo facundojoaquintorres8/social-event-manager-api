@@ -52,12 +52,14 @@ public class SecurityConfig {
                                 "/api/v1/auth/refresh",
                                 "/login/oauth2/code/**",
                                 "/oauth2/**",
-                                "/api/v1/notifications/stream")
+                                "/api/v1/notifications/stream",
+                                "/actuator/health")
                         .permitAll()
                         .requestMatchers(
                                 HttpMethod.GET,
                                 "/api/v1/external-invitations/*")
                         .permitAll()
+                        .requestMatchers("/actuator/**").authenticated()
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
