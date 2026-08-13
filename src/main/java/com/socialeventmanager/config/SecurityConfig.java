@@ -53,13 +53,14 @@ public class SecurityConfig {
                                 "/login/oauth2/code/**",
                                 "/oauth2/**",
                                 "/api/v1/notifications/stream",
-                                "/actuator/health")
+                                "/actuator/health",
+                                "/actuator/info",
+                                "/actuator/metrics")
                         .permitAll()
                         .requestMatchers(
                                 HttpMethod.GET,
                                 "/api/v1/external-invitations/*")
                         .permitAll()
-                        .requestMatchers("/actuator/**").authenticated()
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
