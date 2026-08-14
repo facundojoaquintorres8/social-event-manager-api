@@ -38,6 +38,11 @@ public interface EventRepository extends JpaRepository<Event, UUID>,
             UUID createdById,
             LocalDateTime now);
 
+    long countByCreatedByIdAndStatusAndEventDateAfter(
+            UUID createdById,
+            EventStatus status,
+            LocalDateTime date);
+
     List<Event> findTop5ByCreatedByIdOrderByCreatedAtDesc(
             UUID createdById);
 

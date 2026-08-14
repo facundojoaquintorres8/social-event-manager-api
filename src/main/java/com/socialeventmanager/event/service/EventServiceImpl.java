@@ -83,8 +83,10 @@ public class EventServiceImpl implements EventService {
         User currentUser = getCurrentUser();
 
         if (!currentUser.isPremium()) {
-            long activeEvents = eventRepository.countByCreatedByIdAndStatus(
-                    currentUser.getId(), EventStatus.ACTIVE);
+            long activeEvents = eventRepository.countByCreatedByIdAndStatusAndEventDateAfter(
+                    currentUser.getId(),
+                    EventStatus.ACTIVE,
+                    LocalDateTime.now(Constants.TIMEZONE_ARGENTINA));
             if (activeEvents >= 3) {
                 throw new BadRequestException("freePlanEventLimit");
             }
