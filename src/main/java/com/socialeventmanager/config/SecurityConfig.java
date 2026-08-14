@@ -55,7 +55,8 @@ public class SecurityConfig {
                                 "/api/v1/notifications/stream",
                                 "/actuator/health",
                                 "/actuator/info",
-                                "/actuator/metrics")
+                                "/actuator/metrics",
+                                "/api/v1/payments/webhook")
                         .permitAll()
                         .requestMatchers(
                                 HttpMethod.GET,

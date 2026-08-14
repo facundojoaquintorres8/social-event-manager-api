@@ -135,6 +135,8 @@ public class AuthServiceImpl implements AuthService {
                 .email(user.getEmail())
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
+                .hasPassword(user.isHasPassword())
+                .premium(user.isPremium())
                 .build();
 
         return new ApiResponseDTO<>(
@@ -266,6 +268,7 @@ public class AuthServiceImpl implements AuthService {
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
                 .hasPassword(user.isHasPassword())
+                .premium(user.isPremium())
                 .build();
     }
 

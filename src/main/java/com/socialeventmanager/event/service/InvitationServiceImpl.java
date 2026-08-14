@@ -379,6 +379,11 @@ public class InvitationServiceImpl implements InvitationService {
                 .toList();
     }
 
+    @Override
+    public long countActiveByEvent(Event event) {
+        return invitationRepository.countByEventAndStatusNot(event, InvitationStatus.CANCELLED);
+    }
+
     private User getCurrentUser() {
         return currentUserService.getCurrentUser();
     }

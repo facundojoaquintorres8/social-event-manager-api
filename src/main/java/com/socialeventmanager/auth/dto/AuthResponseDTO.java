@@ -13,4 +13,5 @@ public class AuthResponseDTO {
     private String firstName;
     private String lastName;
     private boolean hasPassword;
+    private boolean premium;
 }

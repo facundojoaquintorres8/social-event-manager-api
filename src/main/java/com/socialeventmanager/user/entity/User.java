@@ -1,5 +1,6 @@
 package com.socialeventmanager.user.entity;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -53,6 +54,13 @@ public class User extends BaseEntity implements UserDetails {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @Builder.Default
     private transient List<UserProvider> providers = new ArrayList<>();
+
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean premium = false;
+
+    @Column(name = "premium_since")
+    private LocalDateTime premiumSince;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

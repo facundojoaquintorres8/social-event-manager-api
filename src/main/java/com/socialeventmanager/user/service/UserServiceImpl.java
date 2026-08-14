@@ -31,6 +31,8 @@ public class UserServiceImpl implements UserService {
                         .lastName(user.getLastName())
                         .email(user.getEmail())
                         .hasPassword(user.isHasPassword())
+                        .premium(user.isPremium())
+                        .premiumSince(user.getPremiumSince())
                         .build());
     }
 

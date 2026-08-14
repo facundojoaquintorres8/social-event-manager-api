@@ -82,6 +82,14 @@ public class EventServiceImpl implements EventService {
             CreateEventRequestDTO request) {
         User currentUser = getCurrentUser();
 
+        if (!currentUser.isPremium()) {
+            long activeEvents = eventRepository.countByCreatedByIdAndStatus(
+                    currentUser.getId(), EventStatus.ACTIVE);
+            if (activeEvents >= 3) {
+                throw new BadRequestException("freePlanEventLimit");
+            }
+        }
+
         Event event = Event.builder()
                 .title(request.getTitle())
                 .description(request.getDescription())
@@ -358,6 +366,13 @@ public class EventServiceImpl implements EventService {
         Event event = eventRepository
                 .findByIdAndCreatedBy(eventId, currentUser)
                 .orElseThrow(() -> new BadRequestException(EVENT_NOT_FOUND));
+
+        if (!event.getCreatedBy().isPremium()) {
+            long participantCount = invitationService.countActiveByEvent(event);
+            if (participantCount >= 10) {
+                throw new BadRequestException("freePlanParticipantLimit");
+            }
+        }
 
         eventValidator.validateEventAllowsInteraction(event);
 

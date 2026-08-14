@@ -51,4 +51,6 @@ public interface InvitationService {
 
     List<UUID> getAcceptedParticipantIds(Event event);
 
+    long countActiveByEvent(Event event);
+
 }

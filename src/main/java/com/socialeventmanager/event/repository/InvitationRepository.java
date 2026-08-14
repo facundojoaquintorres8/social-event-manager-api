@@ -61,4 +61,6 @@ public interface InvitationRepository extends JpaRepository<EventInvitation, UUI
             InvitationStatus status);
 
     List<EventInvitation> findAllByEventAndStatus(Event event, InvitationStatus status);
+
+    long countByEventAndStatusNot(Event event, InvitationStatus status);
 }
