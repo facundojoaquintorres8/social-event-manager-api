@@ -22,4 +22,6 @@ public interface ExternalInvitationService {
 
     void cancelExternalInvitationsForEvent(Event event);
 
+    long countActiveByEvent(Event event);
+
 }

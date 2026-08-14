@@ -194,6 +194,11 @@ public class ExternalInvitationServiceImpl implements ExternalInvitationService 
                 .toList();
     }
 
+    @Override
+    public long countActiveByEvent(Event event) {
+        return externalInvitationRepository.countByEventAndStatus(event, ExternalInvitationStatus.PENDING);
+    }
+
     private User getCurrentUser() {
         return currentUserService.getCurrentUser();
     }

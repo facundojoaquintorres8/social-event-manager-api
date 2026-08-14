@@ -370,8 +370,9 @@ public class EventServiceImpl implements EventService {
                 .orElseThrow(() -> new BadRequestException(EVENT_NOT_FOUND));
 
         if (!event.getCreatedBy().isPremium()) {
-            long participantCount = invitationService.countActiveByEvent(event);
-            if (participantCount >= 10) {
+            long participantInternalCount = invitationService.countActiveByEvent(event);
+            long participantExternalCount = externalInvitationService.countActiveByEvent(event);
+            if (participantInternalCount + participantExternalCount >= 10) {
                 throw new BadRequestException("freePlanParticipantLimit");
             }
         }
