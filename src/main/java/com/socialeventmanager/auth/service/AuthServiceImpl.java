@@ -1,8 +1,21 @@
 package com.socialeventmanager.auth.service;
 
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
+import java.util.UUID;
+
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.socialeventmanager.auth.dto.AuthResponseDTO;
 import com.socialeventmanager.auth.dto.ForgotPasswordRequestDTO;
 import com.socialeventmanager.auth.dto.LoginRequestDTO;
+import com.socialeventmanager.auth.dto.OAuth2LoginRequestDTO;
 import com.socialeventmanager.auth.dto.RefreshRequestDTO;
 import com.socialeventmanager.auth.dto.RegisterRequestDTO;
 import com.socialeventmanager.auth.dto.ResetPasswordRequestDTO;
@@ -12,6 +25,7 @@ import com.socialeventmanager.auth.enums.Provider;
 import com.socialeventmanager.auth.repository.PasswordResetTokenRepository;
 import com.socialeventmanager.auth.repository.UserProviderRepository;
 import com.socialeventmanager.event.service.ExternalInvitationService;
+import com.socialeventmanager.kafka.event.LoginAuditEvent;
 import com.socialeventmanager.kafka.event.PasswordResetRequestedEvent;
 import com.socialeventmanager.kafka.event.UserRegisteredEvent;
 import com.socialeventmanager.kafka.producer.EventProducer;
@@ -25,18 +39,8 @@ import com.socialeventmanager.token.repository.TokenRepository;
 import com.socialeventmanager.user.entity.User;
 import com.socialeventmanager.user.repository.UserRepository;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Locale;
-import java.util.Optional;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -51,6 +55,7 @@ public class AuthServiceImpl implements AuthService {
     private final EventProducer eventProducer;
     private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final UserProviderRepository userProviderRepository;
+    private final HttpServletRequest httpServletRequest;
 
     @Override
     @Transactional
@@ -89,18 +94,32 @@ public class AuthServiceImpl implements AuthService {
     public ApiResponseDTO<AuthResponseDTO> login(LoginRequestDTO request) {
         String email = request.getEmail().trim().toLowerCase(Locale.ROOT);
 
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        email,
-                        request.getPassword()));
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(email, request.getPassword()));
+        } catch (Exception e) {
+            eventProducer.sendLoginAudit(new LoginAuditEvent(
+                    null,
+                    email,
+                    getClientIp(),
+                    getClientUserAgent(),
+                    false,
+                    "invalidCredentials"));
+            throw e;
+        }
 
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new BadRequestException("userNotFound"));
 
-        return new ApiResponseDTO<>(
+        eventProducer.sendLoginAudit(new LoginAuditEvent(
+                user.getId(),
+                email,
+                getClientIp(),
+                getClientUserAgent(),
                 true,
-                "Login successful",
-                buildAuthResponse(user));
+                null));
+
+        return new ApiResponseDTO<>(true, "Login successful", buildAuthResponse(user));
     }
 
     @Override
@@ -210,13 +229,15 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     @Transactional
-    public ApiResponseDTO<AuthResponseDTO> processOAuth2Login(
-            Provider provider,
-            String providerId,
-            String email,
-            String firstName,
-            String lastName,
-            String language) {
+    public ApiResponseDTO<AuthResponseDTO> processOAuth2Login(OAuth2LoginRequestDTO request) {
+        Provider provider = request.getProvider();
+        String providerId = request.getProviderId();
+        String email = request.getEmail();
+        String firstName = request.getFirstName();
+        String lastName = request.getLastName();
+        String language = request.getLanguage();
+        String ip = request.getIp();
+        String userAgent = request.getUserAgent();
 
         Optional<UserProvider> existingProvider = userProviderRepository
                 .findByProviderAndProviderId(provider, providerId);
@@ -250,6 +271,14 @@ public class AuthServiceImpl implements AuthService {
 
             externalInvitationService.claimExternalInvitations(user, language);
         }
+
+        eventProducer.sendLoginAudit(new LoginAuditEvent(
+                user.getId(),
+                email,
+                ip,
+                userAgent,
+                true,
+                null));
 
         return new ApiResponseDTO<>(true, "Login successful", buildAuthResponse(user));
     }
@@ -297,6 +326,18 @@ public class AuthServiceImpl implements AuthService {
         });
 
         tokenRepository.saveAll(validUserTokens);
+    }
+
+    private String getClientIp() {
+        String xForwardedFor = httpServletRequest.getHeader("X-Forwarded-For");
+        if (xForwardedFor != null && !xForwardedFor.isBlank()) {
+            return xForwardedFor.split(",")[0].trim();
+        }
+        return httpServletRequest.getRemoteAddr();
+    }
+
+    private String getClientUserAgent() {
+        return httpServletRequest.getHeader("User-Agent");
     }
 
 }

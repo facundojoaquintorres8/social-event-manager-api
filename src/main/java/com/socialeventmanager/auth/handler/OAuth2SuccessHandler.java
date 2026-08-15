@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.socialeventmanager.auth.dto.AuthResponseDTO;
+import com.socialeventmanager.auth.dto.OAuth2LoginRequestDTO;
 import com.socialeventmanager.auth.enums.Provider;
 import com.socialeventmanager.auth.service.AuthService;
 import com.socialeventmanager.shared.dto.ApiResponseDTO;
@@ -76,9 +77,22 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
         String acceptLanguage = request.getHeader("Accept-Language");
         String language = (acceptLanguage != null && acceptLanguage.startsWith("es")) ? "es" : "en";
+        String ip = request.getHeader("X-Forwarded-For") != null
+                ? request.getHeader("X-Forwarded-For").split(",")[0].trim()
+                : request.getRemoteAddr();
+        String userAgent = request.getHeader("User-Agent");
 
         ApiResponseDTO<AuthResponseDTO> authResponse = authService.processOAuth2Login(
-                provider, providerId, email, firstName, lastName, language);
+                OAuth2LoginRequestDTO.builder()
+                        .provider(provider)
+                        .providerId(providerId)
+                        .email(email)
+                        .firstName(firstName)
+                        .lastName(lastName)
+                        .language(language)
+                        .ip(ip)
+                        .userAgent(userAgent)
+                        .build());
 
         AuthResponseDTO data = authResponse.getData();
 

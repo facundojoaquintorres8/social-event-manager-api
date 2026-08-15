@@ -5,6 +5,7 @@ import com.socialeventmanager.kafka.event.EventCancelledEvent;
 import com.socialeventmanager.kafka.event.EventReminderEvent;
 import com.socialeventmanager.kafka.event.InvitationCreatedEvent;
 import com.socialeventmanager.kafka.event.InvitationRespondedEvent;
+import com.socialeventmanager.kafka.event.LoginAuditEvent;
 import com.socialeventmanager.kafka.event.NotificationEvent;
 import com.socialeventmanager.kafka.event.PasswordResetRequestedEvent;
 import com.socialeventmanager.kafka.event.UserRegisteredEvent;
@@ -82,4 +83,15 @@ public class EventProducer {
                                 event.eventId(), ex.getMessage());
                 });
     }
+
+    public void sendLoginAudit(LoginAuditEvent event) {
+        kafkaTemplate.send(KafkaTopicConfig.AUDIT_TOPIC, event)
+                .whenComplete((result, ex) -> {
+                    if (ex != null) {
+                        log.error("Failed to publish LoginAuditEvent for {}: {}",
+                                event.email(), ex.getMessage());
+                    }
+                });
+    }
+
 }

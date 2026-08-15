@@ -3,10 +3,12 @@ package com.socialeventmanager.notification.consumer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.socialeventmanager.audit.service.AuditService;
 import com.socialeventmanager.kafka.event.EventCancelledEvent;
 import com.socialeventmanager.kafka.event.EventReminderEvent;
 import com.socialeventmanager.kafka.event.InvitationCreatedEvent;
 import com.socialeventmanager.kafka.event.InvitationRespondedEvent;
+import com.socialeventmanager.kafka.event.LoginAuditEvent;
 import com.socialeventmanager.kafka.event.NotificationEvent;
 import com.socialeventmanager.kafka.event.PasswordResetRequestedEvent;
 import com.socialeventmanager.kafka.event.UserRegisteredEvent;
@@ -30,6 +32,7 @@ public class NotificationConsumer {
     private final EmailService emailService;
     private final NotificationService notificationService;
     private final SseService sseService;
+    private final AuditService auditService;
 
     private final ObjectMapper objectMapper = new ObjectMapper()
             .registerModule(new JavaTimeModule())
@@ -113,5 +116,15 @@ public class NotificationConsumer {
 
         String fullType = new String(typeHeader.value());
         return fullType.substring(fullType.lastIndexOf('.') + 1);
+    }
+
+    @KafkaListener(topics = "audit", groupId = "notification-group")
+    public void handleAudit(ConsumerRecord<String, String> consumerRecord) {
+        try {
+            LoginAuditEvent event = objectMapper.readValue(consumerRecord.value(), LoginAuditEvent.class);
+            auditService.saveLoginAudit(event);
+        } catch (Exception e) {
+            log.error("Failed to process audit event: {}", e.getMessage());
+        }
     }
 }

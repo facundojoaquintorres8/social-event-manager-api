@@ -30,6 +30,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import com.socialeventmanager.auth.dto.AuthResponseDTO;
 import com.socialeventmanager.auth.dto.ForgotPasswordRequestDTO;
 import com.socialeventmanager.auth.dto.LoginRequestDTO;
+import com.socialeventmanager.auth.dto.OAuth2LoginRequestDTO;
 import com.socialeventmanager.auth.dto.RegisterRequestDTO;
 import com.socialeventmanager.auth.dto.ResetPasswordRequestDTO;
 import com.socialeventmanager.auth.entity.PasswordResetToken;
@@ -336,8 +337,16 @@ class AuthServiceImplTest {
             when(tokenRepository.save(any())).thenReturn(null);
 
             ApiResponseDTO<AuthResponseDTO> response = authService.processOAuth2Login(
-                    Provider.GOOGLE, "google-123", "facundo@test.com",
-                    "Facundo", "Torres", "en");
+                    OAuth2LoginRequestDTO.builder()
+                            .provider(Provider.GOOGLE)
+                            .providerId("google-456")
+                            .email("nuevo@test.com")
+                            .firstName("Nuevo")
+                            .lastName("Usuario")
+                            .language("en")
+                            .ip("127.0.0.1")
+                            .userAgent("test-agent")
+                            .build());
 
             assertThat(response.isSuccess()).isTrue();
             verify(userRepository, never()).save(any());
@@ -357,8 +366,16 @@ class AuthServiceImplTest {
             when(tokenRepository.save(any())).thenReturn(null);
 
             ApiResponseDTO<AuthResponseDTO> response = authService.processOAuth2Login(
-                    Provider.GOOGLE, "google-456", "nuevo@test.com",
-                    "Nuevo", "Usuario", "en");
+                    OAuth2LoginRequestDTO.builder()
+                            .provider(Provider.GOOGLE)
+                            .providerId("google-456")
+                            .email("nuevo@test.com")
+                            .firstName("Nuevo")
+                            .lastName("Usuario")
+                            .language("en")
+                            .ip("127.0.0.1")
+                            .userAgent("test-agent")
+                            .build());
 
             assertThat(response.isSuccess()).isTrue();
             verify(userRepository).save(any(User.class));
@@ -378,8 +395,16 @@ class AuthServiceImplTest {
             when(tokenRepository.save(any())).thenReturn(null);
 
             ApiResponseDTO<AuthResponseDTO> response = authService.processOAuth2Login(
-                    Provider.GOOGLE, "google-789", "facundo@test.com",
-                    "Facundo", "Torres", "en");
+                    OAuth2LoginRequestDTO.builder()
+                            .provider(Provider.GOOGLE)
+                            .providerId("google-456")
+                            .email("nuevo@test.com")
+                            .firstName("Nuevo")
+                            .lastName("Usuario")
+                            .language("en")
+                            .ip("127.0.0.1")
+                            .userAgent("test-agent")
+                            .build());
 
             assertThat(response.isSuccess()).isTrue();
             verify(userRepository, never()).save(any());
