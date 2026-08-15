@@ -8,7 +8,7 @@
 
 Full-stack web application for creating and managing social events, inviting participants, and tracking shared contributions.
 
-**Live demo:** [social-event-manager-web.vercel.app](https://social-event-manager-web.vercel.app)
+**Live demo:** [planora.com.ar](https://planora.com.ar)
 
 ---
 
