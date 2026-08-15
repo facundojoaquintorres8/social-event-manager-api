@@ -17,15 +17,20 @@ public class WebConfig {
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration config = new CorsConfiguration();
+        CorsConfiguration prometheusConfig = new CorsConfiguration();
+        prometheusConfig.setAllowedOriginPatterns(List.of("*"));
+        prometheusConfig.setAllowedHeaders(List.of("*"));
+        prometheusConfig.setAllowedMethods(List.of("GET", "OPTIONS"));
 
-        config.setAllowCredentials(true);
-        config.setAllowedOrigins(allowedOrigins);
-        config.setAllowedHeaders(List.of("*"));
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        CorsConfiguration apiConfig = new CorsConfiguration();
+        apiConfig.setAllowCredentials(true);
+        apiConfig.setAllowedOrigins(allowedOrigins);
+        apiConfig.setAllowedHeaders(List.of("*"));
+        apiConfig.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", config);
+        source.registerCorsConfiguration("/actuator/prometheus", prometheusConfig);
+        source.registerCorsConfiguration("/**", apiConfig);
 
         return source;
     }
