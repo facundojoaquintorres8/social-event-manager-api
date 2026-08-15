@@ -49,6 +49,8 @@ import com.socialeventmanager.token.repository.TokenRepository;
 import com.socialeventmanager.user.entity.User;
 import com.socialeventmanager.user.repository.UserRepository;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 @ExtendWith(MockitoExtension.class)
 @DisplayName("AuthServiceImpl")
 class AuthServiceImplTest {
@@ -71,6 +73,8 @@ class AuthServiceImplTest {
     private PasswordResetTokenRepository passwordResetTokenRepository;
     @Mock
     private UserProviderRepository userProviderRepository;
+    @Mock
+    private HttpServletRequest httpServletRequest;
 
     @InjectMocks
     private AuthServiceImpl authService;
@@ -326,10 +330,10 @@ class AuthServiceImplTest {
             UserProvider userProvider = UserProvider.builder()
                     .user(user)
                     .provider(Provider.GOOGLE)
-                    .providerId("google-123")
+                    .providerId("google-456")
                     .build();
 
-            when(userProviderRepository.findByProviderAndProviderId(Provider.GOOGLE, "google-123"))
+            when(userProviderRepository.findByProviderAndProviderId(Provider.GOOGLE, "google-456"))
                     .thenReturn(Optional.of(userProvider));
             when(tokenRepository.findAllByUserIdAndExpiredFalseAndRevokedFalse(any())).thenReturn(List.of());
             when(jwtService.generateToken(any())).thenReturn("accessToken");
@@ -385,9 +389,9 @@ class AuthServiceImplTest {
         @Test
         @DisplayName("should link provider to existing user with same email")
         void shouldLinkProviderToExistingUserWithSameEmail() {
-            when(userProviderRepository.findByProviderAndProviderId(Provider.GOOGLE, "google-789"))
+            when(userProviderRepository.findByProviderAndProviderId(Provider.GOOGLE, "google-456"))
                     .thenReturn(Optional.empty());
-            when(userRepository.findByEmail("facundo@test.com")).thenReturn(Optional.of(user));
+            when(userRepository.findByEmail("nuevo@test.com")).thenReturn(Optional.of(user));
             when(userProviderRepository.save(any())).thenReturn(null);
             when(tokenRepository.findAllByUserIdAndExpiredFalseAndRevokedFalse(any())).thenReturn(List.of());
             when(jwtService.generateToken(any())).thenReturn("accessToken");
