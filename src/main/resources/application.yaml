@@ -66,15 +66,23 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics,prometheus
+        include: health,info,metrics
   endpoint:
     health:
       show-details: always
-    prometheus:
-      enabled: true
   metrics:
     tags:
       application: social-event-manager
+  prometheus:
+    metrics:
+      export:
+        pushgateway:
+          enabled: true
+          base-url: ${GRAFANA_REMOTE_WRITE_URL}
+          job: social-event-manager
+          username: ${GRAFANA_USERNAME}
+          password: ${GRAFANA_API_TOKEN}
+          push-rate: 60s
 
 info:
   app:

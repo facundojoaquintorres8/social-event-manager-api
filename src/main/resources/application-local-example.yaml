@@ -19,6 +19,9 @@ GITHUB_CLIENT_SECRET: example-github-client-secret
 MP_ACCESS_TOKEN: example-mp-access-token
 MP_PUBLIC_KEY: example-mp-public-key
 MP_WEBHOOK_SECRET: example-mp-webhook-secret
+GRAFANA_REMOTE_WRITE_URL: example-grafana-remote-write-url
+GRAFANA_USERNAME: example-grafana-username
+GRAFANA_API_TOKEN: example-grafana-api-token
 spring:
   kafka:
     properties:
