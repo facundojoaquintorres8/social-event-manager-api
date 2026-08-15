@@ -37,7 +37,6 @@ public class NotificationConsumer {
 
     @KafkaListener(topics = "invitations", groupId = "notification-group")
     public void handleInvitations(ConsumerRecord<String, String> consumerRecord) {
-        log.info("Received from invitations: {}", consumerRecord.value());
         try {
             String typeHeader = getSimpleTypeName(consumerRecord);
             if ("InvitationCreatedEvent".equals(typeHeader)) {

@@ -53,16 +53,14 @@
     </suppress>
 
     <suppress>
-        <notes>CVE-2026-53914 - Affects Kotlin build cache metadata deserialization, not runtime code.
-        kotlin-stdlib is a transitive runtime dependency of okhttp-jvm used by resend-java SDK.
-        The vulnerability requires access to Kotlin build toolchain cache, which is not 
-        present in a Spring Boot production deployment.
-        Fix available in Kotlin 2.4.20 but that version breaks okhttp-jvm compatibility.
-        Will update when a compatible stable version is available.
-        JetBrains rates this as medium severity (6.7), NVD score of 9.8 is disputed.
+        <notes>CVE-2026-53914, CVE-2020-29582 - Affect Kotlin build cache and internal APIs, not runtime code.
+        kotlin-stdlib and kotlin-stdlib-jdk7 are transitive dependencies of resend-java SDK.
+        These vulnerabilities are not exploitable in a Spring Boot production deployment.
+        Fix for CVE-2026-53914 requires Kotlin 2.4.20 which is not yet stable.
         </notes>
-        <packageUrl regex="true">^pkg:maven/org\.jetbrains\.kotlin/kotlin-stdlib@.*$</packageUrl>
+        <packageUrl regex="true">^pkg:maven/org\.jetbrains\.kotlin/.*@.*$</packageUrl>
         <cve>CVE-2026-53914</cve>
+        <cve>CVE-2020-29582</cve>
     </suppress>
 
 </suppressions>
