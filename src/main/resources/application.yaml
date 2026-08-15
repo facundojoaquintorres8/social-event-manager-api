@@ -66,13 +66,15 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics
+        include: health,info,metrics,prometheus
   endpoint:
     health:
-      show-details: when-authorized
-  info:
-    env:
+      show-details: always
+    prometheus:
       enabled: true
+  metrics:
+    tags:
+      application: social-event-manager
 
 info:
   app:
