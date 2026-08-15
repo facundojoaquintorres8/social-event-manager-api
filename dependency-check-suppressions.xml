@@ -45,4 +45,24 @@
         <vulnerabilityName>GHSA-55q2-fjhq-7xh7</vulnerabilityName>
     </suppress>
 
+    <suppress>
+        <notes>commons-io 2.8.0 - false positive. Referenced only in embedded pom.xml inside 
+        velocity-engine-core jar, not a runtime dependency. Velocity is used only by build tools.</notes>
+        <packageUrl regex="true">^pkg:maven/commons-io/commons-io@.*$</packageUrl>
+        <cve>CVE-2024-47554</cve>
+    </suppress>
+
+    <suppress>
+        <notes>CVE-2026-53914 - Affects Kotlin build cache metadata deserialization, not runtime code.
+        kotlin-stdlib is a transitive runtime dependency of okhttp-jvm used by resend-java SDK.
+        The vulnerability requires access to Kotlin build toolchain cache, which is not 
+        present in a Spring Boot production deployment.
+        Fix available in Kotlin 2.4.20 but that version breaks okhttp-jvm compatibility.
+        Will update when a compatible stable version is available.
+        JetBrains rates this as medium severity (6.7), NVD score of 9.8 is disputed.
+        </notes>
+        <packageUrl regex="true">^pkg:maven/org\.jetbrains\.kotlin/kotlin-stdlib@.*$</packageUrl>
+        <cve>CVE-2026-53914</cve>
+    </suppress>
+
 </suppressions>
